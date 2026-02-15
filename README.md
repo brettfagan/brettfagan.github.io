@@ -23,11 +23,9 @@ npm run preview
 
 ## Deploy to GitHub Pages
 
-For a user/org site named `brettfagan.github.io`, ensure your default branch is configured for GitHub Pages and deploy from `dist`:
+This repo includes a GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) that builds and deploys the `dist` output to GitHub Pages whenever `main` is updated.
 
-```bash
-npm run deploy
-```
+After merging, set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**.
 
 If you later use this setup for a project site (for example `username.github.io/repo-name`), update `base` in `vite.config.js` to `/repo-name/` before deploying.
 
