@@ -511,14 +511,13 @@ function analyze() {
           subMap[tx.cat_detail].count++;
         });
         const subs = Object.entries(subMap).sort((a,b) => b[1].total - a[1].total);
-        const maxSub = subs[0]?.[1].total || 1;
         const color = CAT_COLORS[cat]||'#6b6b75';
         const subPanel = subs.length > 0 ? `
           <div class="subcat-panel" id="subcat-${cat}">
             ${subs.map(([detail, sd]) => `
               <div class="subcat-row" onclick="event.stopPropagation();setSubFilter('${cat}','${detail}')">
                 <div class="subcat-name">${fmtDetail(detail)}</div>
-                <div class="cat-bar-wrap"><div class="cat-bar" style="width:${(Math.abs(sd.total)/Math.abs(maxSub)*100).toFixed(1)}%;background:${color};opacity:0.6"></div></div>
+                <div class="cat-bar-wrap"><div class="cat-bar" style="width:${(Math.abs(sd.total)/Math.abs(maxCat)*100).toFixed(1)}%;background:${color};opacity:0.6"></div></div>
                 <div class="subcat-total" style="color:${color}">${fmt(sd.total)}</div>
                 <div class="subcat-count">${sd.count} txn${sd.count!==1?'s':''}</div>
               </div>`).join('')}
