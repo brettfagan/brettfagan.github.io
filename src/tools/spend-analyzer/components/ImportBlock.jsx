@@ -91,7 +91,7 @@ export default function ImportBlock({ card, onLoad, onClear }) {
         </span>
       </div>
 
-      <div className="import-body">
+      {open && <div className="import-body">
         <div className="tabs">
           <button
             className={`tab-btn${activeTab === 'json' ? ' active' : ''}`}
@@ -165,7 +165,7 @@ export default function ImportBlock({ card, onLoad, onClear }) {
             {loaded && <button className="btn btn-ghost" onClick={handleClear}>Clear</button>}
           </div>
         )}
-      </div>
+      </div>}
     </div>
   );
 }
