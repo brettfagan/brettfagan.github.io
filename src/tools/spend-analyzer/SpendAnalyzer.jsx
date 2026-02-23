@@ -1,13 +1,15 @@
 import { useState, useCallback } from 'react';
 import { CARDS } from './lib/constants';
+import { useAuth } from './context/AuthContext';
 import ImportSidebar from './components/ImportSidebar';
 import ResultsView from './components/ResultsView';
+import AuthButton from './components/AuthButton';
 import './SpendAnalyzer.css';
 
 export default function SpendAnalyzer() {
+  const { user, loading } = useAuth();
   const [loadedData, setLoadedData] = useState({});
   const [results, setResults] = useState(null);
-  // sidebarKey resets all ImportBlock components when startOver is called
   const [sidebarKey, setSidebarKey] = useState(0);
 
   const handleLoad = useCallback((cardId, txns) => {
@@ -40,8 +42,13 @@ export default function SpendAnalyzer() {
   return (
     <>
       <header>
-        <h1>Spend Analyzer</h1>
-        <span>BrettLabs</span>
+        <div className="header-left">
+          <h1>Spend Analyzer</h1>
+          <span>BrettLabs</span>
+        </div>
+        <div className="header-right">
+          <AuthButton />
+        </div>
       </header>
 
       <div className="main">
@@ -63,6 +70,11 @@ export default function SpendAnalyzer() {
                 <p style={{ maxWidth: '300px', lineHeight: 1.8 }}>
                   Import data from one or more cards via Plaid JSON or CSV, then click Analyze.
                 </p>
+                {!loading && !user && (
+                  <p style={{ maxWidth: '300px', lineHeight: 1.8, marginTop: '12px', fontSize: '11px', color: 'var(--muted)' }}>
+                    Sign in to save imports and manage categories.
+                  </p>
+                )}
               </div>
             )
           }
