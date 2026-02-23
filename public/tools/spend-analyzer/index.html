@@ -104,7 +104,7 @@
   .td-merchant { font-weight:500; max-width:260px; }
   .merchant-cell { display:flex; align-items:center; gap:7px; min-width:0; width:100%; }
   .merchant-logo { width:20px; height:20px; border-radius:4px; object-fit:contain; flex-shrink:0; background:var(--surface); border:1px solid var(--border); }
-  .merchant-logo-placeholder { width:20px; height:20px; flex-shrink:0; display:inline-block; }
+  .merchant-logo-placeholder { width:20px; height:20px; border-radius:4px; flex-shrink:0; display:inline-block; background:var(--surface); border:1px solid var(--border); }
   .merchant-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0; }
   .td-amount { text-align:right; font-weight:500; white-space:nowrap; }
   .badge { display:inline-block; font-size:10px; padding:2px 7px; border-radius:3px; border:1px solid var(--border-light); white-space:nowrap; }
@@ -662,7 +662,7 @@ function renderTable() {
     <tbody>${txList.map(tx => {
       const color = CAT_COLORS[tx.cat]||'#6b6b75';
       const csvTag = tx.source==='csv' ? '<span style="font-size:9px;color:var(--accent2);margin-left:5px">CSV</span>' : '';
-      const logoHtml = tx.logo_url ? `<img class="merchant-logo" src="${tx.logo_url}" alt="" onerror="this.style.display='none'">` : `<span class="merchant-logo-placeholder"></span>`;
+      const logoHtml = tx.logo_url ? `<img class="merchant-logo" src="${tx.logo_url}" alt="" onerror="this.classList.add('merchant-logo-placeholder');this.removeAttribute('src')">` : `<span class="merchant-logo-placeholder"></span>`;
       const channelTag = tx.payment_channel ? `<span class="channel-tag">${tx.payment_channel.replace(/_/g,' ')}</span>` : '';
       const txJson = JSON.stringify(tx).replace(/'/g,'&#39;').replace(/"/g,'&quot;');
       return `<tr onclick="openTxModal(JSON.parse(this.dataset.tx))" data-tx="${txJson}">
@@ -714,7 +714,7 @@ function renderTable() {
     <tbody>${allCredits.map(tx => {
       const color = CAT_COLORS[tx.cat]||'#6b6b75';
       const csvTag = tx.source==='csv' ? '<span style="font-size:9px;color:var(--accent2);margin-left:5px">CSV</span>' : '';
-      const logoHtml = tx.logo_url ? `<img class="merchant-logo" src="${tx.logo_url}" alt="" onerror="this.style.display='none'">` : `<span class="merchant-logo-placeholder"></span>`;
+      const logoHtml = tx.logo_url ? `<img class="merchant-logo" src="${tx.logo_url}" alt="" onerror="this.classList.add('merchant-logo-placeholder');this.removeAttribute('src')">` : `<span class="merchant-logo-placeholder"></span>`;
       const channelTag = tx.payment_channel ? `<span class="channel-tag">${tx.payment_channel.replace(/_/g,' ')}</span>` : '';
       const txJson = JSON.stringify(tx).replace(/'/g,'&#39;').replace(/"/g,'&quot;');
       return `<tr onclick="openTxModal(JSON.parse(this.dataset.tx))" data-tx="${txJson}">
@@ -765,7 +765,7 @@ function openTxModal(tx) {
 
   // Header: logo + merchant name + amount
   const logoHtml = tx.logo_url
-    ? `<img class="tx-modal-logo" src="${tx.logo_url}" alt="" onerror="this.style.display='none'">`
+    ? `<img class="tx-modal-logo" src="${tx.logo_url}" alt="" onerror="this.src='';this.style.background='var(--surface)'">`
     : `<div class="tx-modal-logo-placeholder"></div>`;
 
   const amountHtml = `<div class="tx-modal-amount${isCredit ? ' credit' : ''}">
@@ -834,7 +834,7 @@ function openTxModal(tx) {
   if (tx.counterparty && tx.counterparty.length) {
     const cpRows = tx.counterparty.map(cp => {
       const cpLogo = cp.logo_url
-        ? `<img class="tx-modal-cp-logo" src="${cp.logo_url}" alt="" onerror="this.style.display='none'">`
+        ? `<img class="tx-modal-cp-logo" src="${cp.logo_url}" alt="" onerror="this.src='';this.style.background='var(--surface)'">`
         : `<div class="tx-modal-cp-logo" style="background:var(--surface)"></div>`;
       const cpType = cp.type ? cp.type.replace(/_/g,' ').replace(/\b\w/g,x=>x.toUpperCase()) : '';
       return `<div class="tx-modal-counterparty">
