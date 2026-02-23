@@ -1,19 +1,20 @@
 import { useMemo, useState } from 'react';
-import { EXCLUDED } from '../lib/constants';
+import { useCategories } from '../context/CategoriesContext';
 import { fmt, fmtShortDate } from '../lib/format';
 import CategoryBreakdown from './CategoryBreakdown';
 import TransactionTable from './TransactionTable';
 import TransactionModal from './TransactionModal';
 
 export default function ResultsView({ allTransactions }) {
+  const { excludedKeys } = useCategories();
   const [modalTx, setModalTx] = useState(null);
   // catFilter is used to communicate category click → table, but table manages its own filter state
   // We use a key to reset the table when the user clicks a category
   const [tableFilterSignal, setTableFilterSignal] = useState(null);
 
   const { spending, credits, cats, maxCat, grandTotal, postedTotal, postedSpend, pendingSpend, pendingTotal, totalCredits, dateRange } = useMemo(() => {
-    const spending = allTransactions.filter(tx => tx.amount > 0 && !EXCLUDED.includes(tx.cat));
-    const credits  = allTransactions.filter(tx => tx.amount < 0 && !EXCLUDED.includes(tx.cat));
+    const spending = allTransactions.filter(tx => tx.amount > 0 && !excludedKeys.includes(tx.cat));
+    const credits  = allTransactions.filter(tx => tx.amount < 0 && !excludedKeys.includes(tx.cat));
 
     const catMap = {};
     [...spending.filter(tx => !tx.pending), ...credits].forEach(tx => {
@@ -43,7 +44,7 @@ export default function ResultsView({ allTransactions }) {
     const cardSet = new Set(spending.map(t => t._card));
 
     return { spending, credits, cats, maxCat, grandTotal, postedTotal, postedSpend, pendingSpend, pendingTotal, totalCredits, dateRange, cardSet };
-  }, [allTransactions]);
+  }, [allTransactions, excludedKeys]);
 
   const cardSet = useMemo(() => new Set(allTransactions.map(t => t._card)), [allTransactions]);
 

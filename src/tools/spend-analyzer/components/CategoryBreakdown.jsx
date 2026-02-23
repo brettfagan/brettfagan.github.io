@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { CAT_COLORS } from '../lib/constants';
+import { useCategories } from '../context/CategoriesContext';
 import { fmt, fmtCat, fmtDetail } from '../lib/format';
 
 export default function CategoryBreakdown({ cats, maxCat, grandTotal, spending, credits, pendingCount, onFilter }) {
+  const { getCatColor } = useCategories();
   const [openCat, setOpenCat] = useState(null);
 
   function handleCatClick(cat) {
@@ -22,7 +23,7 @@ export default function CategoryBreakdown({ cats, maxCat, grandTotal, spending, 
       </div>
 
       {cats.map(([cat, d]) => {
-        const color = CAT_COLORS[cat] || '#6b6b75';
+        const color = getCatColor(cat);
         const allTx = [...spending.filter(tx => !tx.pending), ...credits];
         const subMap = {};
         allTx.filter(tx => tx.cat === cat && tx.cat_detail).forEach(tx => {

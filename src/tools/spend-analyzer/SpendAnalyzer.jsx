@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import ImportSidebar from './components/ImportSidebar';
 import ResultsView from './components/ResultsView';
 import AuthButton from './components/AuthButton';
+import CategoryManager from './components/CategoryManager';
 import './SpendAnalyzer.css';
 
 export default function SpendAnalyzer() {
@@ -11,6 +12,7 @@ export default function SpendAnalyzer() {
   const [loadedData, setLoadedData] = useState({});
   const [results, setResults] = useState(null);
   const [sidebarKey, setSidebarKey] = useState(0);
+  const [catMgrOpen, setCatMgrOpen] = useState(false);
 
   const handleLoad = useCallback((cardId, txns) => {
     setLoadedData(prev => ({ ...prev, [cardId]: txns }));
@@ -47,6 +49,14 @@ export default function SpendAnalyzer() {
           <span>BrettLabs</span>
         </div>
         <div className="header-right">
+          {user && (
+            <button
+              className="manage-cats-btn"
+              onClick={() => setCatMgrOpen(true)}
+            >
+              ⚙ Categories
+            </button>
+          )}
           <AuthButton />
         </div>
       </header>
@@ -80,6 +90,8 @@ export default function SpendAnalyzer() {
           }
         </div>
       </div>
+
+      <CategoryManager open={catMgrOpen} onClose={() => setCatMgrOpen(false)} />
     </>
   );
 }

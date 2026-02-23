@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { CAT_COLORS } from '../lib/constants';
+import { useCategories } from '../context/CategoriesContext';
 import { fmt, fmtCat, fmtDetail } from '../lib/format';
 
 export default function TransactionModal({ tx, onClose }) {
@@ -13,10 +13,12 @@ export default function TransactionModal({ tx, onClose }) {
     };
   }, [onClose]);
 
+  const { getCatColor } = useCategories();
+
   if (!tx) return null;
 
   const isCredit = tx.amount < 0;
-  const color = CAT_COLORS[tx.cat] || '#6b6b75';
+  const color = getCatColor(tx.cat);
 
   const Row = ({ label, value }) => {
     if (!value && value !== 0) return null;

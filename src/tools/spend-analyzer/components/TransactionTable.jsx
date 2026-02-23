@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
-import { CAT_COLORS } from '../lib/constants';
+import { useCategories } from '../context/CategoriesContext';
 import { fmt, fmtCat, fmtDetail } from '../lib/format';
 
 export default function TransactionTable({ spending, credits, categories, initialCatFilter = '', initialDetailFilter = '', onOpenModal }) {
+  const { getCatColor } = useCategories();
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState(initialCatFilter);
   const [detailFilter, setDetailFilter] = useState(initialDetailFilter);
@@ -83,7 +84,7 @@ export default function TransactionTable({ spending, credits, categories, initia
   );
 
   function TxRow({ tx, creditStyle }) {
-    const color = CAT_COLORS[tx.cat] || '#6b6b75';
+    const color = getCatColor(tx.cat);
     return (
       <tr onClick={() => onOpenModal(tx)} style={{ cursor: 'pointer' }}>
         <td className="td-date">{tx.date}</td>
