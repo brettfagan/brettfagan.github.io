@@ -231,16 +231,16 @@ export default function CategoryManager({ open, onClose }) {
             Categories
           </button>
           <button
-            className={`cm-tab${activeTab === 'rules' ? ' active' : ''}`}
-            onClick={() => setActiveTab('rules')}
-          >
-            CSV Rules
-          </button>
-          <button
             className={`cm-tab${activeTab === 'subcategories' ? ' active' : ''}`}
             onClick={() => setActiveTab('subcategories')}
           >
             Subcategories
+          </button>
+          <button
+            className={`cm-tab${activeTab === 'rules' ? ' active' : ''}`}
+            onClick={() => setActiveTab('rules')}
+          >
+            CSV Rules
           </button>
         </div>
 
