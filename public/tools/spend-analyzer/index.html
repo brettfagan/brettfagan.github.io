@@ -101,11 +101,11 @@
   td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
   tr:hover td { background:rgba(0,0,0,0.02); }
   .td-date { color:var(--muted); white-space:nowrap; }
-  .td-merchant { font-weight:500; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .merchant-cell { display:flex; align-items:center; gap:7px; min-width:0; }
+  .td-merchant { font-weight:500; max-width:260px; }
+  .merchant-cell { display:flex; align-items:center; gap:7px; min-width:0; width:100%; }
   .merchant-logo { width:20px; height:20px; border-radius:4px; object-fit:contain; flex-shrink:0; background:var(--surface); border:1px solid var(--border); }
-  .merchant-logo-placeholder { width:20px; height:20px; flex-shrink:0; }
-  .merchant-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .merchant-logo-placeholder { width:20px; height:20px; flex-shrink:0; display:inline-block; }
+  .merchant-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0; }
   .td-amount { text-align:right; font-weight:500; white-space:nowrap; }
   .badge { display:inline-block; font-size:10px; padding:2px 7px; border-radius:3px; border:1px solid var(--border-light); white-space:nowrap; }
   .channel-tag { display:inline-block; font-size:9px; padding:1px 5px; border-radius:3px; background:var(--surface); border:1px solid var(--border-light); color:var(--muted); margin-left:5px; vertical-align:middle; white-space:nowrap; }
