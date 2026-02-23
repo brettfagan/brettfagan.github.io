@@ -55,11 +55,18 @@ export default function ResultsView({ allTransactions }) {
 
   return (
     <div className="results-section">
-      {dateRange && (
-        <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '16px', marginTop: '-8px' }}>
-          Transaction date range: <span style={{ fontWeight: 600, color: 'var(--text)' }}>{dateRange}</span>
-        </div>
-      )}
+      <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '16px', marginTop: '-8px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        {dateRange
+          ? <span>Transaction date range: <span style={{ fontWeight: 600, color: 'var(--text)' }}>{dateRange}</span></span>
+          : <span />
+        }
+        <span>
+          Total transactions analyzed:{' '}
+          <span style={{ fontWeight: 700, color: 'var(--text)' }}>
+            {pendingSpend.length + postedSpend.length + credits.length + excluded.length}
+          </span>
+        </span>
+      </div>
 
       <div className="stats-row">
         <div className="stat-card">
@@ -173,14 +180,6 @@ export default function ResultsView({ allTransactions }) {
         </>
       )}
 
-      <div style={{ borderTop: '2px solid var(--border)', marginTop: '32px', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--muted)' }}>
-          Total Transactions Analyzed
-        </span>
-        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>
-          {pendingSpend.length + postedSpend.length + credits.length + excluded.length}
-        </span>
-      </div>
     </div>
   );
 }
