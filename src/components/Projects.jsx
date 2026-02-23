@@ -11,7 +11,7 @@ function Projects() {
               trends across credit card statements.
             </p>
             <div className="project-actions">
-              <a className="btn btn-primary" href="/cc-analyzer/">
+              <a className="btn btn-primary" href="/tools/spend-analyzer/">
                 Open App
               </a>
               <a
