@@ -172,6 +172,15 @@ export default function ResultsView({ allTransactions }) {
           </div>
         </>
       )}
+
+      <div style={{ borderTop: '2px solid var(--border)', marginTop: '32px', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--muted)' }}>
+          Total Transactions Analyzed
+        </span>
+        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>
+          {pendingSpend.length + postedSpend.length + credits.length + excluded.length}
+        </span>
+      </div>
     </div>
   );
 }
