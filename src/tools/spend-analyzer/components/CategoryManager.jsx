@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useCategories } from '../context/CategoriesContext';
 import { COLOR_PALETTE } from '../context/CategoriesContext';
+import CsvRulesManager from './CsvRulesManager';
 
 // ── ColorPicker ───────────────────────────────────────────────────────────────
 function ColorPicker({ value, onChange }) {
@@ -192,6 +193,7 @@ function AddCategoryForm({ onAdd }) {
 export default function CategoryManager({ open, onClose }) {
   const { categories, loading, saveCategory, deleteCategory, resetToDefaults } = useCategories();
   const [resetting, setResetting] = useState(false);
+  const [activeTab, setActiveTab] = useState('categories');
 
   async function handleReset() {
     if (!confirm('Reset all categories to defaults? This will delete any custom categories.')) return;
@@ -211,38 +213,58 @@ export default function CategoryManager({ open, onClose }) {
       {/* Panel */}
       <aside className={`cm-panel${open ? ' open' : ''}`}>
         <div className="cm-panel-header">
-          <h2>Manage Categories</h2>
+          <h2>{activeTab === 'categories' ? 'Manage Categories' : 'CSV Rules'}</h2>
           <button className="cm-close-btn" onClick={onClose} title="Close">✕</button>
         </div>
 
+        {/* Tabs */}
+        <div className="cm-tabs">
+          <button
+            className={`cm-tab${activeTab === 'categories' ? ' active' : ''}`}
+            onClick={() => setActiveTab('categories')}
+          >
+            Categories
+          </button>
+          <button
+            className={`cm-tab${activeTab === 'rules' ? ' active' : ''}`}
+            onClick={() => setActiveTab('rules')}
+          >
+            CSV Rules
+          </button>
+        </div>
+
         <div className="cm-panel-body">
-          {loading ? (
-            <p className="cm-loading">Loading…</p>
+          {activeTab === 'categories' ? (
+            loading ? (
+              <p className="cm-loading">Loading…</p>
+            ) : (
+              <>
+                <div className="cm-list">
+                  {categories.map(cat => (
+                    <CategoryRow
+                      key={cat.key}
+                      cat={cat}
+                      onSave={saveCategory}
+                      onDelete={deleteCategory}
+                    />
+                  ))}
+                </div>
+
+                <AddCategoryForm onAdd={saveCategory} />
+
+                <div className="cm-reset-section">
+                  <button
+                    className="cm-btn danger-outline"
+                    onClick={handleReset}
+                    disabled={resetting}
+                  >
+                    {resetting ? 'Resetting…' : 'Reset to Defaults'}
+                  </button>
+                </div>
+              </>
+            )
           ) : (
-            <>
-              <div className="cm-list">
-                {categories.map(cat => (
-                  <CategoryRow
-                    key={cat.key}
-                    cat={cat}
-                    onSave={saveCategory}
-                    onDelete={deleteCategory}
-                  />
-                ))}
-              </div>
-
-              <AddCategoryForm onAdd={saveCategory} />
-
-              <div className="cm-reset-section">
-                <button
-                  className="cm-btn danger-outline"
-                  onClick={handleReset}
-                  disabled={resetting}
-                >
-                  {resetting ? 'Resetting…' : 'Reset to Defaults'}
-                </button>
-              </div>
-            </>
+            <CsvRulesManager />
           )}
         </div>
       </aside>

@@ -1251,3 +1251,149 @@ tr:hover td { background: rgba(0, 0, 0, 0.02); }
   border-top: 1px solid var(--border);
   padding-top: 20px;
 }
+
+/* ── CategoryManager tabs ─────────────────────────────────────────────────── */
+.cm-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  flex-shrink: 0;
+  gap: 0;
+}
+
+.cm-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 10px 16px 8px;
+  text-transform: uppercase;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+.cm-tab:hover {
+  color: var(--text);
+}
+.cm-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── CSV Rule rows ────────────────────────────────────────────────────────── */
+.rule-row {
+  grid-template-columns: auto 1fr auto auto auto auto auto auto;
+}
+
+.rule-reorder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.cm-btn-icon.reorder {
+  font-size: 10px;
+  padding: 1px 4px;
+  line-height: 1;
+}
+.cm-btn-icon.reorder:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+.rule-priority {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+  min-width: 12px;
+  letter-spacing: 0;
+}
+
+.rule-pattern {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.rule-match-field {
+  font-size: 9px;
+  padding: 2px 5px;
+  border-radius: 10px;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.rule-match-field.mf-category  { background: #dbeafe; color: #1e40af; }
+.rule-match-field.mf-merchant  { background: #d1fae5; color: #065f46; }
+.rule-match-field.mf-both      { background: #ede9fe; color: #5b21b6; }
+
+.rule-arrow {
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* ── Match-field toggle (3-button) ───────────────────────────────────────── */
+.match-field-toggle {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+.mft-btn {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 8px;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.mft-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.mft-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ── Category select in rule editor ─────────────────────────────────────── */
+.rule-cat-select {
+  flex: 1;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  cursor: pointer;
+}
+
+/* ── Rules hint text ─────────────────────────────────────────────────────── */
+.rules-hint {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}

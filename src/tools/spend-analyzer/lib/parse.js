@@ -21,17 +21,33 @@ export function normPlaid(tx) {
   };
 }
 
-export function guessCat(raw) {
-  if (!raw) return 'OTHER';
-  const r = raw.toUpperCase();
-  if (/FOOD|DINING|RESTAURANT|GROCERY|GROC|COFFEE|CAFE/.test(r)) return 'FOOD_AND_DRINK';
-  if (/GAS|FUEL|AUTO|UBER|LYFT|PARKING|TRANSIT/.test(r)) return 'TRANSPORTATION';
-  if (/UTIL|PHONE|INTERNET|ELECTRIC|CABLE|WATER/.test(r)) return 'RENT_AND_UTILITIES';
-  if (/MEDICAL|HEALTH|PHARMACY|DRUG|DOCTOR/.test(r)) return 'MEDICAL';
-  if (/ENTERTAIN|MOVIE|SPORT|THEATER/.test(r)) return 'ENTERTAINMENT';
-  if (/HOTEL|FLIGHT|AIRLINE|TRAVEL|AIRBNB/.test(r)) return 'TRAVEL';
-  if (/SHOP|AMAZON|WALMART|TARGET|MERCHANDISE/.test(r)) return 'GENERAL_MERCHANDISE';
-  if (/PERSONAL|SPA|SALON|GYM|FITNESS/.test(r)) return 'PERSONAL_CARE';
+// guessCat: tries user rules first (in priority order), then falls back to
+// hardcoded patterns. Works on both the CSV category column and merchant name.
+export function guessCat(rawCat = '', rawDesc = '', rules = []) {
+  const catUp  = rawCat.toUpperCase();
+  const descUp = rawDesc.toUpperCase();
+
+  // 1. User rules (already sorted by priority ascending from context)
+  for (const rule of rules) {
+    let re;
+    try { re = new RegExp(rule.pattern, 'i'); }
+    catch { continue; } // skip invalid patterns
+
+    const testCat  = rule.match_field !== 'merchant'  && re.test(catUp);
+    const testDesc = rule.match_field !== 'category'  && re.test(descUp);
+    if (testCat || testDesc) return rule.cat;
+  }
+
+  // 2. Hardcoded fallback (for signed-out users or empty rules list)
+  const r = catUp + ' ' + descUp;
+  if (/FOOD|DINING|RESTAURANT|GROCERY|GROC|COFFEE|CAFE/.test(r))  return 'FOOD_AND_DRINK';
+  if (/GAS|FUEL|AUTO|UBER|LYFT|PARKING|TRANSIT/.test(r))          return 'TRANSPORTATION';
+  if (/UTIL|PHONE|INTERNET|ELECTRIC|CABLE|WATER/.test(r))         return 'RENT_AND_UTILITIES';
+  if (/MEDICAL|HEALTH|PHARMACY|DRUG|DOCTOR/.test(r))              return 'MEDICAL';
+  if (/ENTERTAIN|MOVIE|SPORT|THEATER/.test(r))                    return 'ENTERTAINMENT';
+  if (/HOTEL|FLIGHT|AIRLINE|TRAVEL|AIRBNB/.test(r))               return 'TRAVEL';
+  if (/SHOP|AMAZON|WALMART|TARGET|MERCHANDISE/.test(r))           return 'GENERAL_MERCHANDISE';
+  if (/PERSONAL|SPA|SALON|GYM|FITNESS/.test(r))                   return 'PERSONAL_CARE';
   return 'GENERAL_SERVICES';
 }
 
@@ -57,7 +73,7 @@ function splitRow(line) {
   return res;
 }
 
-export function parseCSV(text) {
+export function parseCSV(text, rules = []) {
   const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) throw new Error('CSV appears empty.');
   const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim().toLowerCase());
@@ -89,22 +105,22 @@ export function parseCSV(text) {
     if (row.length < 2) continue;
     const rawDate = clean(row[iDate]);
     const rawDesc = clean(row[iDesc]);
-    const rawAmt = clean(row[iAmount] || '').replace(/[$,]/g, '');
-    const rawCat = iCat >= 0 ? clean(row[iCat]) : '';
+    const rawAmt  = clean(row[iAmount] || '').replace(/[$,]/g, '');
+    const rawCat  = iCat >= 0 ? clean(row[iCat]) : '';
     const rawType = iType >= 0 ? clean(row[iType]).toLowerCase() : '';
     if (!rawDate || !rawAmt) continue;
     const amount = parseFloat(rawAmt);
     if (isNaN(amount)) continue;
     if (rawType === 'payment') continue;
     const normalizedAmount =
-      rawType === 'sale' ? Math.abs(amount) :
+      rawType === 'sale'   ? Math.abs(amount) :
       rawType === 'return' ? -Math.abs(amount) :
       amount;
     txns.push({
       date: normDate(rawDate),
       merchant: rawDesc || '—',
       amount: normalizedAmount,
-      cat: guessCat(rawCat),
+      cat: guessCat(rawCat, rawDesc, rules),
       cat_detail: rawCat,
       pending: false,
       source: 'csv',

@@ -1,7 +1,10 @@
 import { CARDS } from '../lib/constants';
+import { useCsvRules } from '../context/CsvRulesContext';
 import ImportBlock from './ImportBlock';
 
 export default function ImportSidebar({ loadedCount, onLoad, onClear, onAnalyze, onStartOver }) {
+  const { rules } = useCsvRules();
+
   return (
     <aside className="sidebar">
       <div className="sidebar-title">Import Data</div>
@@ -10,6 +13,7 @@ export default function ImportSidebar({ loadedCount, onLoad, onClear, onAnalyze,
           <ImportBlock
             key={card.id}
             card={card}
+            rules={rules}
             onLoad={onLoad}
             onClear={onClear}
           />

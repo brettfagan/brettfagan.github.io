@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { normPlaid } from '../lib/parse';
 import { parseCSV } from '../lib/parse';
 
-export default function ImportBlock({ card, onLoad, onClear }) {
+export default function ImportBlock({ card, onLoad, onClear, rules = [] }) {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('json');
   const [jsonText, setJsonText] = useState('');
@@ -64,7 +64,7 @@ export default function ImportBlock({ card, onLoad, onClear }) {
     const reader = new FileReader();
     reader.onload = ev => {
       try {
-        handleLoad(parseCSV(ev.target.result));
+        handleLoad(parseCSV(ev.target.result, rules));
       } catch (e) {
         setCsvErr('✗ ' + e.message);
       }
