@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useCategories } from '../context/CategoriesContext';
-import { fmt, fmtShortDate } from '../lib/format';
+import { fmt, fmtCat, fmtDetail, fmtShortDate } from '../lib/format';
 import CategoryBreakdown from './CategoryBreakdown';
 import TransactionTable from './TransactionTable';
 import TransactionModal from './TransactionModal';
@@ -12,9 +12,10 @@ export default function ResultsView({ allTransactions }) {
   // We use a key to reset the table when the user clicks a category
   const [tableFilterSignal, setTableFilterSignal] = useState(null);
 
-  const { spending, credits, cats, maxCat, grandTotal, postedTotal, postedSpend, pendingSpend, pendingTotal, totalCredits, dateRange } = useMemo(() => {
+  const { spending, credits, excluded, cats, maxCat, grandTotal, postedTotal, postedSpend, pendingSpend, pendingTotal, totalCredits, dateRange } = useMemo(() => {
     const spending = allTransactions.filter(tx => tx.amount > 0 && !excludedKeys.includes(tx.cat));
     const credits  = allTransactions.filter(tx => tx.amount < 0 && !excludedKeys.includes(tx.cat));
+    const excluded = allTransactions.filter(tx => excludedKeys.includes(tx.cat));
 
     const catMap = {};
     [...spending.filter(tx => !tx.pending), ...credits].forEach(tx => {
@@ -43,7 +44,7 @@ export default function ResultsView({ allTransactions }) {
 
     const cardSet = new Set(spending.map(t => t._card));
 
-    return { spending, credits, cats, maxCat, grandTotal, postedTotal, postedSpend, pendingSpend, pendingTotal, totalCredits, dateRange, cardSet };
+    return { spending, credits, excluded, cats, maxCat, grandTotal, postedTotal, postedSpend, pendingSpend, pendingTotal, totalCredits, dateRange, cardSet };
   }, [allTransactions, excludedKeys]);
 
   const cardSet = useMemo(() => new Set(allTransactions.map(t => t._card)), [allTransactions]);
@@ -110,6 +111,67 @@ export default function ResultsView({ allTransactions }) {
       />
 
       {modalTx && <TransactionModal tx={modalTx} onClose={() => setModalTx(null)} />}
+
+      {excluded.length > 0 && (
+        <>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '32px', marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>
+            Excluded{' '}
+            <span style={{ fontWeight: 400 }}>{excluded.length} transaction{excluded.length !== 1 ? 's' : ''}</span>
+            <span style={{ fontWeight: 400, fontSize: '10px', marginLeft: '8px' }}>— categories marked "excluded" in Settings</span>
+          </div>
+          <table>
+            <colgroup>
+              <col className="c-date" />
+              <col className="c-merchant" />
+              <col className="c-category" />
+              <col className="c-subcat" />
+              <col className="c-card" />
+              <col className="c-amount" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Merchant</th>
+                <th>Category</th>
+                <th>Subcategory</th>
+                <th>Card</th>
+                <th style={{ textAlign: 'right' }}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {excluded.sort((a, b) => (a.date < b.date ? 1 : -1)).map((tx, i) => (
+                <tr key={i} style={{ opacity: 0.6 }}>
+                  <td className="td-date">{tx.date}</td>
+                  <td className="td-merchant" title={tx.merchant}>
+                    <div className="merchant-cell">
+                      {tx.logo_url
+                        ? <img className="merchant-logo" src={tx.logo_url} alt="" onError={e => { e.target.classList.add('merchant-logo-placeholder'); e.target.removeAttribute('src'); }} />
+                        : <span className="merchant-logo-placeholder" />
+                      }
+                      <span className="merchant-name">{tx.merchant}</span>
+                      {tx.source === 'csv' && <span style={{ fontSize: '9px', color: 'var(--accent2)', marginLeft: '5px' }}>CSV</span>}
+                    </div>
+                  </td>
+                  <td><span className="badge" style={{ borderColor: 'var(--muted)', color: 'var(--muted)' }}>{fmtCat(tx.cat)}</span></td>
+                  <td style={{ fontSize: '11px', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {tx.cat_detail ? fmtDetail(tx.cat_detail) : ''}
+                  </td>
+                  <td style={{ color: 'var(--muted)', fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {tx._card}
+                  </td>
+                  <td className="td-amount" style={{ color: 'var(--muted)' }}>
+                    {tx.amount < 0 ? `-${fmt(Math.abs(tx.amount))}` : fmt(tx.amount)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', padding: '10px 0', color: 'var(--muted)' }}>
+            <span>{excluded.length} excluded transaction{excluded.length !== 1 ? 's' : ''}</span>
+            <span style={{ fontWeight: 700 }}>{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))} total</span>
+          </div>
+        </>
+      )}
     </div>
   );
 }
