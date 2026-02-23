@@ -1,108 +1,99 @@
-# Brett Fagan Portfolio (React + Vite)
+# brettfagan.github.io
 
-A minimal personal landing page built with React and Vite for deployment to GitHub Pages at `brettfagan.github.io`.
+Personal portfolio site and tooling, built with React + Vite and deployed to GitHub Pages.
 
-## Getting started
+**Live site:** [brettfagan.github.io](https://brettfagan.github.io)
+
+---
+
+## Project structure
+
+```
+├── src/
+│   ├── main.jsx
+│   ├── styles.css
+│   └── components/
+│       ├── Hero.jsx
+│       ├── About.jsx
+│       ├── Projects.jsx
+│       ├── Contact.jsx
+│       └── Footer.jsx
+├── public/
+│   └── tools/
+│       └── spend-analyzer/
+│           └── index.html      # Standalone Spend Analyzer tool
+├── .github/
+│   └── workflows/
+│       └── deploy-pages.yml    # CI/CD → GitHub Pages
+├── vite.config.js
+└── package.json
+```
+
+---
+
+## Development
 
 ```bash
 npm install
-npm run dev
+npm run dev       # local dev server
+npm run build     # production build → dist/
+npm run preview   # preview production build locally
 ```
 
-## Build for production
+---
 
-```bash
-npm run build
-```
+## Deployment
 
-## Preview production build
+Pushes to `main` trigger the GitHub Actions workflow (`.github/workflows/deploy-pages.yml`), which builds the site and deploys the `dist/` output to GitHub Pages automatically.
 
-```bash
-npm run preview
-```
+**Required GitHub setting:** Settings → Pages → Build and deployment → Source → **GitHub Actions**
 
-## Deploy to GitHub Pages
+The repository must be **public** for GitHub Pages to be available on a free plan.
 
-This repo includes a GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) that builds and deploys the `dist` output to GitHub Pages whenever `main` is updated.
+---
 
-After merging, set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**.
+## Spend Analyzer
 
-If you later use this setup for a project site (for example `username.github.io/repo-name`), update `base` in `vite.config.js` to `/repo-name/` before deploying.
+A client-side financial transaction analysis tool available at `/tools/spend-analyzer/`. All processing happens in the browser — no data is sent to any server.
 
-## Migrating from a project URL to `brettfagan.github.io`
+### Features
 
-To serve this at `https://brettfagan.github.io/` (without the repo suffix), confirm all of the following:
+- **Multi-card import** — load up to 4 accounts simultaneously, each as Plaid JSON or CSV
+- **Plaid JSON support** — paste or drag-drop a `/transactions/get` response; parses all Plaid fields natively
+- **CSV support** — auto-detects column layout from Chase, Mint, Capital One, and generic exports
+- **Spending breakdown** — category and subcategory totals with bar charts, click to filter transactions
+- **Transaction tables** — separate sections for Pending, Posted, and Credits/Refunds, each with fixed aligned columns:
+  - Date · Merchant · Category · Subcategory · Channel · Card · Amount
+- **Merchant logos** — pulled from Plaid's `logo_url` field and displayed inline
+- **Transaction detail modal** — click any row to see full Plaid metadata including location, counterparties, authorized datetime, account/transaction IDs
+- **Search & filter** — filter by keyword, category, subcategory, date range, and card
+- **Sortable columns** — click Date, Merchant, or Amount headers to sort
+- **Low confidence indicator** — merchant names with low Plaid categorization confidence are outlined in red
+- **Summary stats** — cards, total posted spend, pending spend, credits, and net spend at a glance
 
-1. Your GitHub username is `brettfagan`.
-2. The repository name is exactly `brettfagan.github.io`.
-3. The Vite `base` is `/` in `vite.config.js`.
-4. GitHub Pages is enabled for the published branch.
+### Plaid fields used
 
-## Credit card spending analyzer: suggested next steps
+| Field | Usage |
+|---|---|
+| `merchant_name` / `name` | Merchant display name |
+| `logo_url` | Inline logo in table + modal |
+| `website` | Clickable link in modal |
+| `payment_channel` | Channel column (`in store`, `online`, etc.) |
+| `personal_finance_category` | Category, subcategory, confidence level |
+| `pending` | Separated into Pending section |
+| `authorized_date` / `authorized_datetime` | Shown in modal |
+| `datetime` | Precise timestamp in modal |
+| `location` | Address + Google Maps link in modal |
+| `counterparties` | Name, type, logo in modal |
+| `transaction_id` / `account_id` | Reference IDs in modal |
 
-Now that the portfolio is live, use a short implementation plan to de-risk the analyzer before you write a lot of code.
+### CSV auto-detection
 
-### 1) Define MVP scope and success criteria
+Recognized column names (case-insensitive):
 
-Decide what "v1 done" means in concrete terms:
+- **Date** — `date`, `transaction date`, `trans date`
+- **Merchant** — `description`, `merchant`, `name`, `payee`, `memo`
+- **Amount** — `amount`, `debit`, `charge`
+- **Category** — `category`
 
-- Import support (CSV upload first, API integrations later).
-- Automatic categorization rules for common merchants.
-- Monthly spending breakdown by category.
-- A simple "insights" panel (top categories, unusual month-over-month changes).
-
-Write this down as a checklist so every later decision maps back to MVP.
-
-### 2) Lock in data model + ingestion contract
-
-Standardize raw transaction fields up front (date, merchant, amount, card, category, notes) and define how each issuer CSV maps into this shape. This avoids repeated parser rewrites.
-
-### 3) Build parser + normalization layer first
-
-Implement a deterministic import pipeline:
-
-1. Parse file.
-2. Normalize headers and date/amount formats.
-3. Deduplicate transactions.
-4. Validate required fields.
-5. Persist normalized records.
-
-Treat this as a core module with tests because every feature depends on it.
-
-### 4) Ship read-only analytics views next
-
-Before budgets, alerts, or recommendations, get baseline analytics working:
-
-- Total spend by month.
-- Category distribution chart.
-- Merchant leaderboard.
-- Filter by date range/card.
-
-This gives immediate user value and validates your data quality.
-
-### 5) Add categorization quality loop
-
-Support both:
-
-- Rule-based auto-categorization (merchant regex / exact match).
-- Manual recategorization in UI.
-
-Every manual fix should improve future imports via saved rules.
-
-### 6) Add guardrails for privacy and trust
-
-Because this is financial data, include:
-
-- Local-first storage where possible.
-- Clear data retention/deletion controls.
-- Basic encryption-at-rest if backend storage is introduced.
-- Transparent disclaimer that this is an analyzer, not financial advice.
-
-### 7) Roadmap after MVP
-
-Once the ingestion + analytics core is stable, prioritize:
-
-- Budget targets + over-budget alerts.
-- Recurring subscription detection.
-- Simple forecasting and trend projections.
-- Optional bank/API sync (Plaid, etc.) behind feature flags.
+If amounts are mostly negative (Mint-style), they are automatically sign-flipped. Rows with `type = payment` are excluded.
