@@ -101,11 +101,16 @@
   td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
   tr:hover td { background:rgba(0,0,0,0.02); }
   .td-date { color:var(--muted); white-space:nowrap; }
-  .td-merchant { font-weight:500; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .td-merchant { font-weight:500; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .merchant-cell { display:flex; align-items:center; gap:7px; min-width:0; }
+  .merchant-logo { width:20px; height:20px; border-radius:4px; object-fit:contain; flex-shrink:0; background:var(--surface); border:1px solid var(--border); }
+  .merchant-logo-placeholder { width:20px; height:20px; flex-shrink:0; }
+  .merchant-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .td-amount { text-align:right; font-weight:500; white-space:nowrap; }
   .badge { display:inline-block; font-size:10px; padding:2px 7px; border-radius:3px; border:1px solid var(--border-light); white-space:nowrap; }
+  .channel-tag { display:inline-block; font-size:9px; padding:1px 5px; border-radius:3px; background:var(--surface); border:1px solid var(--border-light); color:var(--muted); margin-left:5px; vertical-align:middle; white-space:nowrap; }
   .low-confidence { font-size:10px; color:#e67e22; margin-left:4px; font-weight:700; cursor:default; position:relative; top:-2px; }
-  .pending-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--warn); margin-right:6px; }
+  .pending-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--warn); margin-right:6px; flex-shrink:0; }
 
   .results-section { animation:fadeIn 0.3s ease; }
   @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
@@ -238,6 +243,8 @@ function normPlaid(tx) {
   return {
     date: tx.date,
     merchant: tx.merchant_name || tx.name || '—',
+    logo_url: tx.logo_url || '',
+    payment_channel: tx.payment_channel || '',
     amount: tx.amount,
     cat: tx.personal_finance_category?.primary || 'OTHER',
     cat_detail: tx.personal_finance_category?.detailed || '',
@@ -615,9 +622,11 @@ function renderTable() {
     <tbody>${txList.map(tx => {
       const color = CAT_COLORS[tx.cat]||'#6b6b75';
       const csvTag = tx.source==='csv' ? '<span style="font-size:9px;color:var(--accent2);margin-left:5px">CSV</span>' : '';
+      const logoHtml = tx.logo_url ? `<img class="merchant-logo" src="${tx.logo_url}" alt="" onerror="this.style.display='none'">` : `<span class="merchant-logo-placeholder"></span>`;
+      const channelTag = tx.payment_channel ? `<span class="channel-tag">${tx.payment_channel.replace(/_/g,' ')}</span>` : '';
       return `<tr>
         <td class="td-date">${tx.date}</td>
-        <td class="td-merchant" title="${tx.merchant}">${tx.pending?'<span class="pending-dot"></span>':''} ${tx.cat_confidence==='LOW'?'<span class="low-confidence" title="Low categorization confidence">*</span>':''}${tx.merchant}${csvTag}</td>
+        <td class="td-merchant" title="${tx.merchant}"><div class="merchant-cell">${logoHtml}${tx.pending?'<span class="pending-dot"></span>':''}${tx.cat_confidence==='LOW'?'<span class="low-confidence" title="Low categorization confidence">*</span>':''}<span class="merchant-name">${tx.merchant}</span>${csvTag}${channelTag}</div></td>
         <td><span class="badge" style="border-color:${color};color:${color}">${fmtCat(tx.cat)}</span>${tx.cat_detail ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;padding-left:1px">${fmtDetail(tx.cat_detail)}</div>` : ''}</td>
         <td style="color:var(--muted);font-size:11px">${tx._card}</td>
         <td class="td-amount">${fmt(tx.amount)}</td>
@@ -664,9 +673,11 @@ function renderTable() {
     <tbody>${allCredits.map(tx => {
       const color = CAT_COLORS[tx.cat]||'#6b6b75';
       const csvTag = tx.source==='csv' ? '<span style="font-size:9px;color:var(--accent2);margin-left:5px">CSV</span>' : '';
+      const logoHtml = tx.logo_url ? `<img class="merchant-logo" src="${tx.logo_url}" alt="" onerror="this.style.display='none'">` : `<span class="merchant-logo-placeholder"></span>`;
+      const channelTag = tx.payment_channel ? `<span class="channel-tag">${tx.payment_channel.replace(/_/g,' ')}</span>` : '';
       return `<tr>
         <td class="td-date">${tx.date}</td>
-        <td class="td-merchant" title="${tx.merchant}">${tx.merchant}${csvTag}${tx.cat_confidence==='LOW'?'<span class="low-confidence" title="Low categorization confidence">*</span>':''}</td>
+        <td class="td-merchant" title="${tx.merchant}"><div class="merchant-cell">${logoHtml}<span class="merchant-name">${tx.merchant}</span>${csvTag}${tx.cat_confidence==='LOW'?'<span class="low-confidence" title="Low categorization confidence">*</span>':''}${channelTag}</div></td>
         <td><span class="badge" style="border-color:${color};color:${color}">${fmtCat(tx.cat)}</span>${tx.cat_detail ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;padding-left:1px">${fmtDetail(tx.cat_detail)}</div>` : ''}</td>
         <td style="color:var(--muted);font-size:11px">${tx._card}</td>
         <td class="td-amount" style="color:var(--accent2)">-${fmt(Math.abs(tx.amount))}</td>
