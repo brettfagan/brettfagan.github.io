@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useCsvRules } from '../context/CsvRulesContext';
 import { useCategories } from '../context/CategoriesContext';
-import { fmtDetail } from '../lib/format';
+import { useDetailLabels } from '../context/DetailLabelsContext';
 
 // ── MatchFieldToggle ──────────────────────────────────────────────────────────
 function MatchFieldToggle({ value, onChange }) {
@@ -41,6 +41,7 @@ function CategorySelect({ value, onChange }) {
 // ── RuleRow ───────────────────────────────────────────────────────────────────
 function RuleRow({ rule, index, total, onSave, onDelete, onMove }) {
   const { getCatColor, getCatLabel } = useCategories();
+  const { getDetailLabel } = useDetailLabels();
   const [editing, setEditing]       = useState(false);
   const [pattern, setPattern]       = useState(rule.pattern);
   const [matchField, setMatchField] = useState(rule.match_field);
@@ -98,7 +99,7 @@ function RuleRow({ rule, index, total, onSave, onDelete, onMove }) {
           <span className="rule-pattern" title={rule.pattern}>{rule.pattern}</span>
           {rule.cat_detail && (
             <span className="rule-cat-detail-badge" title={rule.cat_detail}>
-              ↳ {fmtDetail(rule.cat_detail)}
+              ↳ {getDetailLabel(rule.cat_detail)}
             </span>
           )}
         </div>

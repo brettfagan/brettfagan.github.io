@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCategories } from '../context/CategoriesContext';
 import { COLOR_PALETTE } from '../context/CategoriesContext';
 import CsvRulesManager from './CsvRulesManager';
+import DetailLabelsManager from './DetailLabelsManager';
 
 // ── ColorPicker ───────────────────────────────────────────────────────────────
 function ColorPicker({ value, onChange }) {
@@ -213,7 +214,11 @@ export default function CategoryManager({ open, onClose }) {
       {/* Panel */}
       <aside className={`cm-panel${open ? ' open' : ''}`}>
         <div className="cm-panel-header">
-          <h2>{activeTab === 'categories' ? 'Manage Categories' : 'CSV Rules'}</h2>
+          <h2>
+            {activeTab === 'categories' ? 'Manage Categories'
+              : activeTab === 'rules'   ? 'CSV Rules'
+              : 'Subcategory Labels'}
+          </h2>
           <button className="cm-close-btn" onClick={onClose} title="Close">✕</button>
         </div>
 
@@ -230,6 +235,12 @@ export default function CategoryManager({ open, onClose }) {
             onClick={() => setActiveTab('rules')}
           >
             CSV Rules
+          </button>
+          <button
+            className={`cm-tab${activeTab === 'subcategories' ? ' active' : ''}`}
+            onClick={() => setActiveTab('subcategories')}
+          >
+            Subcategories
           </button>
         </div>
 
@@ -263,8 +274,10 @@ export default function CategoryManager({ open, onClose }) {
                 </div>
               </>
             )
-          ) : (
+          ) : activeTab === 'rules' ? (
             <CsvRulesManager />
+          ) : (
+            <DetailLabelsManager />
           )}
         </div>
       </aside>

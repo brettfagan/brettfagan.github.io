@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useCategories } from '../context/CategoriesContext';
-import { fmt, fmtCat, fmtDetail } from '../lib/format';
+import { useDetailLabels } from '../context/DetailLabelsContext';
+import { fmt, fmtCat } from '../lib/format';
 
 export default function CategoryBreakdown({ cats, maxCat, grandTotal, spending, credits, pendingCount, onFilter }) {
   const { getCatColor } = useCategories();
+  const { getDetailLabel } = useDetailLabels();
   const [openCat, setOpenCat] = useState(null);
 
   function handleCatClick(cat) {
@@ -51,7 +53,7 @@ export default function CategoryBreakdown({ cats, maxCat, grandTotal, spending, 
             <div className={`subcat-panel${isOpen ? ' open' : ''}`}>
               {subs.map(([detail, sd]) => (
                 <div key={detail} className="subcat-row" onClick={e => { e.stopPropagation(); onFilter(cat, detail); }}>
-                  <div className="subcat-name">{fmtDetail(detail)}</div>
+                  <div className="subcat-name">{getDetailLabel(detail)}</div>
                   <div className="cat-bar-wrap">
                     <div className="cat-bar" style={{ width: `${(Math.abs(sd.total) / Math.abs(maxCat) * 100).toFixed(1)}%`, background: color, opacity: 0.6 }} />
                   </div>

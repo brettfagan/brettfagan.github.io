@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useCategories } from '../context/CategoriesContext';
-import { fmt, fmtCat, fmtDetail } from '../lib/format';
+import { fmt, fmtCat } from '../lib/format';
+import { useDetailLabels } from '../context/DetailLabelsContext';
 
 export default function TransactionTable({ spending, credits, categories, initialCatFilter = '', initialDetailFilter = '', onOpenModal }) {
   const { getCatColor } = useCategories();
+  const { getDetailLabel } = useDetailLabels();
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState(initialCatFilter);
   const [detailFilter, setDetailFilter] = useState(initialDetailFilter);
@@ -103,7 +105,7 @@ export default function TransactionTable({ spending, credits, categories, initia
         </td>
         <td><span className="badge" style={{ borderColor: color, color }}>{fmtCat(tx.cat)}</span></td>
         <td style={{ fontSize: '11px', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {tx.cat_detail ? fmtDetail(tx.cat_detail) : ''}
+          {tx.cat_detail ? getDetailLabel(tx.cat_detail) : ''}
         </td>
         <td>
           {tx.payment_channel && (
@@ -136,7 +138,7 @@ export default function TransactionTable({ spending, credits, categories, initia
         {detailOptions.length > 0 && (
           <select value={detailFilter} onChange={e => setDetailFilter(e.target.value)}>
             <option value="">All sub-categories</option>
-            {detailOptions.map(d => <option key={d} value={d}>{fmtDetail(d)}</option>)}
+            {detailOptions.map(d => <option key={d} value={d}>{getDetailLabel(d)}</option>)}
           </select>
         )}
         <select value={cardFilter} onChange={e => setCardFilter(e.target.value)}>

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useCategories } from '../context/CategoriesContext';
-import { fmt, fmtCat, fmtDetail } from '../lib/format';
+import { useDetailLabels } from '../context/DetailLabelsContext';
+import { fmt, fmtCat } from '../lib/format';
 
 export default function TransactionModal({ tx, onClose }) {
   useEffect(() => {
@@ -14,6 +15,7 @@ export default function TransactionModal({ tx, onClose }) {
   }, [onClose]);
 
   const { getCatColor } = useCategories();
+  const { getDetailLabel } = useDetailLabels();
 
   if (!tx) return null;
 
@@ -76,7 +78,7 @@ export default function TransactionModal({ tx, onClose }) {
               <Row label="Primary" value={
                 <span className="tx-modal-badge" style={{ borderColor: color, color }}>{fmtCat(tx.cat)}</span>
               } />
-              <Row label="Detail" value={tx.cat_detail ? fmtDetail(tx.cat_detail) : null} />
+              <Row label="Detail" value={tx.cat_detail ? getDetailLabel(tx.cat_detail) : null} />
               <Row label="Confidence" value={tx.cat_confidence ? fmtCat(tx.cat_confidence) : null} />
             </Section>
 
