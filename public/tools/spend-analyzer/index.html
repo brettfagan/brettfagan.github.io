@@ -114,6 +114,38 @@
 
   .results-section { animation:fadeIn 0.3s ease; }
   @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  /* Transaction detail modal */
+  #tx-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:900; animation:fadeOverlay 0.2s ease; }
+  @keyframes fadeOverlay { from{opacity:0} to{opacity:1} }
+  #tx-modal { position:fixed; inset:0; z-index:901; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+  #tx-modal-inner { background:var(--bg); border:1px solid var(--border); border-radius:12px; width:520px; max-width:calc(100vw - 32px); max-height:calc(100vh - 48px); overflow-y:auto; pointer-events:all; animation:slideModal 0.22s cubic-bezier(0.16,1,0.3,1); box-shadow:0 20px 60px rgba(0,0,0,0.18); position:relative; }
+  @keyframes slideModal { from{opacity:0;transform:translateY(16px) scale(0.98)} to{opacity:1;transform:none} }
+  .tx-modal-close { position:absolute; top:14px; right:16px; background:none; border:none; font-size:20px; color:var(--muted); cursor:pointer; line-height:1; padding:4px 6px; border-radius:4px; }
+  .tx-modal-close:hover { color:var(--text); background:var(--surface); }
+  .tx-modal-header { display:flex; align-items:center; gap:14px; padding:24px 24px 18px; border-bottom:1px solid var(--border); }
+  .tx-modal-logo { width:48px; height:48px; border-radius:10px; object-fit:contain; background:var(--surface); border:1px solid var(--border); flex-shrink:0; }
+  .tx-modal-logo-placeholder { width:48px; height:48px; border-radius:10px; background:var(--surface); border:1px solid var(--border); flex-shrink:0; }
+  .tx-modal-title { min-width:0; }
+  .tx-modal-merchant { font-size:18px; font-weight:800; line-height:1.2; word-break:break-word; }
+  .tx-modal-amount { font-size:14px; font-weight:700; margin-top:4px; }
+  .tx-modal-amount.credit { color:var(--accent2); }
+  .tx-modal-body { padding:20px 24px 24px; display:flex; flex-direction:column; gap:20px; }
+  .tx-modal-section { display:flex; flex-direction:column; gap:8px; }
+  .tx-modal-section-title { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); padding-bottom:6px; border-bottom:1px solid var(--border); }
+  .tx-modal-row { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; font-size:12px; }
+  .tx-modal-label { color:var(--muted); white-space:nowrap; flex-shrink:0; }
+  .tx-modal-value { text-align:right; word-break:break-word; font-weight:500; }
+  .tx-modal-value a { color:var(--accent); text-decoration:none; }
+  .tx-modal-value a:hover { text-decoration:underline; }
+  .tx-modal-badge { display:inline-block; font-size:10px; padding:2px 8px; border-radius:3px; border:1px solid var(--border-light); }
+  .tx-modal-pending { display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--warn); font-weight:700; }
+  .tx-modal-counterparty { display:flex; align-items:center; gap:10px; padding:8px; background:var(--surface); border-radius:6px; border:1px solid var(--border); }
+  .tx-modal-cp-logo { width:28px; height:28px; border-radius:6px; object-fit:contain; background:var(--bg); border:1px solid var(--border); flex-shrink:0; }
+  .tx-modal-cp-info { min-width:0; }
+  .tx-modal-cp-name { font-size:12px; font-weight:600; }
+  .tx-modal-cp-type { font-size:10px; color:var(--muted); margin-top:1px; }
+  tbody tr { cursor:pointer; }
 </style>
 </head>
 <body>
@@ -244,12 +276,20 @@ function normPlaid(tx) {
     date: tx.date,
     merchant: tx.merchant_name || tx.name || '—',
     logo_url: tx.logo_url || '',
+    website: tx.website || '',
     payment_channel: tx.payment_channel || '',
     amount: tx.amount,
     cat: tx.personal_finance_category?.primary || 'OTHER',
     cat_detail: tx.personal_finance_category?.detailed || '',
     cat_confidence: tx.personal_finance_category?.confidence_level || '',
     pending: tx.pending || false,
+    authorized_date: tx.authorized_date || '',
+    authorized_datetime: tx.authorized_datetime || '',
+    datetime: tx.datetime || '',
+    location: tx.location || null,
+    transaction_id: tx.transaction_id || '',
+    account_id: tx.account_id || '',
+    counterparty: Array.isArray(tx.counterparties) ? tx.counterparties : [],
     source: 'plaid',
   };
 }
@@ -624,7 +664,8 @@ function renderTable() {
       const csvTag = tx.source==='csv' ? '<span style="font-size:9px;color:var(--accent2);margin-left:5px">CSV</span>' : '';
       const logoHtml = tx.logo_url ? `<img class="merchant-logo" src="${tx.logo_url}" alt="" onerror="this.style.display='none'">` : `<span class="merchant-logo-placeholder"></span>`;
       const channelTag = tx.payment_channel ? `<span class="channel-tag">${tx.payment_channel.replace(/_/g,' ')}</span>` : '';
-      return `<tr>
+      const txJson = JSON.stringify(tx).replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+      return `<tr onclick="openTxModal(JSON.parse(this.dataset.tx))" data-tx="${txJson}">
         <td class="td-date">${tx.date}</td>
         <td class="td-merchant" title="${tx.merchant}"><div class="merchant-cell">${logoHtml}${tx.pending?'<span class="pending-dot"></span>':''}${tx.cat_confidence==='LOW'?'<span class="low-confidence" title="Low categorization confidence">*</span>':''}<span class="merchant-name">${tx.merchant}</span>${csvTag}${channelTag}</div></td>
         <td><span class="badge" style="border-color:${color};color:${color}">${fmtCat(tx.cat)}</span>${tx.cat_detail ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;padding-left:1px">${fmtDetail(tx.cat_detail)}</div>` : ''}</td>
@@ -675,7 +716,8 @@ function renderTable() {
       const csvTag = tx.source==='csv' ? '<span style="font-size:9px;color:var(--accent2);margin-left:5px">CSV</span>' : '';
       const logoHtml = tx.logo_url ? `<img class="merchant-logo" src="${tx.logo_url}" alt="" onerror="this.style.display='none'">` : `<span class="merchant-logo-placeholder"></span>`;
       const channelTag = tx.payment_channel ? `<span class="channel-tag">${tx.payment_channel.replace(/_/g,' ')}</span>` : '';
-      return `<tr>
+      const txJson = JSON.stringify(tx).replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+      return `<tr onclick="openTxModal(JSON.parse(this.dataset.tx))" data-tx="${txJson}">
         <td class="td-date">${tx.date}</td>
         <td class="td-merchant" title="${tx.merchant}"><div class="merchant-cell">${logoHtml}<span class="merchant-name">${tx.merchant}</span>${csvTag}${tx.cat_confidence==='LOW'?'<span class="low-confidence" title="Low categorization confidence">*</span>':''}${channelTag}</div></td>
         <td><span class="badge" style="border-color:${color};color:${color}">${fmtCat(tx.cat)}</span>${tx.cat_detail ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;padding-left:1px">${fmtDetail(tx.cat_detail)}</div>` : ''}</td>
@@ -715,6 +757,147 @@ function fmtDetail(d) {
   }
   return d.replace(/_/g,' ').replace(/\b\w/g,x=>x.toUpperCase());
 }
+
+// ── Transaction detail modal ────────────────────────────────────────────────
+function openTxModal(tx) {
+  const isCredit = tx.amount < 0;
+  const color = CAT_COLORS[tx.cat] || '#6b6b75';
+
+  // Header: logo + merchant name + amount
+  const logoHtml = tx.logo_url
+    ? `<img class="tx-modal-logo" src="${tx.logo_url}" alt="" onerror="this.style.display='none'">`
+    : `<div class="tx-modal-logo-placeholder"></div>`;
+
+  const amountHtml = `<div class="tx-modal-amount${isCredit ? ' credit' : ''}">
+    ${isCredit ? '-' : ''}${fmt(Math.abs(tx.amount))}
+    ${tx.pending ? '<span class="tx-modal-pending"><span class="pending-dot"></span>Pending</span>' : ''}
+  </div>`;
+
+  // Helper to build a label/value row, skipping empty values
+  const row = (label, value) => value
+    ? `<div class="tx-modal-row"><span class="tx-modal-label">${label}</span><span class="tx-modal-value">${value}</span></div>`
+    : '';
+
+  // Category section
+  const catSection = `
+    <div class="tx-modal-section">
+      <div class="tx-modal-section-title">Category</div>
+      ${row('Primary', `<span class="tx-modal-badge" style="border-color:${color};color:${color}">${fmtCat(tx.cat)}</span>`)}
+      ${row('Detail', tx.cat_detail ? fmtDetail(tx.cat_detail) : '')}
+      ${row('Confidence', tx.cat_confidence ? fmtCat(tx.cat_confidence) : '')}
+    </div>`;
+
+  // Payment section
+  const channelFmt = tx.payment_channel ? tx.payment_channel.replace(/_/g,' ').replace(/\b\w/g,x=>x.toUpperCase()) : '';
+  const websiteHtml = tx.website ? `<a href="${tx.website}" target="_blank" rel="noopener">${tx.website.replace(/^https?:\/\//,'')}</a>` : '';
+  const paymentSection = `
+    <div class="tx-modal-section">
+      <div class="tx-modal-section-title">Payment</div>
+      ${row('Card', tx._card || '')}
+      ${row('Channel', channelFmt)}
+      ${row('Website', websiteHtml)}
+    </div>`;
+
+  // Dates section
+  const dateSection = `
+    <div class="tx-modal-section">
+      <div class="tx-modal-section-title">Dates</div>
+      ${row('Posted', tx.date)}
+      ${row('Datetime', tx.datetime ? tx.datetime.replace('T',' ').replace('Z',' UTC') : '')}
+      ${row('Authorized date', tx.authorized_date || '')}
+      ${row('Authorized datetime', tx.authorized_datetime ? tx.authorized_datetime.replace('T',' ').replace('Z',' UTC') : '')}
+    </div>`;
+
+  // Location section
+  let locationSection = '';
+  if (tx.location && Object.values(tx.location).some(v => v)) {
+    const loc = tx.location;
+    const addrParts = [loc.address, loc.city, loc.region, loc.postal_code, loc.country].filter(Boolean);
+    const mapsUrl = (loc.lat && loc.lon)
+      ? `https://www.google.com/maps?q=${loc.lat},${loc.lon}`
+      : addrParts.length ? `https://www.google.com/maps/search/${encodeURIComponent(addrParts.join(', '))}` : '';
+    const addrHtml = addrParts.length
+      ? (mapsUrl ? `<a href="${mapsUrl}" target="_blank" rel="noopener">${addrParts.join(', ')}</a>` : addrParts.join(', '))
+      : '';
+    const coordsHtml = (loc.lat && loc.lon) ? `${loc.lat}, ${loc.lon}` : '';
+    locationSection = `
+      <div class="tx-modal-section">
+        <div class="tx-modal-section-title">Location</div>
+        ${row('Address', addrHtml)}
+        ${row('Store number', loc.store_number || '')}
+        ${row('Coordinates', coordsHtml)}
+      </div>`;
+  }
+
+  // Counterparties section
+  let counterpartySection = '';
+  if (tx.counterparty && tx.counterparty.length) {
+    const cpRows = tx.counterparty.map(cp => {
+      const cpLogo = cp.logo_url
+        ? `<img class="tx-modal-cp-logo" src="${cp.logo_url}" alt="" onerror="this.style.display='none'">`
+        : `<div class="tx-modal-cp-logo" style="background:var(--surface)"></div>`;
+      const cpType = cp.type ? cp.type.replace(/_/g,' ').replace(/\b\w/g,x=>x.toUpperCase()) : '';
+      return `<div class="tx-modal-counterparty">
+        ${cpLogo}
+        <div class="tx-modal-cp-info">
+          <div class="tx-modal-cp-name">${cp.name || '—'}</div>
+          ${cpType ? `<div class="tx-modal-cp-type">${cpType}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    counterpartySection = `
+      <div class="tx-modal-section">
+        <div class="tx-modal-section-title">Counterpart${tx.counterparty.length > 1 ? 'ies' : 'y'}</div>
+        ${cpRows}
+      </div>`;
+  }
+
+  // IDs section
+  const idsSection = `
+    <div class="tx-modal-section">
+      <div class="tx-modal-section-title">Reference</div>
+      ${row('Transaction ID', tx.transaction_id ? `<span style="font-size:10px;word-break:break-all">${tx.transaction_id}</span>` : '')}
+      ${row('Account ID', tx.account_id ? `<span style="font-size:10px;word-break:break-all">${tx.account_id}</span>` : '')}
+    </div>`;
+
+  document.getElementById('tx-modal-body').innerHTML = `
+    <div class="tx-modal-header">
+      ${logoHtml}
+      <div class="tx-modal-title">
+        <div class="tx-modal-merchant">${tx.merchant}</div>
+        ${amountHtml}
+      </div>
+    </div>
+    <div class="tx-modal-body">
+      ${catSection}
+      ${paymentSection}
+      ${dateSection}
+      ${locationSection}
+      ${counterpartySection}
+      ${idsSection}
+    </div>`;
+
+  document.getElementById('tx-modal-overlay').style.display = 'block';
+  document.getElementById('tx-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeTxModal() {
+  document.getElementById('tx-modal-overlay').style.display = 'none';
+  document.getElementById('tx-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTxModal(); });
 </script>
+
+<!-- Transaction detail modal -->
+<div id="tx-modal-overlay" onclick="closeTxModal()" style="display:none"></div>
+<div id="tx-modal" role="dialog" aria-modal="true" style="display:none">
+  <div id="tx-modal-inner">
+    <button class="tx-modal-close" onclick="closeTxModal()" aria-label="Close">&times;</button>
+    <div id="tx-modal-body"></div>
+  </div>
+</div>
 </body>
 </html>
