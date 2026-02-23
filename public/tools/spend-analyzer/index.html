@@ -491,7 +491,14 @@ function analyze() {
   const cardSet = new Set(spending.map(t => t._card));
   const pending = spending.filter(t => t.pending).length;
 
+  const allDates = all.map(t => t.date).filter(Boolean).sort();
+  const fmtShortDate = iso => { const [y,m,d] = iso.split('-'); return `${parseInt(m)}/${parseInt(d)}/${y.slice(2)}`; };
+  const dateRangeHtml = allDates.length
+    ? `<div style="font-size:11px;color:var(--muted);margin-bottom:16px;margin-top:-8px">Transaction date range: <span style="font-weight:600;color:var(--text)">${fmtShortDate(allDates[0])} — ${fmtShortDate(allDates[allDates.length-1])}</span></div>`
+    : '';
+
   content.innerHTML = `<div class="results-section">
+    ${dateRangeHtml}
     <div class="stats-row">
       <div class="stat-card"><div class="stat-label">Cards</div><div class="stat-value">${cardSet.size}</div><div class="stat-sub">${[...cardSet].join(' · ')}</div></div>
       <div class="stat-card"><div class="stat-label">Total Posted Spend</div><div class="stat-value">${fmt(postedTotal)}</div><div class="stat-sub">${postedSpend.length} transactions</div></div>
