@@ -4,14 +4,14 @@ import { useAuth } from './AuthContext';
 
 // ── Default rules (mirrors guessCat() hardcoded patterns) ────────────────────
 export const DEFAULT_RULES = [
-  { pattern: 'FOOD|DINING|RESTAURANT|GROCERY|GROC|COFFEE|CAFE', match_field: 'both', cat: 'FOOD_AND_DRINK',      priority: 0 },
-  { pattern: 'GAS|FUEL|AUTO|UBER|LYFT|PARKING|TRANSIT',         match_field: 'both', cat: 'TRANSPORTATION',      priority: 1 },
-  { pattern: 'UTIL|PHONE|INTERNET|ELECTRIC|CABLE|WATER',        match_field: 'both', cat: 'RENT_AND_UTILITIES',   priority: 2 },
-  { pattern: 'MEDICAL|HEALTH|PHARMACY|DRUG|DOCTOR',             match_field: 'both', cat: 'MEDICAL',             priority: 3 },
-  { pattern: 'ENTERTAIN|MOVIE|SPORT|THEATER',                   match_field: 'both', cat: 'ENTERTAINMENT',       priority: 4 },
-  { pattern: 'HOTEL|FLIGHT|AIRLINE|TRAVEL|AIRBNB',              match_field: 'both', cat: 'TRAVEL',              priority: 5 },
-  { pattern: 'SHOP|AMAZON|WALMART|TARGET|MERCHANDISE',          match_field: 'both', cat: 'GENERAL_MERCHANDISE', priority: 6 },
-  { pattern: 'PERSONAL|SPA|SALON|GYM|FITNESS',                  match_field: 'both', cat: 'PERSONAL_CARE',       priority: 7 },
+  { pattern: 'FOOD|DINING|RESTAURANT|GROCERY|GROC|COFFEE|CAFE', match_field: 'both', cat: 'FOOD_AND_DRINK',      cat_detail: null,                              priority: 0 },
+  { pattern: 'GAS|FUEL|AUTO|UBER|LYFT|PARKING|TRANSIT',         match_field: 'both', cat: 'TRANSPORTATION',      cat_detail: null,                              priority: 1 },
+  { pattern: 'UTIL|PHONE|INTERNET|ELECTRIC|CABLE|WATER',        match_field: 'both', cat: 'RENT_AND_UTILITIES',   cat_detail: null,                              priority: 2 },
+  { pattern: 'MEDICAL|HEALTH|PHARMACY|DRUG|DOCTOR',             match_field: 'both', cat: 'MEDICAL',             cat_detail: null,                              priority: 3 },
+  { pattern: 'ENTERTAIN|MOVIE|SPORT|THEATER',                   match_field: 'both', cat: 'ENTERTAINMENT',       cat_detail: null,                              priority: 4 },
+  { pattern: 'HOTEL|FLIGHT|AIRLINE|TRAVEL|AIRBNB',              match_field: 'both', cat: 'TRAVEL',              cat_detail: null,                              priority: 5 },
+  { pattern: 'SHOP|AMAZON|WALMART|TARGET|MERCHANDISE',          match_field: 'both', cat: 'GENERAL_MERCHANDISE', cat_detail: null,                              priority: 6 },
+  { pattern: 'PERSONAL|SPA|SALON|GYM|FITNESS',                  match_field: 'both', cat: 'PERSONAL_CARE',       cat_detail: null,                              priority: 7 },
 ];
 
 // ── Context ───────────────────────────────────────────────────────────────────
@@ -110,7 +110,7 @@ export function CsvRulesProvider({ children }) {
     // Update existing
     const { data, error } = await supabase
       .from('csv_rules')
-      .update({ pattern: rule.pattern, match_field: rule.match_field, cat: rule.cat })
+      .update({ pattern: rule.pattern, match_field: rule.match_field, cat: rule.cat, cat_detail: rule.cat_detail || null })
       .eq('id', rule.id)
       .eq('user_id', user.id)
       .select()

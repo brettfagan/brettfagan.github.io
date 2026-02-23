@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useCsvRules } from '../context/CsvRulesContext';
 import { useCategories } from '../context/CategoriesContext';
+import { fmtDetail } from '../lib/format';
 
 // ── MatchFieldToggle ──────────────────────────────────────────────────────────
 function MatchFieldToggle({ value, onChange }) {
@@ -27,7 +28,7 @@ function MatchFieldToggle({ value, onChange }) {
 
 // ── CategorySelect ────────────────────────────────────────────────────────────
 function CategorySelect({ value, onChange }) {
-  const { categories, getCatColor } = useCategories();
+  const { categories } = useCategories();
   return (
     <select className="cm-input rule-cat-select" value={value} onChange={e => onChange(e.target.value)}>
       {categories.map(cat => (
@@ -40,10 +41,11 @@ function CategorySelect({ value, onChange }) {
 // ── RuleRow ───────────────────────────────────────────────────────────────────
 function RuleRow({ rule, index, total, onSave, onDelete, onMove }) {
   const { getCatColor, getCatLabel } = useCategories();
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing]       = useState(false);
   const [pattern, setPattern]       = useState(rule.pattern);
   const [matchField, setMatchField] = useState(rule.match_field);
   const [cat, setCat]               = useState(rule.cat);
+  const [catDetail, setCatDetail]   = useState(rule.cat_detail || '');
   const [saving, setSaving]         = useState(false);
   const [patternErr, setPatternErr] = useState('');
 
@@ -53,12 +55,9 @@ function RuleRow({ rule, index, total, onSave, onDelete, onMove }) {
   }
 
   async function handleSave() {
-    if (!validatePattern(pattern)) {
-      setPatternErr('Invalid regex pattern.');
-      return;
-    }
+    if (!validatePattern(pattern)) { setPatternErr('Invalid regex pattern.'); return; }
     setSaving(true);
-    await onSave({ ...rule, pattern, match_field: matchField, cat });
+    await onSave({ ...rule, pattern, match_field: matchField, cat, cat_detail: catDetail.trim() || null });
     setSaving(false);
     setEditing(false);
     setPatternErr('');
@@ -68,6 +67,7 @@ function RuleRow({ rule, index, total, onSave, onDelete, onMove }) {
     setPattern(rule.pattern);
     setMatchField(rule.match_field);
     setCat(rule.cat);
+    setCatDetail(rule.cat_detail || '');
     setEditing(false);
     setPatternErr('');
   }
@@ -94,7 +94,14 @@ function RuleRow({ rule, index, total, onSave, onDelete, onMove }) {
             title="Move down"
           >↓</button>
         </div>
-        <span className="rule-pattern" title={rule.pattern}>{rule.pattern}</span>
+        <div className="rule-pattern-col">
+          <span className="rule-pattern" title={rule.pattern}>{rule.pattern}</span>
+          {rule.cat_detail && (
+            <span className="rule-cat-detail-badge" title={rule.cat_detail}>
+              ↳ {fmtDetail(rule.cat_detail)}
+            </span>
+          )}
+        </div>
         <span className={`rule-match-field mf-${rule.match_field}`}>{matchBadgeLabel}</span>
         <span className="rule-arrow">→</span>
         <span className="cm-swatch" style={{ background: catColor }} />
@@ -125,8 +132,22 @@ function RuleRow({ rule, index, total, onSave, onDelete, onMove }) {
         </div>
         <div className="cm-edit-row">
           <label className="cm-edit-label">Category</label>
-          <CategorySelect value={cat} onChange={setCat} />
+          <CategorySelect value={cat} onChange={v => { setCat(v); setCatDetail(''); }} />
         </div>
+        <div className="cm-edit-row">
+          <label className="cm-edit-label">Subcategory</label>
+          <input
+            className="cm-input"
+            value={catDetail}
+            onChange={e => setCatDetail(e.target.value)}
+            placeholder={`${cat}_SUBCATEGORY (optional)`}
+            spellCheck={false}
+          />
+        </div>
+        <p className="cm-subcat-hint">
+          Optional. Use Plaid detail keys like <code>{cat}_GROCERIES</code> for drill-down in charts.
+          Leave blank to use the raw CSV category value.
+        </p>
         <div className="cm-edit-actions">
           <button className="cm-btn primary" onClick={handleSave} disabled={saving}>
             {saving ? 'Saving…' : 'Save'}
@@ -145,6 +166,7 @@ function AddRuleForm({ onAdd }) {
   const [pattern, setPattern]       = useState('');
   const [matchField, setMatchField] = useState('both');
   const [cat, setCat]               = useState(categories[0]?.key || '');
+  const [catDetail, setCatDetail]   = useState('');
   const [saving, setSaving]         = useState(false);
   const [error, setError]           = useState('');
 
@@ -159,13 +181,19 @@ function AddRuleForm({ onAdd }) {
     if (!validatePattern(pattern)) { setError('Invalid regex pattern.'); return; }
     setSaving(true);
     setError('');
-    const ok = await onAdd({ pattern: pattern.trim(), match_field: matchField, cat });
+    const ok = await onAdd({
+      pattern: pattern.trim(),
+      match_field: matchField,
+      cat,
+      cat_detail: catDetail.trim() || null,
+    });
     setSaving(false);
     if (ok === false) {
       setError('Failed to save. Please try again.');
     } else {
       setPattern(''); setMatchField('both');
       setCat(categories[0]?.key || '');
+      setCatDetail('');
       setOpen(false);
     }
   }
@@ -197,8 +225,22 @@ function AddRuleForm({ onAdd }) {
       </div>
       <div className="cm-edit-row">
         <label className="cm-edit-label">Category</label>
-        <CategorySelect value={cat} onChange={setCat} />
+        <CategorySelect value={cat} onChange={v => { setCat(v); setCatDetail(''); }} />
       </div>
+      <div className="cm-edit-row">
+        <label className="cm-edit-label">Subcategory</label>
+        <input
+          className="cm-input"
+          value={catDetail}
+          onChange={e => setCatDetail(e.target.value)}
+          placeholder={`${cat}_SUBCATEGORY (optional)`}
+          spellCheck={false}
+        />
+      </div>
+      <p className="cm-subcat-hint">
+        Optional. Use Plaid detail keys like <code>{cat}_GROCERIES</code> for drill-down in charts.
+        Leave blank to use the raw CSV category value.
+      </p>
       {error && <p className="cm-error">{error}</p>}
       <div className="cm-edit-actions">
         <button className="cm-btn primary" type="submit" disabled={saving}>

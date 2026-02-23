@@ -23,6 +23,8 @@ export function normPlaid(tx) {
 
 // guessCat: tries user rules first (in priority order), then falls back to
 // hardcoded patterns. Works on both the CSV category column and merchant name.
+// Returns { cat, cat_detail } — cat_detail is from the matched rule if set,
+// otherwise falls back to the raw CSV category string.
 export function guessCat(rawCat = '', rawDesc = '', rules = []) {
   const catUp  = rawCat.toUpperCase();
   const descUp = rawDesc.toUpperCase();
@@ -35,20 +37,28 @@ export function guessCat(rawCat = '', rawDesc = '', rules = []) {
 
     const testCat  = rule.match_field !== 'merchant'  && re.test(catUp);
     const testDesc = rule.match_field !== 'category'  && re.test(descUp);
-    if (testCat || testDesc) return rule.cat;
+    if (testCat || testDesc) {
+      return {
+        cat: rule.cat,
+        cat_detail: rule.cat_detail || rawCat || null,
+      };
+    }
   }
 
   // 2. Hardcoded fallback (for signed-out users or empty rules list)
   const r = catUp + ' ' + descUp;
-  if (/FOOD|DINING|RESTAURANT|GROCERY|GROC|COFFEE|CAFE/.test(r))  return 'FOOD_AND_DRINK';
-  if (/GAS|FUEL|AUTO|UBER|LYFT|PARKING|TRANSIT/.test(r))          return 'TRANSPORTATION';
-  if (/UTIL|PHONE|INTERNET|ELECTRIC|CABLE|WATER/.test(r))         return 'RENT_AND_UTILITIES';
-  if (/MEDICAL|HEALTH|PHARMACY|DRUG|DOCTOR/.test(r))              return 'MEDICAL';
-  if (/ENTERTAIN|MOVIE|SPORT|THEATER/.test(r))                    return 'ENTERTAINMENT';
-  if (/HOTEL|FLIGHT|AIRLINE|TRAVEL|AIRBNB/.test(r))               return 'TRAVEL';
-  if (/SHOP|AMAZON|WALMART|TARGET|MERCHANDISE/.test(r))           return 'GENERAL_MERCHANDISE';
-  if (/PERSONAL|SPA|SALON|GYM|FITNESS/.test(r))                   return 'PERSONAL_CARE';
-  return 'GENERAL_SERVICES';
+  const fallbackCat =
+    /FOOD|DINING|RESTAURANT|GROCERY|GROC|COFFEE|CAFE/.test(r) ? 'FOOD_AND_DRINK' :
+    /GAS|FUEL|AUTO|UBER|LYFT|PARKING|TRANSIT/.test(r)         ? 'TRANSPORTATION' :
+    /UTIL|PHONE|INTERNET|ELECTRIC|CABLE|WATER/.test(r)        ? 'RENT_AND_UTILITIES' :
+    /MEDICAL|HEALTH|PHARMACY|DRUG|DOCTOR/.test(r)             ? 'MEDICAL' :
+    /ENTERTAIN|MOVIE|SPORT|THEATER/.test(r)                   ? 'ENTERTAINMENT' :
+    /HOTEL|FLIGHT|AIRLINE|TRAVEL|AIRBNB/.test(r)              ? 'TRAVEL' :
+    /SHOP|AMAZON|WALMART|TARGET|MERCHANDISE/.test(r)          ? 'GENERAL_MERCHANDISE' :
+    /PERSONAL|SPA|SALON|GYM|FITNESS/.test(r)                  ? 'PERSONAL_CARE' :
+    'GENERAL_SERVICES';
+
+  return { cat: fallbackCat, cat_detail: rawCat || null };
 }
 
 export function normDate(d) {
@@ -116,12 +126,13 @@ export function parseCSV(text, rules = []) {
       rawType === 'sale'   ? Math.abs(amount) :
       rawType === 'return' ? -Math.abs(amount) :
       amount;
+    const { cat, cat_detail } = guessCat(rawCat, rawDesc, rules);
     txns.push({
       date: normDate(rawDate),
       merchant: rawDesc || '—',
       amount: normalizedAmount,
-      cat: guessCat(rawCat, rawDesc, rules),
-      cat_detail: rawCat,
+      cat,
+      cat_detail,
       pending: false,
       source: 'csv',
     });

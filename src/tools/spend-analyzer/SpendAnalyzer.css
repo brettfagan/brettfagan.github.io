@@ -1316,6 +1316,14 @@ tr:hover td { background: rgba(0, 0, 0, 0.02); }
   letter-spacing: 0;
 }
 
+.rule-pattern-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .rule-pattern {
   font-family: 'DM Mono', monospace;
   font-size: 10px;
@@ -1323,6 +1331,16 @@ tr:hover td { background: rgba(0, 0, 0, 0.02); }
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.rule-cat-detail-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   letter-spacing: 0.2px;
 }
 
@@ -1396,4 +1414,21 @@ tr:hover td { background: rgba(0, 0, 0, 0.02); }
   background: var(--surface);
   border-radius: 6px;
   border: 1px solid var(--border);
+}
+
+/* ── Subcategory hint (below rule edit / add forms) ──────────────────────── */
+.cm-subcat-hint {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 4px 0 8px 130px;
+}
+.cm-subcat-hint code {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 4px;
+  color: var(--text);
 }
