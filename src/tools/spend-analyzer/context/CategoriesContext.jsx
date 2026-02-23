@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 
@@ -38,35 +38,48 @@ export function CategoriesProvider({ children }) {
   const { user } = useAuth();
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [loading, setLoading] = useState(false);
+  // Guard against StrictMode double-invoke seeding the same user twice
+  const seedingRef = useRef(false);
 
   // Fetch from Supabase when user signs in
   useEffect(() => {
     if (!user) {
       setCategories(DEFAULT_CATEGORIES);
+      seedingRef.current = false;
       return;
     }
+
+    let cancelled = false;
     setLoading(true);
+
     supabase
       .from('categories')
       .select('key, label, color, excluded')
       .order('key')
       .then(({ data, error }) => {
+        if (cancelled) return;
         if (error) {
           console.error('Failed to load categories:', error.message);
         } else if (data && data.length > 0) {
           setCategories(data);
-        } else {
+        } else if (!seedingRef.current) {
           // First sign-in: seed defaults into Supabase silently
+          seedingRef.current = true;
           seedDefaults(user.id);
           setCategories(DEFAULT_CATEGORIES);
         }
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       });
+
+    return () => { cancelled = true; };
   }, [user]);
 
   async function seedDefaults(userId) {
     const rows = DEFAULT_CATEGORIES.map(c => ({ ...c, user_id: userId }));
-    const { error } = await supabase.from('categories').insert(rows);
+    // upsert with ignoreDuplicates as DB-level safety net
+    const { error } = await supabase
+      .from('categories')
+      .upsert(rows, { onConflict: 'user_id,key', ignoreDuplicates: true });
     if (error) console.error('Failed to seed default categories:', error.message);
   }
 
@@ -116,6 +129,7 @@ export function CategoriesProvider({ children }) {
       console.error('Failed to reset categories:', error.message);
       return false;
     }
+    seedingRef.current = false;
     await seedDefaults(user.id);
     setCategories(DEFAULT_CATEGORIES);
     return true;

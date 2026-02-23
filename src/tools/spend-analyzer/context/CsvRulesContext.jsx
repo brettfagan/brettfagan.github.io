@@ -1,17 +1,17 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 
 // ── Default rules (mirrors guessCat() hardcoded patterns) ────────────────────
 export const DEFAULT_RULES = [
-  { pattern: 'FOOD|DINING|RESTAURANT|GROCERY|GROC|COFFEE|CAFE', match_field: 'both', cat: 'FOOD_AND_DRINK',       priority: 0 },
-  { pattern: 'GAS|FUEL|AUTO|UBER|LYFT|PARKING|TRANSIT',         match_field: 'both', cat: 'TRANSPORTATION',       priority: 1 },
-  { pattern: 'UTIL|PHONE|INTERNET|ELECTRIC|CABLE|WATER',        match_field: 'both', cat: 'RENT_AND_UTILITIES',    priority: 2 },
-  { pattern: 'MEDICAL|HEALTH|PHARMACY|DRUG|DOCTOR',             match_field: 'both', cat: 'MEDICAL',              priority: 3 },
-  { pattern: 'ENTERTAIN|MOVIE|SPORT|THEATER',                   match_field: 'both', cat: 'ENTERTAINMENT',        priority: 4 },
-  { pattern: 'HOTEL|FLIGHT|AIRLINE|TRAVEL|AIRBNB',              match_field: 'both', cat: 'TRAVEL',               priority: 5 },
-  { pattern: 'SHOP|AMAZON|WALMART|TARGET|MERCHANDISE',          match_field: 'both', cat: 'GENERAL_MERCHANDISE',  priority: 6 },
-  { pattern: 'PERSONAL|SPA|SALON|GYM|FITNESS',                  match_field: 'both', cat: 'PERSONAL_CARE',        priority: 7 },
+  { pattern: 'FOOD|DINING|RESTAURANT|GROCERY|GROC|COFFEE|CAFE', match_field: 'both', cat: 'FOOD_AND_DRINK',      priority: 0 },
+  { pattern: 'GAS|FUEL|AUTO|UBER|LYFT|PARKING|TRANSIT',         match_field: 'both', cat: 'TRANSPORTATION',      priority: 1 },
+  { pattern: 'UTIL|PHONE|INTERNET|ELECTRIC|CABLE|WATER',        match_field: 'both', cat: 'RENT_AND_UTILITIES',   priority: 2 },
+  { pattern: 'MEDICAL|HEALTH|PHARMACY|DRUG|DOCTOR',             match_field: 'both', cat: 'MEDICAL',             priority: 3 },
+  { pattern: 'ENTERTAIN|MOVIE|SPORT|THEATER',                   match_field: 'both', cat: 'ENTERTAINMENT',       priority: 4 },
+  { pattern: 'HOTEL|FLIGHT|AIRLINE|TRAVEL|AIRBNB',              match_field: 'both', cat: 'TRAVEL',              priority: 5 },
+  { pattern: 'SHOP|AMAZON|WALMART|TARGET|MERCHANDISE',          match_field: 'both', cat: 'GENERAL_MERCHANDISE', priority: 6 },
+  { pattern: 'PERSONAL|SPA|SALON|GYM|FITNESS',                  match_field: 'both', cat: 'PERSONAL_CARE',       priority: 7 },
 ];
 
 // ── Context ───────────────────────────────────────────────────────────────────
@@ -21,13 +21,18 @@ export function CsvRulesProvider({ children }) {
   const { user } = useAuth();
   const [rules, setRules] = useState(DEFAULT_RULES);
   const [loading, setLoading] = useState(false);
+  // Guard against StrictMode double-invoke seeding the same user twice
+  const seedingRef = useRef(false);
 
   // ── Fetch or seed on sign-in ────────────────────────────────────────────────
   useEffect(() => {
     if (!user) {
       setRules(DEFAULT_RULES);
+      seedingRef.current = false;
       return;
     }
+
+    let cancelled = false;
 
     async function load() {
       setLoading(true);
@@ -37,6 +42,8 @@ export function CsvRulesProvider({ children }) {
         .eq('user_id', user.id)
         .order('priority', { ascending: true });
 
+      if (cancelled) return;
+
       if (error) {
         console.error('CsvRulesContext fetch error:', error);
         setRules(DEFAULT_RULES);
@@ -45,24 +52,31 @@ export function CsvRulesProvider({ children }) {
       }
 
       if (!data || data.length === 0) {
-        await seedDefaults(user.id);
+        // Only seed if no other invocation is already doing it
+        if (!seedingRef.current) {
+          seedingRef.current = true;
+          await seedDefaults(user.id);
+        }
       } else {
         setRules(data);
       }
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     }
 
     load();
+    // Cleanup: mark this invocation as stale if effect re-runs (StrictMode / user change)
+    return () => { cancelled = true; };
   }, [user]);
 
   async function seedDefaults(userId) {
     const rows = DEFAULT_RULES.map(r => ({ ...r, user_id: userId }));
+    // ON CONFLICT DO NOTHING is the DB-level safety net against any duplicate inserts
     const { data, error } = await supabase
       .from('csv_rules')
-      .insert(rows)
+      .upsert(rows, { onConflict: 'user_id,priority', ignoreDuplicates: true })
       .select()
       .order('priority', { ascending: true });
-    if (!error && data) setRules(data);
+    if (!error && data && data.length > 0) setRules(data);
   }
 
   // ── Re-fetch helper (after reorder) ─────────────────────────────────────────
@@ -76,9 +90,7 @@ export function CsvRulesProvider({ children }) {
     if (data) setRules(data);
   }
 
-  // ── Save (upsert) ────────────────────────────────────────────────────────────
-  // For new rules (no id): inserts at end (priority = max + 1)
-  // For existing rules (has id): updates in place
+  // ── Save (insert new or update existing) ────────────────────────────────────
   async function saveRule(rule) {
     if (!user) return false;
 
@@ -132,13 +144,22 @@ export function CsvRulesProvider({ children }) {
     const a = sorted[idx];
     const b = sorted[swapIdx];
 
-    // Swap priorities
+    // Swap priorities optimistically in local state first
+    setRules(prev => prev.map(r => {
+      if (r.id === a.id) return { ...r, priority: b.priority };
+      if (r.id === b.id) return { ...r, priority: a.priority };
+      return r;
+    }).sort((x, y) => x.priority - y.priority));
+
+    // Persist to DB
     const { error } = await supabase.from('csv_rules').upsert([
       { ...a, priority: b.priority },
       { ...b, priority: a.priority },
     ]);
-    if (error) { console.error('moveRule error:', error); return; }
-    await refetch();
+    if (error) {
+      console.error('moveRule error:', error);
+      await refetch(); // revert on failure
+    }
   }
 
   // ── Reset to defaults ────────────────────────────────────────────────────────
@@ -149,6 +170,7 @@ export function CsvRulesProvider({ children }) {
       .delete()
       .eq('user_id', user.id);
     if (delErr) { console.error('resetToDefaults delete error:', delErr); return false; }
+    seedingRef.current = false;
     await seedDefaults(user.id);
     return true;
   }
