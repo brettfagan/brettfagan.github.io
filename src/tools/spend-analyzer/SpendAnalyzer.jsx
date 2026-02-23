@@ -54,7 +54,7 @@ export default function SpendAnalyzer() {
               className="manage-cats-btn"
               onClick={() => setCatMgrOpen(true)}
             >
-              ⚙ Categories
+              ⚙ Settings
             </button>
           )}
           <AuthButton />
