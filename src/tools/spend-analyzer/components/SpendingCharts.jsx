@@ -150,7 +150,7 @@ export default function SpendingCharts({ spending, credits, cats }) {
                 tickLine={false}
                 width={44}
               />
-              <Tooltip content={<BarTooltipContent />} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
+              <Tooltip content={<BarTooltipContent />} cursor={{ fill: 'rgba(0,0,0,0.04)' }} isAnimationActive={false} />
               <Bar dataKey="spend" fill="#2563eb" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
