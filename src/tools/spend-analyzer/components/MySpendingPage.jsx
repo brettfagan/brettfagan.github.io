@@ -231,6 +231,7 @@ export default function MySpendingPage() {
           onReCategorize={handleReCategorize}
           onDeleteTransaction={handleDeleteTransaction}
           hideImport
+          hideExcluded
         />
       )}
     </>

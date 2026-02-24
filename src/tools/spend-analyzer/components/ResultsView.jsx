@@ -7,7 +7,7 @@ import TransactionTable from './TransactionTable';
 import TransactionModal from './TransactionModal';
 import ImportToDbModal from './ImportToDbModal';
 
-export default function ResultsView({ allTransactions, onReCategorize, onDeleteTransaction, hideImport = false }) {
+export default function ResultsView({ allTransactions, onReCategorize, onDeleteTransaction, hideImport = false, hideExcluded = false }) {
   const { user } = useAuth();
   const { excludedKeys } = useCategories();
   const [modalTx, setModalTx] = useState(null);
@@ -100,11 +100,13 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
           <div className="stat-value" style={{ color: 'var(--warn)' }}>{fmt(pendingTotal)}</div>
           <div className="stat-sub">{pendingSpend.length} transactions</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">Excluded Transactions</div>
-          <div className="stat-value" style={{ color: 'var(--muted)' }}>{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))}</div>
-          <div className="stat-sub">{excluded.length} transaction{excluded.length !== 1 ? 's' : ''}</div>
-        </div>
+        {!hideExcluded && (
+          <div className="stat-card">
+            <div className="stat-label">Excluded Transactions</div>
+            <div className="stat-value" style={{ color: 'var(--muted)' }}>{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))}</div>
+            <div className="stat-sub">{excluded.length} transaction{excluded.length !== 1 ? 's' : ''}</div>
+          </div>
+        )}
       </div>
 
       {user && !hideImport && (
