@@ -1,9 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useCategories } from '../context/CategoriesContext';
 import { useDetailLabels } from '../context/DetailLabelsContext';
-import { fmt, fmtCat } from '../lib/format';
+import { SUBCATEGORIES } from '../lib/constants';
+import { fmt, fmtCat, fmtDetail } from '../lib/format';
 
-export default function TransactionModal({ tx, onClose }) {
+export default function TransactionModal({ tx, onClose, onReCategorize }) {
+  const [editingCat, setEditingCat] = useState(false);
+  const [selectedCat, setSelectedCat] = useState(tx?.cat || '');
+  const [selectedDetail, setSelectedDetail] = useState(tx?.cat_detail || '');
+
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose(); }
     document.addEventListener('keydown', onKey);
@@ -14,13 +19,27 @@ export default function TransactionModal({ tx, onClose }) {
     };
   }, [onClose]);
 
-  const { getCatColor } = useCategories();
+  const { getCatColor, getCatLabel, categories } = useCategories();
   const { getDetailLabel } = useDetailLabels();
 
   if (!tx) return null;
 
   const isCredit = tx.amount < 0;
   const color = getCatColor(tx.cat);
+
+  const subOptions = SUBCATEGORIES[selectedCat] || [];
+
+  function handleSaveCategory() {
+    onReCategorize(tx._id, selectedCat, selectedDetail || null);
+    setEditingCat(false);
+    onClose();
+  }
+
+  function handleCancelEdit() {
+    setSelectedCat(tx.cat);
+    setSelectedDetail(tx.cat_detail || '');
+    setEditingCat(false);
+  }
 
   const Row = ({ label, value }) => {
     if (!value && value !== 0) return null;
@@ -75,11 +94,59 @@ export default function TransactionModal({ tx, onClose }) {
 
           <div className="tx-modal-body">
             <Section title="Category">
-              <Row label="Primary" value={
-                <span className="tx-modal-badge" style={{ borderColor: color, color }}>{fmtCat(tx.cat)}</span>
-              } />
-              <Row label="Detail" value={tx.cat_detail ? getDetailLabel(tx.cat_detail) : null} />
-              <Row label="Confidence" value={tx.cat_confidence ? fmtCat(tx.cat_confidence) : null} />
+              {editingCat ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '4px 0' }}>
+                  <div className="tx-modal-row">
+                    <span className="tx-modal-label">Primary</span>
+                    <select
+                      value={selectedCat}
+                      onChange={e => { setSelectedCat(e.target.value); setSelectedDetail(''); }}
+                      style={{ flex: 1, fontFamily: "'DM Mono',monospace", fontSize: '12px', padding: '5px 8px', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--surface)', color: 'var(--text)' }}
+                    >
+                      {categories.map(c => (
+                        <option key={c.key} value={c.key}>{getCatLabel(c.key)}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {subOptions.length > 0 && (
+                    <div className="tx-modal-row">
+                      <span className="tx-modal-label">Detail</span>
+                      <select
+                        value={selectedDetail}
+                        onChange={e => setSelectedDetail(e.target.value)}
+                        style={{ flex: 1, fontFamily: "'DM Mono',monospace", fontSize: '12px', padding: '5px 8px', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--surface)', color: 'var(--text)' }}
+                      >
+                        <option value="">— none —</option>
+                        {subOptions.map(s => (
+                          <option key={s} value={s}>{fmtDetail(s)}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: '8px', paddingLeft: '90px' }}>
+                    <button onClick={handleSaveCategory} className="cm-btn primary" style={{ fontSize: '11px', padding: '5px 14px' }}>Save</button>
+                    <button onClick={handleCancelEdit} className="cm-btn" style={{ fontSize: '11px', padding: '5px 14px' }}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="tx-modal-row">
+                    <span className="tx-modal-label">Primary</span>
+                    <span className="tx-modal-value" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="tx-modal-badge" style={{ borderColor: color, color }}>{fmtCat(tx.cat)}</span>
+                      {onReCategorize && (
+                        <button
+                          onClick={() => setEditingCat(true)}
+                          title="Edit category"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '13px', padding: '2px 4px', lineHeight: 1 }}
+                        >✎</button>
+                      )}
+                    </span>
+                  </div>
+                  <Row label="Detail" value={tx.cat_detail ? getDetailLabel(tx.cat_detail) : null} />
+                  <Row label="Confidence" value={tx.cat_confidence ? fmtCat(tx.cat_confidence) : null} />
+                </>
+              )}
             </Section>
 
             <Section title="Payment">

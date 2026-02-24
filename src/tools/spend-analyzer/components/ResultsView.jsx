@@ -5,7 +5,7 @@ import CategoryBreakdown from './CategoryBreakdown';
 import TransactionTable from './TransactionTable';
 import TransactionModal from './TransactionModal';
 
-export default function ResultsView({ allTransactions }) {
+export default function ResultsView({ allTransactions, onReCategorize }) {
   const { excludedKeys } = useCategories();
   const [modalTx, setModalTx] = useState(null);
   // catFilter is used to communicate category click → table, but table manages its own filter state
@@ -123,7 +123,7 @@ export default function ResultsView({ allTransactions }) {
         onOpenModal={setModalTx}
       />
 
-      {modalTx && <TransactionModal tx={modalTx} onClose={() => setModalTx(null)} />}
+      {modalTx && <TransactionModal tx={modalTx} onClose={() => setModalTx(null)} onReCategorize={onReCategorize} />}
 
       {excluded.length > 0 && (
         <>

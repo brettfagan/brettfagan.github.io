@@ -28,12 +28,17 @@ export default function SpendAnalyzer() {
 
   function handleAnalyze() {
     const all = [];
+    let idx = 0;
     Object.entries(loadedData).forEach(([id, txns]) => {
       const card = CARDS.find(c => c.id === id);
-      txns.forEach(tx => all.push({ ...tx, _card: card.label }));
+      txns.forEach(tx => all.push({ ...tx, _card: card.label, _id: idx++ }));
     });
     setResults(all);
   }
+
+  const handleReCategorize = useCallback((id, cat, catDetail) => {
+    setResults(prev => prev.map(tx => tx._id === id ? { ...tx, cat, cat_detail: catDetail } : tx));
+  }, []);
 
   function handleStartOver() {
     setLoadedData({});
@@ -73,7 +78,7 @@ export default function SpendAnalyzer() {
 
         <div className="content">
           {results
-            ? <ResultsView allTransactions={results} />
+            ? <ResultsView allTransactions={results} onReCategorize={handleReCategorize} />
             : (
               <div className="empty-state">
                 <div className="empty-icon">◈</div>
