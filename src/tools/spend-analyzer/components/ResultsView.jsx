@@ -240,7 +240,6 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         <ImportToDbModal
           spending={spending}
           credits={credits}
-          excluded={excluded}
           onClose={() => setImportModalOpen(false)}
         />
       )}

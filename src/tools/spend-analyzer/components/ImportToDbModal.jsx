@@ -22,7 +22,7 @@ function BreakdownRow({ label, count, sum, color, sign = '' }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function ImportToDbModal({ spending, credits, excluded, onClose }) {
+export default function ImportToDbModal({ spending, credits, onClose }) {
   const { user } = useAuth();
   const [includePending, setIncludePending] = useState(false);
   const [step, setStep] = useState('preview'); // 'preview' | 'importing' | 'done' | 'error'
@@ -36,7 +36,6 @@ export default function ImportToDbModal({ spending, credits, excluded, onClose }
     ...posted,
     ...(includePending ? pending : []),
     ...credits,
-    ...excluded,
   ];
 
   async function handleImport() {
@@ -81,8 +80,6 @@ export default function ImportToDbModal({ spending, credits, excluded, onClose }
       postedSum:       posted.reduce((s, t) => s + t.amount, 0),
       credits:         credits.length,
       creditsSum:      Math.abs(credits.reduce((s, t) => s + t.amount, 0)),
-      excluded:        excluded.length,
-      excludedSum:     excluded.reduce((s, t) => s + Math.abs(t.amount), 0),
       pending:         pending.length,
       pendingSum:      pending.reduce((s, t) => s + t.amount, 0),
       includedPending: includePending,
@@ -137,9 +134,8 @@ export default function ImportToDbModal({ spending, credits, excluded, onClose }
           </label>
 
           <div style={{ background: 'var(--surface)', borderRadius: '8px', padding: '4px 12px', marginBottom: '20px' }}>
-            <BreakdownRow label="Posted"           count={posted.length}   sum={posted.reduce((s, t) => s + t.amount, 0)}                        color="var(--text)" />
-            <BreakdownRow label="Credits / Refunds" count={credits.length}  sum={Math.abs(credits.reduce((s, t) => s + t.amount, 0))}             color="var(--accent2)" sign="-" />
-            <BreakdownRow label="Excluded"          count={excluded.length} sum={excluded.reduce((s, t) => s + Math.abs(t.amount), 0)}            color="var(--muted)" />
+            <BreakdownRow label="Posted"            count={posted.length}  sum={posted.reduce((s, t) => s + t.amount, 0)}               color="var(--text)" />
+            <BreakdownRow label="Credits / Refunds" count={credits.length} sum={Math.abs(credits.reduce((s, t) => s + t.amount, 0))} color="var(--accent2)" sign="-" />
             {includePending && (
               <BreakdownRow label="Pending" count={pending.length} sum={pending.reduce((s, t) => s + t.amount, 0)} color="var(--warn)" />
             )}
@@ -207,9 +203,8 @@ export default function ImportToDbModal({ spending, credits, excluded, onClose }
           </div>
 
           <div style={{ background: 'var(--surface)', borderRadius: '8px', padding: '4px 12px', marginBottom: '20px' }}>
-            <BreakdownRow label="Posted"            count={summary.posted}   sum={summary.postedSum}   color="var(--text)" />
-            <BreakdownRow label="Credits / Refunds" count={summary.credits}  sum={summary.creditsSum}  color="var(--accent2)" sign="-" />
-            <BreakdownRow label="Excluded"          count={summary.excluded} sum={summary.excludedSum} color="var(--muted)" />
+            <BreakdownRow label="Posted"            count={summary.posted}  sum={summary.postedSum}  color="var(--text)" />
+            <BreakdownRow label="Credits / Refunds" count={summary.credits} sum={summary.creditsSum} color="var(--accent2)" sign="-" />
             {summary.includedPending && (
               <BreakdownRow label="Pending" count={summary.pending} sum={summary.pendingSum} color="var(--warn)" />
             )}
