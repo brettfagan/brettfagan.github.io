@@ -554,7 +554,7 @@ th {
 th:hover { color: var(--text); }
 
 td {
-  padding: 10px 12px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
   overflow: hidden;
@@ -574,8 +574,8 @@ tr:hover td { background: rgba(0, 0, 0, 0.02); }
 }
 
 .merchant-logo {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
   object-fit: contain;
   flex-shrink: 0;
@@ -584,8 +584,8 @@ tr:hover td { background: rgba(0, 0, 0, 0.02); }
 }
 
 .merchant-logo-placeholder {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
   flex-shrink: 0;
   display: inline-block;
