@@ -74,7 +74,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         </span>
       </div>
 
-      <div className="stats-row">
+      <div className="stats-row" style={hideExcluded ? { gridTemplateColumns: 'repeat(5, 1fr)' } : undefined}>
         <div className="stat-card">
           <div className="stat-label">Cards</div>
           <div className="stat-value">{cardSet.size}</div>
