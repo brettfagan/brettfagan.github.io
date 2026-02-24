@@ -189,7 +189,9 @@ export default function ResultsView({ allTransactions }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', padding: '10px 0', color: 'var(--muted)' }}>
             <span>{excluded.length} excluded transaction{excluded.length !== 1 ? 's' : ''}</span>
             <span style={{ fontWeight: 700 }}>{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))} total</span>
-          </div>}</>}
+          </div>
+          </>}
+
         </>
       )}
 
