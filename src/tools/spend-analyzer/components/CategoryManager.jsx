@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useCategories } from '../context/CategoriesContext';
-import { COLOR_PALETTE } from '../context/CategoriesContext';
+import { useCategories, COLOR_PALETTE } from '../context/CategoriesContext';
+import { fmtDetail } from '../lib/format';
+import { SUBCATEGORIES } from '../lib/constants';
 import CsvRulesManager from './CsvRulesManager';
-import DetailLabelsManager from './DetailLabelsManager';
 
 // ── ColorPicker ───────────────────────────────────────────────────────────────
 function ColorPicker({ value, onChange }) {
@@ -29,6 +29,9 @@ function CategoryRow({ cat, onSave, onDelete }) {
   const [color, setColor]     = useState(cat.color);
   const [excluded, setExcluded] = useState(cat.excluded);
   const [saving, setSaving]   = useState(false);
+  const [subOpen, setSubOpen] = useState(false);
+
+  const subs = SUBCATEGORIES[cat.key] || [];
 
   async function handleSave() {
     setSaving(true);
@@ -46,15 +49,29 @@ function CategoryRow({ cat, onSave, onDelete }) {
 
   if (!editing) {
     return (
-      <div className="cm-row">
-        <span className="cm-swatch" style={{ background: cat.color }} />
-        <span className="cm-row-label">{cat.label}</span>
-        <span className="cm-row-key">{cat.key}</span>
-        <span className={`cm-excluded-badge${cat.excluded ? ' active' : ''}`}>
-          {cat.excluded ? 'excluded' : 'included'}
-        </span>
-        <button className="cm-btn-icon" onClick={() => setEditing(true)} title="Edit">✎</button>
-        <button className="cm-btn-icon danger" onClick={() => onDelete(cat.key)} title="Delete">✕</button>
+      <div className="cm-row-group">
+        <div className="cm-row">
+          <span className="cm-swatch" style={{ background: cat.color }} />
+          <span className="cm-row-label">{cat.label}</span>
+          <span className="cm-row-key">{cat.key}</span>
+          <span className={`cm-excluded-badge${cat.excluded ? ' active' : ''}`}>
+            {cat.excluded ? 'excluded' : 'included'}
+          </span>
+          <button className="cm-btn-icon" onClick={() => setEditing(true)} title="Edit">✎</button>
+          <button className="cm-btn-icon danger" onClick={() => onDelete(cat.key)} title="Delete">✕</button>
+        </div>
+        {subs.length > 0 && (
+          <div className="cm-subcats">
+            <button className="cm-subcats-toggle" onClick={() => setSubOpen(o => !o)}>
+              {subOpen ? '▼' : '▶'} {subs.length} subcategories
+            </button>
+            {subOpen && (
+              <div className="cm-subcats-list">
+                {subs.map(s => <span key={s} className="cm-subcat-tag">{fmtDetail(s)}</span>)}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -214,11 +231,7 @@ export default function CategoryManager({ open, onClose }) {
       {/* Panel */}
       <aside className={`cm-panel${open ? ' open' : ''}`}>
         <div className="cm-panel-header">
-          <h2>
-            {activeTab === 'categories' ? 'Manage Categories'
-              : activeTab === 'rules'   ? 'CSV Rules'
-              : 'Subcategory Labels'}
-          </h2>
+          <h2>{activeTab === 'categories' ? 'Manage Categories' : 'CSV Rules'}</h2>
           <button className="cm-close-btn" onClick={onClose} title="Close">✕</button>
         </div>
 
@@ -229,12 +242,6 @@ export default function CategoryManager({ open, onClose }) {
             onClick={() => setActiveTab('categories')}
           >
             Categories
-          </button>
-          <button
-            className={`cm-tab${activeTab === 'subcategories' ? ' active' : ''}`}
-            onClick={() => setActiveTab('subcategories')}
-          >
-            Subcategories
           </button>
           <button
             className={`cm-tab${activeTab === 'rules' ? ' active' : ''}`}
@@ -274,10 +281,8 @@ export default function CategoryManager({ open, onClose }) {
                 </div>
               </>
             )
-          ) : activeTab === 'rules' ? (
-            <CsvRulesManager />
           ) : (
-            <DetailLabelsManager />
+            <CsvRulesManager />
           )}
         </div>
       </aside>

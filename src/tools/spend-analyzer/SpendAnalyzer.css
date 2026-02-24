@@ -1416,6 +1416,47 @@ tr:hover td { background: rgba(0, 0, 0, 0.02); }
   border: 1px solid var(--border);
 }
 
+/* ── Category row group (row + subcategory section) ─────────────────────── */
+.cm-row-group {
+  display: flex;
+  flex-direction: column;
+}
+.cm-row-group .cm-row {
+  margin-bottom: 0;
+}
+.cm-subcats {
+  padding: 2px 10px 6px 38px;
+}
+.cm-subcats-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  padding: 0;
+  letter-spacing: 0.3px;
+}
+.cm-subcats-toggle:hover {
+  color: var(--text);
+}
+.cm-subcats-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.cm-subcat-tag {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+
 /* ── Subcategory hint (below rule edit / add forms) ──────────────────────── */
 .cm-subcat-hint {
   font-size: 11px;
