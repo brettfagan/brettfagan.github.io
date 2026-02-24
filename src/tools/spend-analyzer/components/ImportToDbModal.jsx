@@ -43,20 +43,29 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
     setErrorMsg('');
 
     // ── Duplicate detection ───────────────────────────────────────────────────
-    const plaidIds = toImport.map(tx => tx.transaction_id).filter(Boolean);
-    let existingIds = new Set();
+    const hasPlaid = toImport.some(tx => tx.transaction_id);
+    const hasCsv   = toImport.some(tx => !tx.transaction_id);
 
-    if (plaidIds.length > 0) {
-      const { data: existing } = await supabase
-        .from('imported_transactions')
-        .select('plaid_transaction_id')
-        .eq('user_id', user.id)
-        .not('plaid_transaction_id', 'is', null);
-      existingIds = new Set((existing || []).map(r => r.plaid_transaction_id));
-    }
+    const [plaidResult, csvResult] = await Promise.all([
+      hasPlaid
+        ? supabase.from('imported_transactions').select('plaid_transaction_id').eq('user_id', user.id).not('plaid_transaction_id', 'is', null)
+        : Promise.resolve({ data: [] }),
+      hasCsv
+        ? supabase.from('imported_transactions').select('date, merchant, amount').eq('user_id', user.id).is('plaid_transaction_id', null)
+        : Promise.resolve({ data: [] }),
+    ]);
 
-    const duplicates = toImport.filter(tx => tx.transaction_id && existingIds.has(tx.transaction_id));
-    const newTxns    = toImport.filter(tx => !tx.transaction_id || !existingIds.has(tx.transaction_id));
+    const existingPlaidIds = new Set((plaidResult.data || []).map(r => r.plaid_transaction_id));
+    const existingCsvPrints = new Set((csvResult.data || []).map(r => `${r.date}|${r.merchant}|${r.amount}`));
+
+    const fp = tx => `${tx.date}|${tx.merchant}|${tx.amount}`;
+
+    const isDupe = tx => tx.transaction_id
+      ? existingPlaidIds.has(tx.transaction_id)
+      : existingCsvPrints.has(fp(tx));
+
+    const duplicates = toImport.filter(isDupe);
+    const newTxns    = toImport.filter(tx => !isDupe(tx));
 
     if (newTxns.length === 0) {
       setSummary({
