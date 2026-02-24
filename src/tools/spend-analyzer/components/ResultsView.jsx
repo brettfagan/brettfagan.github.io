@@ -1,13 +1,17 @@
 import { useMemo, useState } from 'react';
 import { useCategories } from '../context/CategoriesContext';
+import { useAuth } from '../context/AuthContext';
 import { fmt, fmtCat, fmtDetail, fmtShortDate } from '../lib/format';
 import CategoryBreakdown from './CategoryBreakdown';
 import TransactionTable from './TransactionTable';
 import TransactionModal from './TransactionModal';
+import ImportToDbModal from './ImportToDbModal';
 
 export default function ResultsView({ allTransactions, onReCategorize, onDeleteTransaction }) {
+  const { user } = useAuth();
   const { excludedKeys } = useCategories();
   const [modalTx, setModalTx] = useState(null);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   // catFilter is used to communicate category click → table, but table manages its own filter state
   // We use a key to reset the table when the user clicks a category
   const [tableFilterSignal, setTableFilterSignal] = useState(null);
@@ -102,6 +106,17 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
           <div className="stat-sub">{excluded.length} transaction{excluded.length !== 1 ? 's' : ''}</div>
         </div>
       </div>
+
+      {user && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '-4px 0 20px' }}>
+          <button
+            onClick={() => setImportModalOpen(true)}
+            style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, padding: '6px 14px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--muted)', cursor: 'pointer', letterSpacing: '0.5px' }}
+          >
+            ↑ Save to Database
+          </button>
+        </div>
+      )}
 
       <CategoryBreakdown
         cats={cats}
@@ -221,6 +236,14 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         </>
       )}
 
+      {importModalOpen && (
+        <ImportToDbModal
+          spending={spending}
+          credits={credits}
+          excluded={excluded}
+          onClose={() => setImportModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
