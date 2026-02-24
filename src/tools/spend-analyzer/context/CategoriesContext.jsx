@@ -25,18 +25,36 @@ export const DEFAULT_CATEGORIES = [
 ];
 
 export const COLOR_PALETTE = [
+  '#16a34a', // green
   '#059669', // emerald
+  '#0d9488', // teal
+  '#0f766e', // dark teal
+  '#65a30d', // lime
+  '#4d7c0f', // dark lime
   '#0891b2', // cyan
+  '#0284c7', // sky
   '#2563eb', // blue
+  '#1d4ed8', // dark blue
   '#4f46e5', // indigo
+  '#4338ca', // dark indigo
+  '#6d28d9', // dark violet
   '#7c3aed', // violet
+  '#9333ea', // purple
+  '#a21caf', // fuchsia
+  '#be185d', // dark pink
   '#db2777', // pink
+  '#e11d48', // rose
   '#dc2626', // red
+  '#b91c1c', // dark red
+  '#c2410c', // dark orange
   '#ea580c', // orange
   '#d97706', // amber
-  '#65a30d', // lime
-  '#0d9488', // teal
+  '#b45309', // dark amber
+  '#a16207', // yellow-amber
+  '#92400e', // brown
+  '#57534e', // stone
   '#6b7280', // gray
+  '#374151', // dark gray
 ];
 
 const CategoriesContext = createContext(null);
