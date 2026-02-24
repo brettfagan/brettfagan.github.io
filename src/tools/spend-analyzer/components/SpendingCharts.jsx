@@ -118,7 +118,7 @@ export default function SpendingCharts({ spending, credits, cats }) {
               >
                 {donutData.map(d => <Cell key={d.key} fill={d.color} stroke="none" />)}
               </Pie>
-              <Tooltip content={<DonutTooltipContent />} />
+              <Tooltip content={<DonutTooltipContent />} isAnimationActive={false} />
             </PieChart>
           </ResponsiveContainer>
         </div>
