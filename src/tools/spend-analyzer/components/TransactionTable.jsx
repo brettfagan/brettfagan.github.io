@@ -3,7 +3,7 @@ import { useCategories } from '../context/CategoriesContext';
 import { fmt, fmtCat } from '../lib/format';
 import { useDetailLabels } from '../context/DetailLabelsContext';
 
-export default function TransactionTable({ spending, credits, categories, initialCatFilter = '', initialDetailFilter = '', onOpenModal }) {
+export default function TransactionTable({ spending, credits, categories, initialCatFilter = '', initialDetailFilter = '', onOpenModal, onDeleteTransaction }) {
   const { getCatColor } = useCategories();
   const { getDetailLabel } = useDetailLabels();
   const [search, setSearch] = useState('');
@@ -15,6 +15,7 @@ export default function TransactionTable({ spending, credits, categories, initia
   const [pendingOpen, setPendingOpen] = useState(true);
   const [postedOpen, setPostedOpen] = useState(true);
   const [creditsOpen, setCreditsOpen] = useState(true);
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   const cardSet = useMemo(() => [...new Set(spending.map(t => t._card))], [spending]);
 
@@ -71,6 +72,7 @@ export default function TransactionTable({ spending, credits, categories, initia
       <col className="c-channel" />
       <col className="c-card" />
       <col className="c-amount" />
+      <col style={{ width: '28px' }} />
     </colgroup>
   );
 
@@ -84,6 +86,7 @@ export default function TransactionTable({ spending, credits, categories, initia
         <th>Channel</th>
         <th>Card</th>
         <th onClick={() => handleSort('amount')} style={{ textAlign: 'right' }}>Amount{sortArrow('amount')}</th>
+        <th />
       </tr>
     </thead>
   );
@@ -120,6 +123,13 @@ export default function TransactionTable({ spending, credits, categories, initia
         </td>
         <td className="td-amount" style={creditStyle ? { color: 'var(--accent2)' } : undefined}>
           {creditStyle ? `-${fmt(Math.abs(tx.amount))}` : fmt(tx.amount)}
+        </td>
+        <td style={{ padding: '0 6px 0 0', textAlign: 'right' }}>
+          <button
+            onClick={e => { e.stopPropagation(); setPendingDelete(tx); }}
+            title="Delete transaction"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '11px', padding: '4px', lineHeight: 1, opacity: 0.5 }}
+          >✕</button>
         </td>
       </tr>
     );
@@ -236,6 +246,21 @@ export default function TransactionTable({ spending, credits, categories, initia
       <div style={{ color: 'var(--muted)', fontSize: '10px', padding: '8px 0', display: 'flex', gap: '16px' }}>
         <span><span className="low-confidence" style={{ fontSize: '10px' }}>ABC</span> Low categorization confidence</span>
       </div>
+
+      {pendingDelete && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 300 }} onClick={() => setPendingDelete(null)} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '10px', padding: '28px 24px', zIndex: 301, minWidth: '320px', maxWidth: '90vw', boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '12px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '12px' }}>Delete Transaction</div>
+            <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px' }}>{pendingDelete.merchant}</div>
+            <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '20px' }}>{pendingDelete.date} · {fmt(Math.abs(pendingDelete.amount))}</div>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button className="cm-btn" onClick={() => setPendingDelete(null)}>Cancel</button>
+              <button className="cm-btn danger-outline" onClick={() => { onDeleteTransaction(pendingDelete._id); setPendingDelete(null); }}>Delete</button>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

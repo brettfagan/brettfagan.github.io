@@ -5,13 +5,14 @@ import CategoryBreakdown from './CategoryBreakdown';
 import TransactionTable from './TransactionTable';
 import TransactionModal from './TransactionModal';
 
-export default function ResultsView({ allTransactions, onReCategorize }) {
+export default function ResultsView({ allTransactions, onReCategorize, onDeleteTransaction }) {
   const { excludedKeys } = useCategories();
   const [modalTx, setModalTx] = useState(null);
   // catFilter is used to communicate category click → table, but table manages its own filter state
   // We use a key to reset the table when the user clicks a category
   const [tableFilterSignal, setTableFilterSignal] = useState(null);
   const [excludedOpen, setExcludedOpen] = useState(true);
+  const [pendingDeleteExcluded, setPendingDeleteExcluded] = useState(null);
 
   const { spending, credits, excluded, cats, maxCat, grandTotal, postedTotal, postedSpend, pendingSpend, pendingTotal, totalCredits, dateRange } = useMemo(() => {
     const spending = allTransactions.filter(tx => tx.amount > 0 && !excludedKeys.includes(tx.cat));
@@ -121,6 +122,7 @@ export default function ResultsView({ allTransactions, onReCategorize }) {
         initialCatFilter={tableFilterSignal?.cat || ''}
         initialDetailFilter={tableFilterSignal?.detail || ''}
         onOpenModal={setModalTx}
+        onDeleteTransaction={onDeleteTransaction}
       />
 
       {modalTx && <TransactionModal tx={modalTx} onClose={() => setModalTx(null)} onReCategorize={onReCategorize} />}
@@ -147,6 +149,7 @@ export default function ResultsView({ allTransactions, onReCategorize }) {
               <col className="c-subcat" />
               <col className="c-card" />
               <col className="c-amount" />
+              <col style={{ width: '28px' }} />
             </colgroup>
             <thead>
               <tr>
@@ -156,6 +159,7 @@ export default function ResultsView({ allTransactions, onReCategorize }) {
                 <th>Subcategory</th>
                 <th>Card</th>
                 <th style={{ textAlign: 'right' }}>Amount</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -182,6 +186,13 @@ export default function ResultsView({ allTransactions, onReCategorize }) {
                   <td className="td-amount" style={{ color: 'var(--muted)' }}>
                     {tx.amount < 0 ? `-${fmt(Math.abs(tx.amount))}` : fmt(tx.amount)}
                   </td>
+                  <td style={{ padding: '0 6px 0 0', textAlign: 'right' }}>
+                    <button
+                      onClick={() => setPendingDeleteExcluded(tx)}
+                      title="Delete transaction"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '11px', padding: '4px', lineHeight: 1, opacity: 0.5 }}
+                    >✕</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -191,6 +202,21 @@ export default function ResultsView({ allTransactions, onReCategorize }) {
             <span style={{ fontWeight: 700 }}>{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))} total</span>
           </div>
           </>}
+
+          {pendingDeleteExcluded && (
+            <>
+              <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 300 }} onClick={() => setPendingDeleteExcluded(null)} />
+              <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '10px', padding: '28px 24px', zIndex: 301, minWidth: '320px', maxWidth: '90vw', boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '12px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '12px' }}>Delete Transaction</div>
+                <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px' }}>{pendingDeleteExcluded.merchant}</div>
+                <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '20px' }}>{pendingDeleteExcluded.date} · {fmt(Math.abs(pendingDeleteExcluded.amount))}</div>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button className="cm-btn" onClick={() => setPendingDeleteExcluded(null)}>Cancel</button>
+                  <button className="cm-btn danger-outline" onClick={() => { onDeleteTransaction(pendingDeleteExcluded._id); setPendingDeleteExcluded(null); }}>Delete</button>
+                </div>
+              </div>
+            </>
+          )}
 
         </>
       )}

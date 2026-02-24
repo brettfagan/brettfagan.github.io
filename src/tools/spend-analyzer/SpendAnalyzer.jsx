@@ -40,6 +40,10 @@ export default function SpendAnalyzer() {
     setResults(prev => prev.map(tx => tx._id === id ? { ...tx, cat, cat_detail: catDetail } : tx));
   }, []);
 
+  const handleDeleteTransaction = useCallback((id) => {
+    setResults(prev => prev.filter(tx => tx._id !== id));
+  }, []);
+
   function handleStartOver() {
     setLoadedData({});
     setResults(null);
@@ -78,7 +82,7 @@ export default function SpendAnalyzer() {
 
         <div className="content">
           {results
-            ? <ResultsView allTransactions={results} onReCategorize={handleReCategorize} />
+            ? <ResultsView allTransactions={results} onReCategorize={handleReCategorize} onDeleteTransaction={handleDeleteTransaction} />
             : (
               <div className="empty-state">
                 <div className="empty-icon">◈</div>
