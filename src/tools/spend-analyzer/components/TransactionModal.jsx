@@ -65,7 +65,7 @@ export default function TransactionModal({ tx, onClose }) {
               : <div className="tx-modal-logo-placeholder" />
             }
             <div className="tx-modal-title">
-              <div className="tx-modal-merchant">{tx.merchant}</div>
+              <div className="tx-modal-merchant">{tx.name}</div>
               <div className={`tx-modal-amount${isCredit ? ' credit' : ''}`}>
                 {isCredit ? '-' : ''}{fmt(Math.abs(tx.amount))}
                 {tx.pending && <span className="tx-modal-pending">⏳ Pending</span>}
