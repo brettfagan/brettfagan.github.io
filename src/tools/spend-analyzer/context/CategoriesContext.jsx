@@ -4,17 +4,24 @@ import { useAuth } from './AuthContext';
 
 // ── Hardcoded defaults (used when signed out or before user cats load) ────────
 export const DEFAULT_CATEGORIES = [
-  { key: 'FOOD_AND_DRINK',     label: 'Food & Drink',       color: '#059669', excluded: false },
-  { key: 'TRANSPORTATION',     label: 'Transportation',      color: '#0891b2', excluded: false },
-  { key: 'RENT_AND_UTILITIES', label: 'Rent & Utilities',    color: '#d97706', excluded: false },
-  { key: 'GENERAL_MERCHANDISE',label: 'General Merchandise', color: '#7c3aed', excluded: false },
-  { key: 'MEDICAL',            label: 'Medical',             color: '#dc2626', excluded: false },
-  { key: 'ENTERTAINMENT',      label: 'Entertainment',       color: '#2563eb', excluded: false },
-  { key: 'TRAVEL',             label: 'Travel',              color: '#db2777', excluded: false },
-  { key: 'PERSONAL_CARE',      label: 'Personal Care',       color: '#ea580c', excluded: false },
-  { key: 'GENERAL_SERVICES',   label: 'General Services',    color: '#4f46e5', excluded: false },
-  { key: 'LOAN_PAYMENTS',      label: 'Loan Payments',       color: '#6b7280', excluded: true  },
-  { key: 'INCOME',             label: 'Income',              color: '#6b7280', excluded: true  },
+  { key: 'FOOD_AND_DRINK',            label: 'Food & Drink',             color: '#059669', excluded: false },
+  { key: 'TRANSPORTATION',            label: 'Transportation',            color: '#0891b2', excluded: false },
+  { key: 'RENT_AND_UTILITIES',        label: 'Rent & Utilities',          color: '#d97706', excluded: false },
+  { key: 'GENERAL_MERCHANDISE',       label: 'General Merchandise',       color: '#7c3aed', excluded: false },
+  { key: 'MEDICAL',                   label: 'Medical',                   color: '#dc2626', excluded: false },
+  { key: 'ENTERTAINMENT',             label: 'Entertainment',             color: '#2563eb', excluded: false },
+  { key: 'TRAVEL',                    label: 'Travel',                    color: '#db2777', excluded: false },
+  { key: 'PERSONAL_CARE',             label: 'Personal Care',             color: '#ea580c', excluded: false },
+  { key: 'GENERAL_SERVICES',          label: 'General Services',          color: '#4f46e5', excluded: false },
+  { key: 'HOME_IMPROVEMENT',          label: 'Home Improvement',          color: '#0d9488', excluded: false },
+  { key: 'BANK_FEES',                 label: 'Bank Fees',                 color: '#65a30d', excluded: false },
+  { key: 'GOVERNMENT_AND_NON_PROFIT', label: 'Government & Non-Profit',   color: '#9333ea', excluded: false },
+  { key: 'OTHER',                     label: 'Other',                     color: '#6b7280', excluded: false },
+  { key: 'LOAN_PAYMENTS',             label: 'Loan Payments',             color: '#6b7280', excluded: true  },
+  { key: 'LOAN_DISBURSEMENTS',        label: 'Loan Disbursements',        color: '#6b7280', excluded: true  },
+  { key: 'INCOME',                    label: 'Income',                    color: '#6b7280', excluded: true  },
+  { key: 'TRANSFER_IN',               label: 'Transfer In',               color: '#6b7280', excluded: true  },
+  { key: 'TRANSFER_OUT',              label: 'Transfer Out',              color: '#6b7280', excluded: true  },
 ];
 
 export const COLOR_PALETTE = [
