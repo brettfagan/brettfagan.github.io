@@ -13,6 +13,8 @@ export default function TransactionTable({ spending, credits, categories, initia
   const [sortCol, setSortCol] = useState('date');
   const [sortDir, setSortDir] = useState(1);
   const [pendingOpen, setPendingOpen] = useState(true);
+  const [postedOpen, setPostedOpen] = useState(true);
+  const [creditsOpen, setCreditsOpen] = useState(true);
 
   const cardSet = useMemo(() => [...new Set(spending.map(t => t._card))], [spending]);
 
@@ -183,33 +185,51 @@ export default function TransactionTable({ spending, credits, categories, initia
             </>
           )}
 
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>
-            Posted <span style={{ fontWeight: 400, color: 'var(--muted)' }}>{posted.length} transaction{posted.length !== 1 ? 's' : ''}</span>
+          <div
+            onClick={() => setPostedOpen(o => !o)}
+            style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: postedOpen ? '10px' : '0', paddingBottom: '8px', borderBottom: '1px solid var(--border)', cursor: 'pointer', userSelect: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <span>
+              Posted <span style={{ fontWeight: 400, color: 'var(--muted)' }}>{posted.length} transaction{posted.length !== 1 ? 's' : ''}</span>
+              {!postedOpen && <span style={{ fontWeight: 400, color: 'var(--text)', marginLeft: '12px' }}>{fmt(posted.reduce((s, t) => s + t.amount, 0))}</span>}
+            </span>
+            <span style={{ fontSize: '9px', opacity: 0.6, letterSpacing: 0 }}>{postedOpen ? '▼ hide' : '▶ show'}</span>
           </div>
-          {posted.length
-            ? <table>{colgroup}{thead}<tbody>{posted.map((tx, i) => <TxRow key={i} tx={tx} />)}</tbody></table>
-            : <div style={{ color: 'var(--muted)', padding: '16px 0' }}>No posted transactions match.</div>
-          }
-          <div style={{ fontSize: '11px', padding: '10px 0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--muted)', marginBottom: '2px' }}>
-              <span>{posted.length} posted transaction{posted.length !== 1 ? 's' : ''}</span>
-              <span style={{ fontWeight: 700, color: 'var(--text)' }}>{fmt(posted.reduce((s, t) => s + t.amount, 0))}</span>
+          {postedOpen && <>
+            {posted.length
+              ? <table>{colgroup}{thead}<tbody>{posted.map((tx, i) => <TxRow key={i} tx={tx} />)}</tbody></table>
+              : <div style={{ color: 'var(--muted)', padding: '16px 0' }}>No posted transactions match.</div>
+            }
+            <div style={{ fontSize: '11px', padding: '10px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--muted)', marginBottom: '2px' }}>
+                <span>{posted.length} posted transaction{posted.length !== 1 ? 's' : ''}</span>
+                <span style={{ fontWeight: 700, color: 'var(--text)' }}>{fmt(posted.reduce((s, t) => s + t.amount, 0))}</span>
+              </div>
+              <div style={{ color: 'var(--muted)' }}>{filtered.length} of {spending.length} total transactions</div>
             </div>
-            <div style={{ color: 'var(--muted)' }}>{filtered.length} of {spending.length} total transactions</div>
-          </div>
+          </>}
         </>
       }
 
       {filteredCredits.length > 0 && (
         <>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent2)', marginTop: '32px', marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>
-            Credits / Refunds <span style={{ fontWeight: 400, color: 'var(--muted)' }}>{filteredCredits.length} transaction{filteredCredits.length !== 1 ? 's' : ''}</span>
+          <div
+            onClick={() => setCreditsOpen(o => !o)}
+            style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent2)', marginTop: '32px', marginBottom: creditsOpen ? '10px' : '0', paddingBottom: '8px', borderBottom: '1px solid var(--border)', cursor: 'pointer', userSelect: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <span>
+              Credits / Refunds <span style={{ fontWeight: 400, color: 'var(--muted)' }}>{filteredCredits.length} transaction{filteredCredits.length !== 1 ? 's' : ''}</span>
+              {!creditsOpen && <span style={{ fontWeight: 400, color: 'var(--accent2)', marginLeft: '12px' }}>{fmt(filteredCredits.reduce((s, t) => s + Math.abs(t.amount), 0))} credited</span>}
+            </span>
+            <span style={{ fontSize: '9px', opacity: 0.6, letterSpacing: 0 }}>{creditsOpen ? '▼ hide' : '▶ show'}</span>
           </div>
-          <table>{colgroup}{thead}<tbody>{filteredCredits.map((tx, i) => <TxRow key={i} tx={tx} creditStyle />)}</tbody></table>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', padding: '10px 0' }}>
-            <span style={{ color: 'var(--muted)' }}>{filteredCredits.length} refund{filteredCredits.length !== 1 ? 's' : ''}</span>
-            <span style={{ fontWeight: 700, color: 'var(--accent2)' }}>{fmt(filteredCredits.reduce((s, t) => s + Math.abs(t.amount), 0))} credited</span>
-          </div>
+          {creditsOpen && <>
+            <table>{colgroup}{thead}<tbody>{filteredCredits.map((tx, i) => <TxRow key={i} tx={tx} creditStyle />)}</tbody></table>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', padding: '10px 0' }}>
+              <span style={{ color: 'var(--muted)' }}>{filteredCredits.length} refund{filteredCredits.length !== 1 ? 's' : ''}</span>
+              <span style={{ fontWeight: 700, color: 'var(--accent2)' }}>{fmt(filteredCredits.reduce((s, t) => s + Math.abs(t.amount), 0))} credited</span>
+            </div>
+          </>}
         </>
       )}
 
