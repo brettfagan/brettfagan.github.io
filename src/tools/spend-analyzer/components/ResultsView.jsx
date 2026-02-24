@@ -3,6 +3,7 @@ import { useCategories } from '../context/CategoriesContext';
 import { useAuth } from '../context/AuthContext';
 import { fmt, fmtCat, fmtDetail, fmtShortDate } from '../lib/format';
 import CategoryBreakdown from './CategoryBreakdown';
+import SpendingCharts from './SpendingCharts';
 import TransactionTable from './TransactionTable';
 import TransactionModal from './TransactionModal';
 import ImportToDbModal from './ImportToDbModal';
@@ -119,6 +120,8 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
           </button>
         </div>
       )}
+
+      <SpendingCharts spending={spending} credits={credits} cats={cats} />
 
       <CategoryBreakdown
         cats={cats}
