@@ -16,7 +16,7 @@ export default function CategoryBreakdown({ cats, maxCat, grandTotal, spending, 
   return (
     <div className="categories">
       <div className="section-title">
-        Spending by Category — posted only · click to filter
+        Spending by Category — posted + refunds · click to filter
         {pendingCount > 0 && (
           <span style={{ fontWeight: 400, fontSize: '10px', color: 'var(--warn)', letterSpacing: 0 }}>
             {' '}({pendingCount} pending transaction{pendingCount !== 1 ? 's' : ''} excluded)
@@ -36,6 +36,10 @@ export default function CategoryBreakdown({ cats, maxCat, grandTotal, spending, 
         const subs = Object.entries(subMap).sort((a, b) => b[1].total - a[1].total);
         const isOpen = openCat === cat;
 
+        const catCreditAbs = Math.abs(
+          credits.filter(tx => tx.cat === cat).reduce((s, tx) => s + tx.amount, 0)
+        );
+
         return (
           <div key={cat}>
             <div className="category-row" onClick={() => handleCatClick(cat)}>
@@ -44,9 +48,16 @@ export default function CategoryBreakdown({ cats, maxCat, grandTotal, spending, 
                 {subs.length > 0 && <span style={{ fontSize: '9px', opacity: 0.6 }}> {isOpen ? '▼' : '▶'}</span>}
               </div>
               <div className="cat-bar-wrap">
-                <div className="cat-bar" style={{ width: `${(d.total / maxCat * 100).toFixed(1)}%`, background: color }} />
+                <div className="cat-bar" style={{ width: `${(Math.abs(d.total) / maxCat * 100).toFixed(1)}%`, background: color }} />
               </div>
-              <div className="cat-total">{fmt(d.total)}</div>
+              <div className="cat-total">
+                {fmt(d.total)}
+                {catCreditAbs > 0 && (
+                  <div style={{ fontSize: '9px', color: 'var(--accent2)', fontWeight: 400 }}>
+                    -{fmt(catCreditAbs)} refund{catCreditAbs !== 1 ? 's' : ''}
+                  </div>
+                )}
+              </div>
               <div className="cat-count">{d.count} txn{d.count !== 1 ? 's' : ''}</div>
             </div>
 
@@ -71,7 +82,7 @@ export default function CategoryBreakdown({ cats, maxCat, grandTotal, spending, 
         <div />
         <div style={{ textAlign: 'right', fontFamily: "'DM Mono',monospace", fontSize: '13px', fontWeight: 800 }}>{fmt(grandTotal)}</div>
         <div style={{ textAlign: 'right', color: 'var(--muted)', fontSize: '11px' }}>
-          {spending.filter(t => !t.pending).length + credits.length} txns
+          {spending.filter(t => !t.pending).length} posted · {credits.length} refund{credits.length !== 1 ? 's' : ''}
         </div>
       </div>
     </div>
