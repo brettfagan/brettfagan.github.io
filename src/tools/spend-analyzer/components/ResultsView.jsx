@@ -11,6 +11,7 @@ export default function ResultsView({ allTransactions }) {
   // catFilter is used to communicate category click → table, but table manages its own filter state
   // We use a key to reset the table when the user clicks a category
   const [tableFilterSignal, setTableFilterSignal] = useState(null);
+  const [excludedOpen, setExcludedOpen] = useState(true);
 
   const { spending, credits, excluded, cats, maxCat, grandTotal, postedTotal, postedSpend, pendingSpend, pendingTotal, totalCredits, dateRange } = useMemo(() => {
     const spending = allTransactions.filter(tx => tx.amount > 0 && !excludedKeys.includes(tx.cat));
@@ -121,12 +122,19 @@ export default function ResultsView({ allTransactions }) {
 
       {excluded.length > 0 && (
         <>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '32px', marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>
-            Excluded{' '}
-            <span style={{ fontWeight: 400 }}>{excluded.length} transaction{excluded.length !== 1 ? 's' : ''}</span>
-            <span style={{ fontWeight: 400, fontSize: '10px', marginLeft: '8px' }}>— categories marked "excluded" in Settings</span>
+          <div
+            onClick={() => setExcludedOpen(o => !o)}
+            style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '32px', marginBottom: excludedOpen ? '10px' : '0', paddingBottom: '8px', borderBottom: '1px solid var(--border)', cursor: 'pointer', userSelect: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <span>
+              Excluded{' '}
+              <span style={{ fontWeight: 400 }}>{excluded.length} transaction{excluded.length !== 1 ? 's' : ''}</span>
+              <span style={{ fontWeight: 400, fontSize: '10px', marginLeft: '8px' }}>— categories marked "excluded" in Settings</span>
+              {!excludedOpen && <span style={{ fontWeight: 400, color: 'var(--text)', marginLeft: '12px' }}>{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))} total</span>}
+            </span>
+            <span style={{ fontSize: '9px', opacity: 0.6, letterSpacing: 0 }}>{excludedOpen ? '▼ hide' : '▶ show'}</span>
           </div>
-          <table>
+          {excludedOpen && <><table>
             <colgroup>
               <col className="c-date" />
               <col className="c-merchant" />
@@ -176,7 +184,7 @@ export default function ResultsView({ allTransactions }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', padding: '10px 0', color: 'var(--muted)' }}>
             <span>{excluded.length} excluded transaction{excluded.length !== 1 ? 's' : ''}</span>
             <span style={{ fontWeight: 700 }}>{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))} total</span>
-          </div>
+          </div>}</>}
         </>
       )}
 
