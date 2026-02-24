@@ -55,6 +55,26 @@ export const COLOR_PALETTE = [
   '#57534e', // stone
   '#6b7280', // gray
   '#374151', // dark gray
+  '#9d174d', // deep pink
+  '#831843', // very deep pink
+  '#c026d3', // magenta
+  '#86198f', // deep fuchsia
+  '#7e22ce', // medium purple
+  '#6b21a8', // deep purple
+  '#1e3a8a', // navy
+  '#075985', // dark sky
+  '#15803d', // medium green
+  '#166534', // dark green
+  '#881337', // burgundy
+  '#7f1d1d', // maroon
+  '#9a3412', // terracotta
+  '#b8860b', // gold
+  '#854d0e', // dark gold
+  '#78350f', // deep amber
+  '#3f6212', // olive
+  '#164e63', // dark cyan
+  '#475569', // slate
+  '#334155', // dark slate
 ];
 
 const CategoriesContext = createContext(null);
