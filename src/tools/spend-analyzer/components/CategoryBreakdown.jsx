@@ -1,43 +1,67 @@
-import { useState } from 'react';
-import { useCategories } from '../context/CategoriesContext';
-import { useDetailLabels } from '../context/DetailLabelsContext';
-import { fmt, fmtCat } from '../lib/format';
+import { useState } from "react";
+import { useCategories } from "../context/CategoriesContext";
+import { useDetailLabels } from "../context/DetailLabelsContext";
+import { fmt, fmtCat } from "../lib/format";
 
-export default function CategoryBreakdown({ cats, maxCat, grandTotal, spending, credits, pendingCount, onFilter }) {
+export default function CategoryBreakdown({
+  cats,
+  maxCat,
+  grandTotal,
+  spending,
+  credits,
+  pendingCount,
+  onFilter,
+}) {
   const { getCatColor } = useCategories();
   const { getDetailLabel } = useDetailLabels();
   const [openCat, setOpenCat] = useState(null);
 
   function handleCatClick(cat) {
-    setOpenCat(prev => prev === cat ? null : cat);
+    setOpenCat((prev) => (prev === cat ? null : cat));
     onFilter(cat);
   }
 
   return (
     <div className="categories">
       <div className="section-title">
-        Spending by Category — posted + refunds · click to filter
+        Spending by Category
         {pendingCount > 0 && (
-          <span style={{ fontWeight: 400, fontSize: '10px', color: 'var(--warn)', letterSpacing: 0 }}>
-            {' '}({pendingCount} pending transaction{pendingCount !== 1 ? 's' : ''} excluded)
+          <span
+            style={{
+              fontWeight: 400,
+              fontSize: "10px",
+              color: "var(--warn)",
+              letterSpacing: 0,
+            }}
+          >
+            {" "}
+            ({pendingCount} pending transaction{pendingCount !== 1 ? "s" : ""}{" "}
+            excluded)
           </span>
         )}
       </div>
 
       {cats.map(([cat, d]) => {
         const color = getCatColor(cat);
-        const allTx = [...spending.filter(tx => !tx.pending), ...credits];
+        const allTx = [...spending.filter((tx) => !tx.pending), ...credits];
         const subMap = {};
-        allTx.filter(tx => tx.cat === cat && tx.cat_detail).forEach(tx => {
-          if (!subMap[tx.cat_detail]) subMap[tx.cat_detail] = { total: 0, count: 0 };
-          subMap[tx.cat_detail].total += tx.amount;
-          subMap[tx.cat_detail].count++;
-        });
-        const subs = Object.entries(subMap).sort((a, b) => b[1].total - a[1].total);
+        allTx
+          .filter((tx) => tx.cat === cat && tx.cat_detail)
+          .forEach((tx) => {
+            if (!subMap[tx.cat_detail])
+              subMap[tx.cat_detail] = { total: 0, count: 0 };
+            subMap[tx.cat_detail].total += tx.amount;
+            subMap[tx.cat_detail].count++;
+          });
+        const subs = Object.entries(subMap).sort(
+          (a, b) => b[1].total - a[1].total,
+        );
         const isOpen = openCat === cat;
 
         const catCreditAbs = Math.abs(
-          credits.filter(tx => tx.cat === cat).reduce((s, tx) => s + tx.amount, 0)
+          credits
+            .filter((tx) => tx.cat === cat)
+            .reduce((s, tx) => s + tx.amount, 0),
         );
 
         return (
@@ -45,31 +69,68 @@ export default function CategoryBreakdown({ cats, maxCat, grandTotal, spending, 
             <div className="category-row" onClick={() => handleCatClick(cat)}>
               <div className="cat-name" style={{ color }}>
                 {fmtCat(cat)}
-                {subs.length > 0 && <span style={{ fontSize: '9px', opacity: 0.6 }}> {isOpen ? '▼' : '▶'}</span>}
+                {subs.length > 0 && (
+                  <span style={{ fontSize: "9px", opacity: 0.6 }}>
+                    {" "}
+                    {isOpen ? "▼" : "▶"}
+                  </span>
+                )}
               </div>
               <div className="cat-bar-wrap">
-                <div className="cat-bar" style={{ width: `${(Math.abs(d.total) / maxCat * 100).toFixed(1)}%`, background: color }} />
+                <div
+                  className="cat-bar"
+                  style={{
+                    width: `${((Math.abs(d.total) / maxCat) * 100).toFixed(1)}%`,
+                    background: color,
+                  }}
+                />
               </div>
               <div className="cat-total">
                 {fmt(d.total)}
                 {catCreditAbs > 0 && (
-                  <div style={{ fontSize: '9px', color: 'var(--accent2)', fontWeight: 400 }}>
-                    -{fmt(catCreditAbs)} refund{catCreditAbs !== 1 ? 's' : ''}
+                  <div
+                    style={{
+                      fontSize: "9px",
+                      color: "var(--accent2)",
+                      fontWeight: 400,
+                    }}
+                  >
+                    -{fmt(catCreditAbs)} refund{catCreditAbs !== 1 ? "s" : ""}
                   </div>
                 )}
               </div>
-              <div className="cat-count">{d.count} txn{d.count !== 1 ? 's' : ''}</div>
+              <div className="cat-count">
+                {d.count} txn{d.count !== 1 ? "s" : ""}
+              </div>
             </div>
 
-            <div className={`subcat-panel${isOpen ? ' open' : ''}`}>
+            <div className={`subcat-panel${isOpen ? " open" : ""}`}>
               {subs.map(([detail, sd]) => (
-                <div key={detail} className="subcat-row" onClick={e => { e.stopPropagation(); onFilter(cat, detail); }}>
+                <div
+                  key={detail}
+                  className="subcat-row"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFilter(cat, detail);
+                  }}
+                >
                   <div className="subcat-name">{getDetailLabel(detail)}</div>
                   <div className="cat-bar-wrap">
-                    <div className="cat-bar" style={{ width: `${(Math.abs(sd.total) / Math.abs(maxCat) * 100).toFixed(1)}%`, background: color, opacity: 0.6 }} />
+                    <div
+                      className="cat-bar"
+                      style={{
+                        width: `${((Math.abs(sd.total) / Math.abs(maxCat)) * 100).toFixed(1)}%`,
+                        background: color,
+                        opacity: 0.6,
+                      }}
+                    />
                   </div>
-                  <div className="subcat-total" style={{ color }}>{fmt(sd.total)}</div>
-                  <div className="subcat-count">{sd.count} txn{sd.count !== 1 ? 's' : ''}</div>
+                  <div className="subcat-total" style={{ color }}>
+                    {fmt(sd.total)}
+                  </div>
+                  <div className="subcat-count">
+                    {sd.count} txn{sd.count !== 1 ? "s" : ""}
+                  </div>
                 </div>
               ))}
             </div>
@@ -77,12 +138,45 @@ export default function CategoryBreakdown({ cats, maxCat, grandTotal, spending, 
         );
       })}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr 90px 80px', alignItems: 'center', gap: '16px', padding: '12px 0', borderTop: '2px solid var(--border)' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '12px', fontWeight: 700 }}>Total</div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "200px 1fr 90px 80px",
+          alignItems: "center",
+          gap: "16px",
+          padding: "12px 0",
+          borderTop: "2px solid var(--border)",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "'DM Mono',monospace",
+            fontSize: "12px",
+            fontWeight: 700,
+          }}
+        >
+          Total
+        </div>
         <div />
-        <div style={{ textAlign: 'right', fontFamily: "'DM Mono',monospace", fontSize: '13px', fontWeight: 800 }}>{fmt(grandTotal)}</div>
-        <div style={{ textAlign: 'right', color: 'var(--muted)', fontSize: '11px' }}>
-          {spending.filter(t => !t.pending).length} posted · {credits.length} refund{credits.length !== 1 ? 's' : ''}
+        <div
+          style={{
+            textAlign: "right",
+            fontFamily: "'DM Mono',monospace",
+            fontSize: "13px",
+            fontWeight: 800,
+          }}
+        >
+          {fmt(grandTotal)}
+        </div>
+        <div
+          style={{
+            textAlign: "right",
+            color: "var(--muted)",
+            fontSize: "11px",
+          }}
+        >
+          {spending.filter((t) => !t.pending).length} posted · {credits.length}{" "}
+          refund{credits.length !== 1 ? "s" : ""}
         </div>
       </div>
     </div>
