@@ -12,6 +12,7 @@ export default function TransactionTable({ spending, credits, categories, initia
   const [cardFilter, setCardFilter] = useState('');
   const [sortCol, setSortCol] = useState('date');
   const [sortDir, setSortDir] = useState(-1);
+  const [pendingOpen, setPendingOpen] = useState(true);
 
   const cardSet = useMemo(() => [...new Set(spending.map(t => t._card))], [spending]);
 
@@ -160,14 +161,25 @@ export default function TransactionTable({ spending, credits, categories, initia
         : <>
           {pending.length > 0 && (
             <>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--warn)', marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>
-                Pending <span style={{ fontWeight: 400, color: 'var(--muted)' }}>{pending.length} transaction{pending.length !== 1 ? 's' : ''}</span>
+              <div
+                onClick={() => setPendingOpen(o => !o)}
+                style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--warn)', marginBottom: pendingOpen ? '10px' : '24px', paddingBottom: '8px', borderBottom: '1px solid var(--border)', cursor: 'pointer', userSelect: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <span>
+                  Pending <span style={{ fontWeight: 400, color: 'var(--muted)' }}>{pending.length} transaction{pending.length !== 1 ? 's' : ''}</span>
+                  {!pendingOpen && <span style={{ fontWeight: 400, color: 'var(--text)', marginLeft: '12px' }}>{fmt(pending.reduce((s, t) => s + t.amount, 0))}</span>}
+                </span>
+                <span style={{ fontSize: '9px', opacity: 0.6, letterSpacing: 0 }}>{pendingOpen ? '▼ hide' : '▶ show'}</span>
               </div>
-              <table>{colgroup}{thead}<tbody>{pending.map((tx, i) => <TxRow key={i} tx={tx} />)}</tbody></table>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--muted)', fontSize: '11px', padding: '10px 0 24px' }}>
-                <span>{pending.length} pending transaction{pending.length !== 1 ? 's' : ''}</span>
-                <span style={{ fontWeight: 700, color: 'var(--text)' }}>{fmt(pending.reduce((s, t) => s + t.amount, 0))}</span>
-              </div>
+              {pendingOpen && (
+                <>
+                  <table>{colgroup}{thead}<tbody>{pending.map((tx, i) => <TxRow key={i} tx={tx} />)}</tbody></table>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--muted)', fontSize: '11px', padding: '10px 0 24px' }}>
+                    <span>{pending.length} pending transaction{pending.length !== 1 ? 's' : ''}</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text)' }}>{fmt(pending.reduce((s, t) => s + t.amount, 0))}</span>
+                  </div>
+                </>
+              )}
             </>
           )}
 
