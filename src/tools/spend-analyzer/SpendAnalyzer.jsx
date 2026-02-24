@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { CARDS } from './lib/constants';
 import { useAuth } from './context/AuthContext';
 import ImportSidebar from './components/ImportSidebar';
 import ResultsView from './components/ResultsView';
 import AuthButton from './components/AuthButton';
 import CategoryManager from './components/CategoryManager';
+import MySpendingPage from './components/MySpendingPage';
 import './SpendAnalyzer.css';
 
 export default function SpendAnalyzer() {
@@ -13,6 +14,12 @@ export default function SpendAnalyzer() {
   const [results, setResults] = useState(null);
   const [sidebarKey, setSidebarKey] = useState(0);
   const [catMgrOpen, setCatMgrOpen] = useState(false);
+  const [page, setPage] = useState('analyzer');
+
+  // Redirect to analyzer if user signs out while on my-spending
+  useEffect(() => {
+    if (!loading && !user) setPage('analyzer');
+  }, [user, loading]);
 
   const handleLoad = useCallback((cardId, txns) => {
     setLoadedData(prev => ({ ...prev, [cardId]: txns }));
@@ -59,6 +66,22 @@ export default function SpendAnalyzer() {
         </div>
         <div className="header-right">
           {user && (
+            <nav className="header-nav">
+              <button
+                className={`nav-tab${page === 'analyzer' ? ' active' : ''}`}
+                onClick={() => setPage('analyzer')}
+              >
+                Analyzer
+              </button>
+              <button
+                className={`nav-tab${page === 'my-spending' ? ' active' : ''}`}
+                onClick={() => setPage('my-spending')}
+              >
+                My Spending
+              </button>
+            </nav>
+          )}
+          {user && (
             <button
               className="manage-cats-btn"
               onClick={() => setCatMgrOpen(true)}
@@ -70,33 +93,36 @@ export default function SpendAnalyzer() {
         </div>
       </header>
 
-      <div className="main">
-        <ImportSidebar
-          key={sidebarKey}
-          loadedCount={Object.keys(loadedData).length}
-          onLoad={handleLoad}
-          onClear={handleClear}
-          onAnalyze={handleAnalyze}
-          onStartOver={handleStartOver}
-        />
+      <div className={`main${page === 'my-spending' ? ' main--full' : ''}`}>
+        {page === 'analyzer' && (
+          <ImportSidebar
+            key={sidebarKey}
+            loadedCount={Object.keys(loadedData).length}
+            onLoad={handleLoad}
+            onClear={handleClear}
+            onAnalyze={handleAnalyze}
+            onStartOver={handleStartOver}
+          />
+        )}
 
         <div className="content">
-          {results
-            ? <ResultsView allTransactions={results} onReCategorize={handleReCategorize} onDeleteTransaction={handleDeleteTransaction} />
-            : (
-              <div className="empty-state">
-                <div className="empty-icon">◈</div>
-                <p style={{ maxWidth: '300px', lineHeight: 1.8 }}>
-                  Import data from one or more cards via Plaid JSON or CSV, then click Analyze.
+          {page === 'my-spending' ? (
+            <MySpendingPage />
+          ) : results ? (
+            <ResultsView allTransactions={results} onReCategorize={handleReCategorize} onDeleteTransaction={handleDeleteTransaction} />
+          ) : (
+            <div className="empty-state">
+              <div className="empty-icon">◈</div>
+              <p style={{ maxWidth: '300px', lineHeight: 1.8 }}>
+                Import data from one or more cards via Plaid JSON or CSV, then click Analyze.
+              </p>
+              {!loading && !user && (
+                <p style={{ maxWidth: '300px', lineHeight: 1.8, marginTop: '12px', fontSize: '11px', color: 'var(--muted)' }}>
+                  Sign in to save imports and manage categories.
                 </p>
-                {!loading && !user && (
-                  <p style={{ maxWidth: '300px', lineHeight: 1.8, marginTop: '12px', fontSize: '11px', color: 'var(--muted)' }}>
-                    Sign in to save imports and manage categories.
-                  </p>
-                )}
-              </div>
-            )
-          }
+              )}
+            </div>
+          )}
         </div>
       </div>
 

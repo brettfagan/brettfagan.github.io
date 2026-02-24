@@ -7,7 +7,7 @@ import TransactionTable from './TransactionTable';
 import TransactionModal from './TransactionModal';
 import ImportToDbModal from './ImportToDbModal';
 
-export default function ResultsView({ allTransactions, onReCategorize, onDeleteTransaction }) {
+export default function ResultsView({ allTransactions, onReCategorize, onDeleteTransaction, hideImport = false }) {
   const { user } = useAuth();
   const { excludedKeys } = useCategories();
   const [modalTx, setModalTx] = useState(null);
@@ -107,7 +107,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         </div>
       </div>
 
-      {user && (
+      {user && !hideImport && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '-4px 0 20px' }}>
           <button
             onClick={() => setImportModalOpen(true)}
