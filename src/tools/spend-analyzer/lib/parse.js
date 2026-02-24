@@ -3,6 +3,7 @@ export function normPlaid(tx) {
     date: tx.date,
     merchant: tx.merchant_name || tx.name || '—',
     logo_url: tx.logo_url || '',
+    cat_icon_url: tx.personal_finance_category_icon_url || '',
     website: tx.website || '',
     payment_channel: tx.payment_channel || '',
     amount: tx.amount,

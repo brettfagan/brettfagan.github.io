@@ -60,8 +60,8 @@ export default function TransactionModal({ tx, onClose }) {
           <button className="tx-modal-close" onClick={onClose} aria-label="Close">×</button>
 
           <div className="tx-modal-header">
-            {tx.logo_url
-              ? <img className="tx-modal-logo" src={tx.logo_url} alt="" onError={e => { e.target.src = ''; e.target.style.background = 'var(--surface)'; }} />
+            {(tx.logo_url || tx.cat_icon_url)
+              ? <img className="tx-modal-logo" src={tx.logo_url || tx.cat_icon_url} alt="" onError={e => { e.target.src = ''; e.target.style.background = 'var(--surface)'; }} />
               : <div className="tx-modal-logo-placeholder" />
             }
             <div className="tx-modal-title">

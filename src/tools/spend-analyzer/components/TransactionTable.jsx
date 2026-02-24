@@ -93,8 +93,8 @@ export default function TransactionTable({ spending, credits, categories, initia
         <td className="td-date">{tx.date}</td>
         <td className="td-merchant" title={tx.merchant}>
           <div className="merchant-cell">
-            {tx.logo_url
-              ? <img className="merchant-logo" src={tx.logo_url} alt="" onError={e => { e.target.classList.add('merchant-logo-placeholder'); e.target.removeAttribute('src'); }} />
+            {(tx.logo_url || tx.cat_icon_url)
+              ? <img className="merchant-logo" src={tx.logo_url || tx.cat_icon_url} alt="" onError={e => { e.target.classList.add('merchant-logo-placeholder'); e.target.removeAttribute('src'); }} />
               : <span className="merchant-logo-placeholder" />
             }
             <span className={`merchant-name${tx.cat_confidence === 'LOW' ? ' low-confidence' : ''}`}
