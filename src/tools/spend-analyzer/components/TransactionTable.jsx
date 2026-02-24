@@ -11,7 +11,7 @@ export default function TransactionTable({ spending, credits, categories, initia
   const [detailFilter, setDetailFilter] = useState(initialDetailFilter);
   const [cardFilter, setCardFilter] = useState('');
   const [sortCol, setSortCol] = useState('date');
-  const [sortDir, setSortDir] = useState(-1);
+  const [sortDir, setSortDir] = useState(1);
   const [pendingOpen, setPendingOpen] = useState(true);
 
   const cardSet = useMemo(() => [...new Set(spending.map(t => t._card))], [spending]);
