@@ -42,7 +42,40 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
     setStep('importing');
     setErrorMsg('');
 
-    const rows = toImport.map(tx => ({
+    // ── Duplicate detection ───────────────────────────────────────────────────
+    const plaidIds = toImport.map(tx => tx.transaction_id).filter(Boolean);
+    let existingIds = new Set();
+
+    if (plaidIds.length > 0) {
+      const { data: existing } = await supabase
+        .from('imported_transactions')
+        .select('plaid_transaction_id')
+        .eq('user_id', user.id)
+        .not('plaid_transaction_id', 'is', null);
+      existingIds = new Set((existing || []).map(r => r.plaid_transaction_id));
+    }
+
+    const duplicates = toImport.filter(tx => tx.transaction_id && existingIds.has(tx.transaction_id));
+    const newTxns    = toImport.filter(tx => !tx.transaction_id || !existingIds.has(tx.transaction_id));
+
+    if (newTxns.length === 0) {
+      setSummary({
+        posted:          posted.length,
+        postedSum:       posted.reduce((s, t) => s + t.amount, 0),
+        credits:         credits.length,
+        creditsSum:      Math.abs(credits.reduce((s, t) => s + t.amount, 0)),
+        pending:         pending.length,
+        pendingSum:      pending.reduce((s, t) => s + t.amount, 0),
+        includedPending: includePending,
+        total:           0,
+        duplicateCount:  duplicates.length,
+        duplicateList:   duplicates.map(t => ({ merchant: t.merchant, date: t.date, amount: t.amount })),
+      });
+      setStep('done');
+      return;
+    }
+
+    const rows = newTxns.map(tx => ({
       user_id:              user.id,
       date:                 tx.date || null,
       merchant:             tx.merchant || null,
@@ -83,7 +116,9 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
       pending:         pending.length,
       pendingSum:      pending.reduce((s, t) => s + t.amount, 0),
       includedPending: includePending,
-      total:           toImport.length,
+      total:           newTxns.length,
+      duplicateCount:  duplicates.length,
+      duplicateList:   duplicates.map(t => ({ merchant: t.merchant, date: t.date, amount: t.amount })),
     });
     setStep('done');
   }
@@ -198,17 +233,41 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
               {sectionLabel('Import Complete')}
               <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
                 {summary.total} transaction{summary.total !== 1 ? 's' : ''} saved
+                {summary.duplicateCount > 0 && (
+                  <span style={{ fontWeight: 400, color: 'var(--muted)', marginLeft: '8px' }}>
+                    · {summary.duplicateCount} skipped
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
-          <div style={{ background: 'var(--surface)', borderRadius: '8px', padding: '4px 12px', marginBottom: '20px' }}>
+          <div style={{ background: 'var(--surface)', borderRadius: '8px', padding: '4px 12px', marginBottom: summary.duplicateCount > 0 ? '12px' : '20px' }}>
             <BreakdownRow label="Posted"            count={summary.posted}  sum={summary.postedSum}  color="var(--text)" />
             <BreakdownRow label="Credits / Refunds" count={summary.credits} sum={summary.creditsSum} color="var(--accent2)" sign="-" />
             {summary.includedPending && (
               <BreakdownRow label="Pending" count={summary.pending} sum={summary.pendingSum} color="var(--warn)" />
             )}
           </div>
+
+          {summary.duplicateCount > 0 && (
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '6px' }}>
+                Skipped — already in database ({summary.duplicateCount})
+              </div>
+              <div style={{ background: 'var(--surface)', borderRadius: '8px', padding: '4px 12px', maxHeight: '140px', overflowY: 'auto' }}>
+                {summary.duplicateList.map((t, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '5px 0', borderBottom: i < summary.duplicateList.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '240px' }}>{t.merchant}</span>
+                    <span style={{ display: 'flex', gap: '12px', alignItems: 'baseline', flexShrink: 0 }}>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', color: 'var(--muted)' }}>{t.date}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '12px', fontWeight: 700, color: 'var(--muted)' }}>{fmt(Math.abs(t.amount))}</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button className="cm-btn primary" onClick={onClose}>Done</button>
