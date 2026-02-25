@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, sessionGuardReady } from '../lib/supabase';
 
 const AuthContext = createContext(null);
 
@@ -8,10 +8,15 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
+    // Await the session guard before hydrating auth state. The guard checks
+    // whether a stale session should be cleared (via BroadcastChannel + heartbeat)
+    // and signs out locally if so. Delaying getSession() here ensures no stale
+    // session is ever read into app state — the existing loading=true covers the wait.
+    sessionGuardReady.then(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      });
     });
 
     // Listen for auth state changes (sign in, sign out, token refresh)
