@@ -12,6 +12,22 @@
 
 **Warning signal:** If `git push` (to a branch you've already pushed before) outputs `[new branch]` instead of updating the existing remote branch, stop immediately — the remote branch was likely deleted after a merge. Run `git checkout main && git pull` and create a fresh branch before continuing. Note: `[new branch]` is expected and correct on the *first* push of a brand-new branch (`git push -u origin <branch>`) — that is not a warning.
 
+## Codex Review
+Codex (chatgpt-codex-connector[bot]) automatically reviews every PR. **All Codex feedback must be addressed before the PR is merged.**
+
+Fetch inline comments with:
+```
+gh api repos/brettfagan/brettfagan.github.io/pulls/<number>/comments | jq '[.[] | select(.user.login | contains("codex")) | {path, line: .original_line, body}]'
+```
+
+For each comment:
+- Read the flagged file and line to understand the current code
+- Determine if the issue is still present (it may be moot if later code changed the area)
+- If still present, fix it in the same branch before requesting merge
+- If moot or already resolved, note why and move on
+
+Priority badges: **P1** (orange) = blocking, fix immediately; **P2** (yellow) = important, fix before merge.
+
 ## Tech Stack
 - **Frontend:** React 18 + Vite, deployed to GitHub Pages
 - **Backend:** Supabase (auth, Postgres DB, Edge Functions)
