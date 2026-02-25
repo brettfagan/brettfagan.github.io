@@ -80,6 +80,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
       data.forEach(c => { init[c.id] = { ...dates }; });
       setConnDates(init);
     }
+    return data || [];
   }
 
   async function fetchSaved(conn) {
@@ -115,8 +116,13 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
       });
       onLoad(newForm.card_name, transactions.map(normPlaid));
       setShowAdd(false);
+      const savedCardName = newForm.card_name;
       setNewForm({ access_token: '', card_name: '', ...defaultDates(), save: true });
-      if (newForm.save) await loadConnections();
+      if (newForm.save) {
+        const conns = await loadConnections();
+        const newConn = conns.find(c => c.card_name === savedCardName);
+        if (newConn) setLoadedKeys(s => new Set([...s, newConn.id]));
+      }
     } catch (e) {
       setFetchErr(f => ({ ...f, new: e.message }));
     } finally {
