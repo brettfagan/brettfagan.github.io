@@ -250,19 +250,20 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
 
             {!isLoaded && (
               <>
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '6px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Start</label>
                   <input
                     type="date"
                     value={dates.start}
                     onChange={e => setConnDates(d => ({ ...d, [conn.id]: { ...d[conn.id], start: e.target.value } }))}
-                    style={{ ...dateInputStyle, width: 'auto' }}
+                    style={{ ...inputStyle, fontSize: '11px', padding: '5px 6px' }}
                   />
-                  <span style={{ color: 'var(--muted)', fontSize: '11px', flexShrink: 0 }}>→</span>
+                  <label style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>End</label>
                   <input
                     type="date"
                     value={dates.end}
                     onChange={e => setConnDates(d => ({ ...d, [conn.id]: { ...d[conn.id], end: e.target.value } }))}
-                    style={{ ...dateInputStyle, width: 'auto' }}
+                    style={{ ...inputStyle, fontSize: '11px', padding: '5px 6px' }}
                   />
                 </div>
                 {fetchErr[conn.id] && (
