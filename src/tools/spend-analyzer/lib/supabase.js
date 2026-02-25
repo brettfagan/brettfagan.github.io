@@ -8,18 +8,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Session guard: clear stored auth when the browser is reopened after being closed.
-// Each tab writes a heartbeat to localStorage every 30 s while the app is open.
-// On first load in a new tab, if the heartbeat is stale (>90 s) it means no tabs
-// were open — i.e. the browser was closed — and the session should be cleared.
-// If the heartbeat is fresh, a new tab was opened within an active browser session
-// and auth is preserved normally (cross-tab sharing continues to work).
+// A heartbeat timestamp is written to localStorage every 5 minutes while the app
+// is open in any tab. On first load in a new tab, if the heartbeat is stale (>8 h)
+// it indicates the browser was closed (not merely that this tab was closed while
+// the browser remained open), and the stored session is cleared.
 const _HEARTBEAT_KEY = 'sb-heartbeat';
 const _TAB_KEY = 'sb-tab-init';
+const _STALE_MS = 8 * 60 * 60 * 1000; // 8 hours
 
 try {
   if (!sessionStorage.getItem(_TAB_KEY)) {
     const lastBeat = parseInt(localStorage.getItem(_HEARTBEAT_KEY) || '0', 10);
-    if (Date.now() - lastBeat > 90_000) {
+    if (Date.now() - lastBeat > _STALE_MS) {
       Object.keys(localStorage)
         .filter(k => k.startsWith('sb-') && k !== _HEARTBEAT_KEY)
         .forEach(k => localStorage.removeItem(k));
@@ -29,7 +29,7 @@ try {
 
   const _writeHeartbeat = () => localStorage.setItem(_HEARTBEAT_KEY, Date.now().toString());
   _writeHeartbeat();
-  setInterval(_writeHeartbeat, 30_000);
+  setInterval(_writeHeartbeat, 5 * 60 * 1000); // every 5 minutes
 } catch {
   // Storage unavailable (e.g. strict privacy settings) — skip session guard
   // and let Supabase initialize normally without persistent session support.
