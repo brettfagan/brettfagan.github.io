@@ -33,9 +33,13 @@ async function callPlaidFetch(body) {
     const { exp } = JSON.parse(atob(session.access_token.split('.')[1]));
     if (exp * 1000 < Date.now() + 60_000) {
       const { data } = await supabase.auth.refreshSession();
-      if (data.session) session = data.session;
+      if (!data.session) throw new Error('Session expired — please sign out and sign in again');
+      session = data.session;
     }
-  } catch { /* unparseable token — proceed and let the server reject it */ }
+  } catch (e) {
+    if (e.message?.startsWith('Session expired')) throw e;
+    // unparseable token — proceed and let the server reject it
+  }
 
   const res = await fetch(`${SUPABASE_URL}/functions/v1/plaid-fetch`, {
     method: 'POST',
