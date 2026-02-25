@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { normPlaid } from '../lib/parse';
@@ -52,6 +52,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
   const [loadedKeys, setLoadedKeys] = useState(new Set()); // connection ids loaded this session
   const [editingToken, setEditingToken] = useState({}); // { [id]: string } — token being typed
   const [updatingToken, setUpdatingToken] = useState({}); // { [id]: bool }
+  const connectionIdsRef = useRef(new Set()); // kept in sync for race-condition guard in syncConnection
 
   useEffect(() => {
     if (user) loadConnections();
@@ -62,7 +63,10 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
       .from('plaid_connections')
       .select('id, card_name, created_at')
       .order('created_at', { ascending: false });
-    if (data) setConnections(data);
+    if (data) {
+      setConnections(data);
+      connectionIdsRef.current = new Set(data.map(c => c.id));
+    }
     return data || [];
   }
 
@@ -93,9 +97,12 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
         connection_id: conn.id,
         cursor: storedCursor,
       });
-      onSync(conn.card_name, added.map(normPlaid), modified.map(normPlaid), removed);
-      setCursor(conn.id, next_cursor);
-      setLoadedKeys(s => new Set([...s, conn.id]));
+      // Guard: if the connection was removed while the fetch was in flight, discard results
+      if (connectionIdsRef.current.has(conn.id)) {
+        onSync(conn.card_name, added.map(normPlaid), modified.map(normPlaid), removed);
+        setCursor(conn.id, next_cursor);
+        setLoadedKeys(s => new Set([...s, conn.id]));
+      }
     } catch (e) {
       setFetchErr(f => ({ ...f, [conn.id]: e.message }));
     } finally {
@@ -132,6 +139,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
   async function removeConnection(conn) {
     await supabase.from('plaid_connections').delete().eq('id', conn.id);
     clearCursor(conn.id);
+    connectionIdsRef.current.delete(conn.id);
     onClear(conn.card_name);
     setLoadedKeys(s => { const n = new Set(s); n.delete(conn.id); return n; });
     setConnections(cs => cs.filter(c => c.id !== conn.id));

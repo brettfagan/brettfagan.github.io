@@ -14,14 +14,6 @@ function Projects() {
               <a className="btn btn-primary" href="/tools/spend-analyzer/">
                 Open App
               </a>
-              <a
-                className="text-link"
-                href="https://github.com/your-username/cc-analyzer"
-                target="_blank"
-                rel="noreferrer"
-              >
-                View GitHub Repo
-              </a>
             </div>
           </article>
         </div>
