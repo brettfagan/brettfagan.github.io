@@ -7,32 +7,55 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables.');
 }
 
-// Session guard: clear stored auth when the browser is reopened after being closed.
-// A heartbeat timestamp is written to localStorage every 5 minutes while the app
-// is open in any tab. On first load in a new tab, if the heartbeat is stale (>8 h)
-// it indicates the browser was closed (not merely that this tab was closed while
-// the browser remained open), and the stored session is cleared.
-const _HEARTBEAT_KEY = 'sb-heartbeat';
-const _TAB_KEY = 'sb-tab-init';
-const _STALE_MS = 8 * 60 * 60 * 1000; // 8 hours
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Session guard: sign the user out when the browser is reopened after being closed.
+//
+// Each tab writes a heartbeat to localStorage every 5 min while the app is open.
+// On first load in a new tab, a BroadcastChannel query asks any other open app
+// tabs if the browser session is still active. If a response arrives within 100 ms,
+// auth is preserved (the browser session is confirmed live). If no response arrives,
+// the pre-load heartbeat is checked: stale (>15 min) means the browser was closed
+// and supabase.auth.signOut() is called to clear the local session.
+//
+// This distinguishes "app tab closed, browser still running" (BC response or fresh
+// heartbeat) from "browser was closed" (no BC response + stale heartbeat).
 try {
-  if (!sessionStorage.getItem(_TAB_KEY)) {
-    const lastBeat = parseInt(localStorage.getItem(_HEARTBEAT_KEY) || '0', 10);
-    if (Date.now() - lastBeat > _STALE_MS) {
-      Object.keys(localStorage)
-        .filter(k => k.startsWith('sb-') && k !== _HEARTBEAT_KEY)
-        .forEach(k => localStorage.removeItem(k));
-    }
-    sessionStorage.setItem(_TAB_KEY, '1');
-  }
+  const _HEARTBEAT_KEY = 'sb-heartbeat';
+  const _TAB_KEY = 'sb-tab-init';
+  const _STALE_MS = 15 * 60 * 1000; // 15 minutes
 
+  // Capture the heartbeat written by previous tabs before this tab updates it.
+  const _lastBeat = parseInt(localStorage.getItem(_HEARTBEAT_KEY) || '0', 10);
+
+  // Keep the heartbeat alive while this tab is open.
   const _writeHeartbeat = () => localStorage.setItem(_HEARTBEAT_KEY, Date.now().toString());
   _writeHeartbeat();
-  setInterval(_writeHeartbeat, 5 * 60 * 1000); // every 5 minutes
-} catch {
-  // Storage unavailable (e.g. strict privacy settings) — skip session guard
-  // and let Supabase initialize normally without persistent session support.
-}
+  setInterval(_writeHeartbeat, 5 * 60 * 1000);
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const _bc = new BroadcastChannel('sb-session');
+
+  // Answer liveness queries from newly opened tabs.
+  _bc.addEventListener('message', (e) => {
+    if (e.data === 'alive?') _bc.postMessage('alive');
+  });
+
+  if (!sessionStorage.getItem(_TAB_KEY)) {
+    sessionStorage.setItem(_TAB_KEY, '1');
+
+    // Ask other open tabs if the browser session is still active.
+    let _confirmed = false;
+    const _onAlive = (e) => { if (e.data === 'alive') _confirmed = true; };
+    _bc.addEventListener('message', _onAlive);
+    _bc.postMessage('alive?');
+
+    setTimeout(() => {
+      _bc.removeEventListener('message', _onAlive);
+      if (!_confirmed && Date.now() - _lastBeat > _STALE_MS) {
+        supabase.auth.signOut({ scope: 'local' });
+      }
+    }, 100);
+  }
+} catch {
+  // BroadcastChannel or Web Storage unavailable — skip session guard.
+}
