@@ -55,8 +55,19 @@ export default function SpendAnalyzer() {
     setResults(all);
   }
 
-  const handleReCategorize = useCallback((id, cat, catDetail) => {
-    setResults(prev => prev.map(tx => tx._id === id ? { ...tx, cat, cat_detail: catDetail } : tx));
+  const handleReCategorize = useCallback((id, cat, catDetail, applyToSimilar) => {
+    setResults(prev => {
+      const originalTx = prev.find(tx => tx._id === id);
+      if (applyToSimilar && originalTx?.merchant) {
+        const { merchant, cat: originalCat } = originalTx;
+        return prev.map(tx =>
+          tx.merchant === merchant && tx.cat === originalCat
+            ? { ...tx, cat, cat_detail: catDetail }
+            : tx
+        );
+      }
+      return prev.map(tx => tx._id === id ? { ...tx, cat, cat_detail: catDetail } : tx);
+    });
   }, []);
 
   const handleDeleteTransaction = useCallback((id) => {

@@ -87,16 +87,33 @@ export default function MySpendingPage() {
     if (!error) setTransactions(prev => prev.filter(tx => tx._id !== id));
   }, [user]);
 
-  const handleReCategorize = useCallback(async (id, cat, catDetail) => {
-    const { error } = await supabase
-      .from('imported_transactions')
-      .update({ cat, cat_detail: catDetail || null })
-      .eq('id', id)
-      .eq('user_id', user.id);
-    if (!error) setTransactions(prev => prev.map(tx =>
-      tx._id === id ? { ...tx, cat, cat_detail: catDetail } : tx
-    ));
-  }, [user]);
+  const handleReCategorize = useCallback(async (id, cat, catDetail, applyToSimilar) => {
+    if (applyToSimilar) {
+      const originalTx = transactions.find(tx => tx._id === id);
+      if (!originalTx?.merchant) return;
+      const { merchant, cat: originalCat } = originalTx;
+      const { error } = await supabase
+        .from('imported_transactions')
+        .update({ cat, cat_detail: catDetail || null })
+        .eq('user_id', user.id)
+        .eq('merchant', merchant)
+        .eq('cat', originalCat);
+      if (!error) setTransactions(prev => prev.map(tx =>
+        tx.merchant === merchant && tx.cat === originalCat
+          ? { ...tx, cat, cat_detail: catDetail }
+          : tx
+      ));
+    } else {
+      const { error } = await supabase
+        .from('imported_transactions')
+        .update({ cat, cat_detail: catDetail || null })
+        .eq('id', id)
+        .eq('user_id', user.id);
+      if (!error) setTransactions(prev => prev.map(tx =>
+        tx._id === id ? { ...tx, cat, cat_detail: catDetail } : tx
+      ));
+    }
+  }, [user, transactions]);
 
   // Years derived from loaded data, current year always included
   const availableYears = useMemo(() => {
