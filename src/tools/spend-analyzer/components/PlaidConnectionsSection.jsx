@@ -61,7 +61,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
   async function loadConnections() {
     const { data } = await supabase
       .from('plaid_connections')
-      .select('id, card_name, created_at')
+      .select('id, card_name, created_at, account_type')
       .order('created_at', { ascending: false });
     if (data) {
       setConnections(data);
@@ -251,7 +251,14 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isLoaded ? '0' : '8px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 500 }}>{conn.card_name}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 500 }}>{conn.card_name}</span>
+                {conn.account_type && (
+                  <span style={{ fontSize: '10px', color: 'var(--muted)', background: 'var(--border)', borderRadius: '4px', padding: '1px 5px', fontWeight: 500 }}>
+                    {conn.account_type === 'depository' ? 'Bank' : conn.account_type === 'credit' ? 'Credit Card' : 'Mixed'}
+                  </span>
+                )}
+              </span>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                 {isLoaded && (
                   <>
