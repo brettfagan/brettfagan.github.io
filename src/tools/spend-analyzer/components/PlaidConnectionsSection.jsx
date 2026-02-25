@@ -95,6 +95,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
       });
       onSync(conn.card_name, added.map(normPlaid), modified.map(normPlaid), removed);
       setCursor(conn.id, next_cursor);
+      setLoadedKeys(s => new Set([...s, conn.id]));
     } catch (e) {
       setFetchErr(f => ({ ...f, [conn.id]: e.message }));
     } finally {
@@ -308,14 +309,26 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
                     ✗ {fetchErr[conn.id]}
                   </div>
                 )}
-                <button
-                  className="cm-btn primary"
-                  onClick={() => fetchSaved(conn)}
-                  disabled={fetching[conn.id]}
-                  style={{ width: '100%', fontSize: '12px' }}
-                >
-                  {fetching[conn.id] ? 'Fetching…' : 'Fetch Transactions'}
-                </button>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    className="cm-btn primary"
+                    onClick={() => fetchSaved(conn)}
+                    disabled={fetching[conn.id] || fetching[`sync_${conn.id}`]}
+                    style={{ flex: 1, fontSize: '12px' }}
+                  >
+                    {fetching[conn.id] ? 'Fetching…' : 'Fetch All'}
+                  </button>
+                  {getCursor(conn.id) && (
+                    <button
+                      className="cm-btn"
+                      onClick={() => syncConnection(conn)}
+                      disabled={fetching[conn.id] || fetching[`sync_${conn.id}`]}
+                      style={{ flex: 1, fontSize: '12px' }}
+                    >
+                      {fetching[`sync_${conn.id}`] ? 'Syncing…' : 'Sync New'}
+                    </button>
+                  )}
+                </div>
               </>
             )}
 
