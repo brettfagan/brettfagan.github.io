@@ -44,9 +44,12 @@ Body:
   "client_name": "Spend Analyzer",
   "products": ["transactions"],
   "country_codes": ["US"],
-  "language": "en"
+  "language": "en",
+  "webhook": "https://webhook.site/<your-unique-id>"
 }
 ```
+
+> **Webhook (optional but recommended for debugging):** The `webhook` field tells Plaid where to POST transaction update events. Use a [webhook.site](https://webhook.site) URL here to inspect live payloads during setup — see the [Monitoring Webhooks](#monitoring-webhook-events-webhooksite) section below.
 
 Response — copy the `link_token` value:
 ```json
@@ -144,6 +147,76 @@ If an access token is revoked or expires:
 2. In the Plaid Connections list, click the **edit (pencil) icon** on the connection
 3. Paste the new token and save
 4. The cursor is automatically cleared — the next action will be a full re-fetch
+
+---
+
+## Monitoring Webhook Events (webhook.site)
+
+[webhook.site](https://webhook.site) gives you a free, unique HTTPS URL that captures and displays any HTTP request sent to it — useful for watching Plaid fire transaction events without standing up a real server.
+
+### 1. Get your unique URL
+
+1. Go to [https://webhook.site](https://webhook.site)
+2. A unique URL is generated automatically, e.g.:
+   ```
+   https://webhook.site/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+   ```
+3. Keep the tab open — incoming requests appear in real time
+
+### 2. Register the webhook URL with Plaid
+
+**Option A — At link token creation (Phase 1):**
+Add the `webhook` field to the `/link/token/create` body (shown in Phase 1 above). Plaid registers the URL when the item is created.
+
+**Option B — After you already have an access token:**
+Call `/item/webhook/update` directly via Postman:
+
+**POST** `https://production.plaid.com/item/webhook/update`
+
+Body:
+```json
+{
+  "client_id": "<YOUR_CLIENT_ID>",
+  "secret": "<YOUR_SECRET>",
+  "access_token": "<access_token>",
+  "webhook": "https://webhook.site/<your-unique-id>"
+}
+```
+
+This updates the webhook for an existing connection without repeating the full link flow.
+
+### 3. What events to look for
+
+Once the connection is established and transactions are loading, Plaid posts `TRANSACTIONS` webhook events to your URL:
+
+| Event | When it fires |
+|-------|--------------|
+| `INITIAL_UPDATE` | First batch of recent transactions is ready (~1–2 min after connection) |
+| `HISTORICAL_UPDATE` | Full historical backfill is complete (up to 2 years) |
+| `SYNC_UPDATES_AVAILABLE` | New, modified, or removed transactions are available |
+| `TRANSACTIONS_REMOVED` | Transactions were deleted by the institution |
+
+Example payload you'll see in webhook.site:
+```json
+{
+  "webhook_type": "TRANSACTIONS",
+  "webhook_code": "SYNC_UPDATES_AVAILABLE",
+  "item_id": "eVBnVMp7zdTJLkRNr33Rs6zr27",
+  "initial_update_complete": true,
+  "historical_update_complete": false,
+  "environment": "production"
+}
+```
+
+### 4. Triggering a sync after the webhook fires
+
+The webhook is a notification only — Plaid does not push transaction data in the payload. After receiving `SYNC_UPDATES_AVAILABLE` or `HISTORICAL_UPDATE`, go to the Import sidebar and click **Sync** (or **Fetch All**) on the connection to pull the new data.
+
+> **Tip:** In sandbox, you can fire a test webhook immediately via Postman:
+> **POST** `https://sandbox.plaid.com/sandbox/item/fire_webhook`
+> ```json
+> { "client_id": "...", "secret": "...", "access_token": "...", "webhook_code": "SYNC_UPDATES_AVAILABLE" }
+> ```
 
 ---
 
