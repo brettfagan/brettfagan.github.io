@@ -33,6 +33,17 @@ export default function SpendAnalyzer() {
     });
   }, []);
 
+  const handleSync = useCallback((cardId, addedNorm, modifiedNorm, removed) => {
+    setLoadedData(prev => {
+      const existing = prev[cardId] ?? [];
+      const byId = new Map(existing.map(tx => [tx.transaction_id, tx]));
+      const removedIds = new Set(removed.map(r => r.transaction_id));
+      for (const tx of modifiedNorm) byId.set(tx.transaction_id, tx);
+      for (const tx of addedNorm)    byId.set(tx.transaction_id, tx);
+      return { ...prev, [cardId]: [...byId.values()].filter(tx => !removedIds.has(tx.transaction_id)) };
+    });
+  }, []);
+
   function handleAnalyze() {
     const all = [];
     let idx = 0;
@@ -101,6 +112,7 @@ export default function SpendAnalyzer() {
             loadedCount={Object.keys(loadedData).length}
             onLoad={handleLoad}
             onClear={handleClear}
+            onSync={handleSync}
             onAnalyze={handleAnalyze}
             onStartOver={handleStartOver}
           />

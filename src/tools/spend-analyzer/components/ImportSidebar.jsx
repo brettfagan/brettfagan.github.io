@@ -3,13 +3,13 @@ import { useCsvRules } from '../context/CsvRulesContext';
 import ImportBlock from './ImportBlock';
 import PlaidConnectionsSection from './PlaidConnectionsSection';
 
-export default function ImportSidebar({ loadedCount, onLoad, onClear, onAnalyze, onStartOver }) {
+export default function ImportSidebar({ loadedCount, onLoad, onClear, onSync, onAnalyze, onStartOver }) {
   const { rules } = useCsvRules();
 
   return (
     <aside className="sidebar">
       <div className="sidebar-title">Import Data</div>
-      <PlaidConnectionsSection onLoad={onLoad} onClear={onClear} />
+      <PlaidConnectionsSection onLoad={onLoad} onClear={onClear} onSync={onSync} />
       <div id="slots">
         {CARDS.map(card => (
           <ImportBlock

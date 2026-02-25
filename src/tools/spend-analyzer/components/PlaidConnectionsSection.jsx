@@ -17,12 +17,11 @@ const inputStyle = {
   boxSizing: 'border-box',
 };
 
-const dateInputStyle = {
-  ...inputStyle,
-  flex: 1,
-  padding: '5px 6px',
-  fontSize: '11px',
-};
+// localStorage cursor helpers
+const cursorKey = id => `plaid_cursor_${id}`;
+const getCursor = id => localStorage.getItem(cursorKey(id)) || undefined;
+const setCursor = (id, c) => localStorage.setItem(cursorKey(id), c);
+const clearCursor = id => localStorage.removeItem(cursorKey(id));
 
 async function callPlaidFetch(body) {
   const { data: { session } } = await supabase.auth.getSession();
@@ -39,21 +38,18 @@ async function callPlaidFetch(body) {
   return json;
 }
 
-export default function PlaidConnectionsSection({ onLoad, onClear }) {
+export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
   const { user } = useAuth();
   const [connections, setConnections] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [newForm, setNewForm] = useState({
     access_token: '',
     card_name: '',
-    start: '',
-    end: '',
     save: true,
   });
-  const [fetching, setFetching] = useState({});   // { [id | 'new']: bool }
+  const [fetching, setFetching] = useState({});   // { [id | 'new' | 'sync_id']: bool }
   const [fetchErr, setFetchErr] = useState({});    // { [id | 'new']: string }
   const [loadedKeys, setLoadedKeys] = useState(new Set()); // connection ids loaded this session
-  const [connDates, setConnDates] = useState({});  // { [id]: { start, end } }
 
   useEffect(() => {
     if (user) loadConnections();
@@ -64,26 +60,20 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
       .from('plaid_connections')
       .select('id, card_name, created_at')
       .order('created_at', { ascending: false });
-    if (data) {
-      setConnections(data);
-      const init = {};
-      data.forEach(c => { init[c.id] = { start: '', end: '' }; });
-      setConnDates(init);
-    }
+    if (data) setConnections(data);
     return data || [];
   }
 
   async function fetchSaved(conn) {
-    const dates = connDates[conn.id] || { start: '', end: '' };
     setFetching(f => ({ ...f, [conn.id]: true }));
     setFetchErr(e => ({ ...e, [conn.id]: '' }));
     try {
-      const { transactions } = await callPlaidFetch({
+      clearCursor(conn.id); // full sync always starts fresh
+      const { added, next_cursor } = await callPlaidFetch({
         connection_id: conn.id,
-        start_date: dates.start,
-        end_date: dates.end,
       });
-      onLoad(conn.card_name, transactions.map(normPlaid));
+      onLoad(conn.card_name, added.map(normPlaid));
+      setCursor(conn.id, next_cursor);
       setLoadedKeys(s => new Set([...s, conn.id]));
     } catch (e) {
       setFetchErr(f => ({ ...f, [conn.id]: e.message }));
@@ -92,26 +82,42 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
     }
   }
 
+  async function syncConnection(conn) {
+    setFetching(f => ({ ...f, [`sync_${conn.id}`]: true }));
+    setFetchErr(e => ({ ...e, [conn.id]: '' }));
+    try {
+      const storedCursor = getCursor(conn.id);
+      const { added, modified, removed, next_cursor } = await callPlaidFetch({
+        connection_id: conn.id,
+        cursor: storedCursor,
+      });
+      onSync(conn.card_name, added.map(normPlaid), modified.map(normPlaid), removed);
+      setCursor(conn.id, next_cursor);
+    } catch (e) {
+      setFetchErr(f => ({ ...f, [conn.id]: e.message }));
+    } finally {
+      setFetching(f => ({ ...f, [`sync_${conn.id}`]: false }));
+    }
+  }
+
   async function addConnection() {
     if (!newForm.access_token || !newForm.card_name) return;
     setFetching(f => ({ ...f, new: true }));
     setFetchErr(e => ({ ...e, new: '' }));
     try {
-      const { transactions } = await callPlaidFetch({
+      const { added, next_cursor, connection_id } = await callPlaidFetch({
         access_token: newForm.access_token,
         card_name: newForm.card_name,
-        start_date: newForm.start,
-        end_date: newForm.end,
         save: newForm.save,
       });
-      onLoad(newForm.card_name, transactions.map(normPlaid));
-      setShowAdd(false);
+      onLoad(newForm.card_name, added.map(normPlaid));
       const savedCardName = newForm.card_name;
-      setNewForm({ access_token: '', card_name: '', start: '', end: '', save: true });
-      if (newForm.save) {
-        const conns = await loadConnections();
-        const newConn = conns.find(c => c.card_name === savedCardName);
-        if (newConn) setLoadedKeys(s => new Set([...s, newConn.id]));
+      setShowAdd(false);
+      setNewForm({ access_token: '', card_name: '', save: true });
+      if (newForm.save && connection_id) {
+        setCursor(connection_id, next_cursor);
+        await loadConnections();
+        setLoadedKeys(s => new Set([...s, connection_id]));
       }
     } catch (e) {
       setFetchErr(f => ({ ...f, new: e.message }));
@@ -122,6 +128,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
 
   async function removeConnection(conn) {
     await supabase.from('plaid_connections').delete().eq('id', conn.id);
+    clearCursor(conn.id);
     onClear(conn.card_name);
     setLoadedKeys(s => { const n = new Set(s); n.delete(conn.id); return n; });
     setConnections(cs => cs.filter(c => c.id !== conn.id));
@@ -176,22 +183,6 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
               onChange={e => setNewForm(f => ({ ...f, access_token: e.target.value }))}
               style={inputStyle}
             />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Start</label>
-              <input
-                type="date"
-                value={newForm.start}
-                onChange={e => setNewForm(f => ({ ...f, start: e.target.value }))}
-                style={{ ...inputStyle, fontSize: '11px', padding: '5px 6px' }}
-              />
-              <label style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>End</label>
-              <input
-                type="date"
-                value={newForm.end}
-                onChange={e => setNewForm(f => ({ ...f, end: e.target.value }))}
-                style={{ ...inputStyle, fontSize: '11px', padding: '5px 6px' }}
-              />
-            </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--muted)', cursor: 'pointer' }}>
               <input
                 type="checkbox"
@@ -206,7 +197,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
             <button
               className="cm-btn primary"
               onClick={addConnection}
-              disabled={fetching.new || !newForm.access_token || !newForm.card_name || !newForm.start || !newForm.end}
+              disabled={fetching.new || !newForm.access_token || !newForm.card_name}
               style={{ width: '100%' }}
             >
               {fetching.new ? 'Fetching…' : 'Fetch Transactions'}
@@ -217,7 +208,6 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
 
       {/* Saved connections */}
       {connections.map(conn => {
-        const dates = connDates[conn.id] || { start: '', end: '' };
         const isLoaded = loadedKeys.has(conn.id);
         return (
           <div
@@ -234,9 +224,19 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
               <span style={{ fontSize: '13px', fontWeight: 500 }}>{conn.card_name}</span>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                 {isLoaded && (
-                  <span style={{ fontSize: '10px', color: 'var(--accent)', fontWeight: 600, textTransform: 'uppercase' }}>
-                    loaded
-                  </span>
+                  <>
+                    <span style={{ fontSize: '10px', color: 'var(--accent)', fontWeight: 600, textTransform: 'uppercase' }}>
+                      loaded
+                    </span>
+                    <button
+                      className="cm-btn"
+                      onClick={() => syncConnection(conn)}
+                      disabled={fetching[`sync_${conn.id}`]}
+                      style={{ fontSize: '11px', padding: '3px 8px' }}
+                    >
+                      {fetching[`sync_${conn.id}`] ? 'Syncing…' : 'Sync'}
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={() => removeConnection(conn)}
@@ -250,22 +250,6 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
 
             {!isLoaded && (
               <>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '6px' }}>
-                  <label style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Start</label>
-                  <input
-                    type="date"
-                    value={dates.start}
-                    onChange={e => setConnDates(d => ({ ...d, [conn.id]: { ...d[conn.id], start: e.target.value } }))}
-                    style={{ ...inputStyle, fontSize: '11px', padding: '5px 6px' }}
-                  />
-                  <label style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>End</label>
-                  <input
-                    type="date"
-                    value={dates.end}
-                    onChange={e => setConnDates(d => ({ ...d, [conn.id]: { ...d[conn.id], end: e.target.value } }))}
-                    style={{ ...inputStyle, fontSize: '11px', padding: '5px 6px' }}
-                  />
-                </div>
                 {fetchErr[conn.id] && (
                   <div style={{ color: 'var(--warn)', fontSize: '11px', marginBottom: '4px' }}>
                     ✗ {fetchErr[conn.id]}
@@ -274,12 +258,18 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
                 <button
                   className="cm-btn primary"
                   onClick={() => fetchSaved(conn)}
-                  disabled={fetching[conn.id] || !dates.start || !dates.end}
+                  disabled={fetching[conn.id]}
                   style={{ width: '100%', fontSize: '12px' }}
                 >
                   {fetching[conn.id] ? 'Fetching…' : 'Fetch Transactions'}
                 </button>
               </>
+            )}
+
+            {isLoaded && fetchErr[conn.id] && (
+              <div style={{ color: 'var(--warn)', fontSize: '11px', marginTop: '6px' }}>
+                ✗ {fetchErr[conn.id]}
+              </div>
             )}
           </div>
         );
