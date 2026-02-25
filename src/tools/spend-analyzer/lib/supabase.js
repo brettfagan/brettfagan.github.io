@@ -57,16 +57,20 @@ export const sessionGuardReady = new Promise((resolve) => {
 
         setTimeout(async () => {
           _bc.removeEventListener('message', _onAlive);
-          if (!_confirmed) {
-            const { error } = await supabase.auth.signOut({ scope: 'local' });
-            if (error) {
-              // Fallback: clear auth keys directly if the SDK call fails.
-              Object.keys(localStorage)
-                .filter(k => k.startsWith('sb-') && k !== _HEARTBEAT_KEY)
-                .forEach(k => localStorage.removeItem(k));
+          try {
+            if (!_confirmed) {
+              const { error } = await supabase.auth.signOut({ scope: 'local' });
+              if (error) {
+                // Fallback: clear auth keys directly if the SDK call fails.
+                Object.keys(localStorage)
+                  .filter(k => k.startsWith('sb-') && k !== _HEARTBEAT_KEY)
+                  .forEach(k => localStorage.removeItem(k));
+              }
             }
+          } finally {
+            // Always resolve so AuthContext is never stuck in loading state.
+            resolve();
           }
-          resolve();
         }, 100);
         return;
       }
