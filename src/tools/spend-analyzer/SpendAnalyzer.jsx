@@ -38,7 +38,8 @@ export default function SpendAnalyzer() {
     let idx = 0;
     Object.entries(loadedData).forEach(([id, txns]) => {
       const card = CARDS.find(c => c.id === id);
-      txns.forEach(tx => all.push({ ...tx, _card: card.label, _id: idx++ }));
+      const cardLabel = card ? card.label : id;
+      txns.forEach(tx => all.push({ ...tx, _card: cardLabel, _id: idx++ }));
     });
     setResults(all);
   }
