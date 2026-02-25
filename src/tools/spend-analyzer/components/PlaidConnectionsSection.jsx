@@ -50,6 +50,8 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
   const [fetching, setFetching] = useState({});   // { [id | 'new' | 'sync_id']: bool }
   const [fetchErr, setFetchErr] = useState({});    // { [id | 'new']: string }
   const [loadedKeys, setLoadedKeys] = useState(new Set()); // connection ids loaded this session
+  const [editingToken, setEditingToken] = useState({}); // { [id]: string } — token being typed
+  const [updatingToken, setUpdatingToken] = useState({}); // { [id]: bool }
 
   useEffect(() => {
     if (user) loadConnections();
@@ -132,6 +134,21 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
     onClear(conn.card_name);
     setLoadedKeys(s => { const n = new Set(s); n.delete(conn.id); return n; });
     setConnections(cs => cs.filter(c => c.id !== conn.id));
+  }
+
+  async function updateToken(conn) {
+    const newToken = editingToken[conn.id];
+    if (!newToken) return;
+    setUpdatingToken(u => ({ ...u, [conn.id]: true }));
+    try {
+      await supabase.from('plaid_connections').update({ access_token: newToken }).eq('id', conn.id);
+      clearCursor(conn.id);
+      onClear(conn.card_name);
+      setLoadedKeys(s => { const n = new Set(s); n.delete(conn.id); return n; });
+      setEditingToken(e => { const n = { ...e }; delete n[conn.id]; return n; });
+    } finally {
+      setUpdatingToken(u => ({ ...u, [conn.id]: false }));
+    }
   }
 
   const cardNameSuggestions = [
@@ -239,6 +256,17 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
                   </>
                 )}
                 <button
+                  onClick={() => setEditingToken(e =>
+                    e[conn.id] !== undefined
+                      ? (({ [conn.id]: _, ...rest }) => rest)(e)
+                      : { ...e, [conn.id]: '' }
+                  )}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '13px', padding: '2px 4px', lineHeight: 1 }}
+                  title={editingToken[conn.id] !== undefined ? 'Cancel update' : 'Update access token'}
+                >
+                  {editingToken[conn.id] !== undefined ? '↩' : '✎'}
+                </button>
+                <button
                   onClick={() => removeConnection(conn)}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '13px', padding: '2px 4px', lineHeight: 1 }}
                   title="Remove connection"
@@ -247,6 +275,27 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
                 </button>
               </div>
             </div>
+
+            {editingToken[conn.id] !== undefined && (
+              <div style={{ marginTop: '8px', display: 'flex', gap: '6px' }}>
+                <input
+                  type="password"
+                  placeholder="New access token"
+                  value={editingToken[conn.id]}
+                  onChange={e => setEditingToken(et => ({ ...et, [conn.id]: e.target.value }))}
+                  style={{ ...inputStyle, flex: 1 }}
+                  autoFocus
+                />
+                <button
+                  className="cm-btn primary"
+                  onClick={() => updateToken(conn)}
+                  disabled={updatingToken[conn.id] || !editingToken[conn.id]}
+                  style={{ fontSize: '11px', padding: '3px 10px', whiteSpace: 'nowrap' }}
+                >
+                  {updatingToken[conn.id] ? 'Saving…' : 'Update'}
+                </button>
+              </div>
+            )}
 
             {!isLoaded && (
               <>
