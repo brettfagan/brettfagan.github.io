@@ -32,19 +32,20 @@ export const sessionGuardReady = new Promise((resolve) => {
     _writeHeartbeat();
     setInterval(_writeHeartbeat, 5 * 60 * 1000);
 
-    // Whether this tab was genuinely open before this page load.
-    // Only previously-open tabs answer liveness queries — tabs on their first load
-    // (including all tabs in a concurrent session restore) must not reply, which
-    // prevents them from mutually confirming each other as active when none was.
-    const _wasAlreadyOpen = !!sessionStorage.getItem(_TAB_KEY);
     const _bc = new BroadcastChannel('sb-session');
-    if (_wasAlreadyOpen) {
+
+    // Register the liveness responder with a delay greater than the probe window
+    // (100 ms) so that concurrently opened tabs — e.g. a browser session restore
+    // launching several tabs at once — cannot answer each other's probes.
+    // Tabs opened sequentially (>250 ms apart) will have their responder active
+    // in time to reply, including tabs whose heartbeat became stale during sleep.
+    setTimeout(() => {
       _bc.addEventListener('message', (e) => {
         if (e.data === 'alive?') _bc.postMessage('alive');
       });
-    }
+    }, 250);
 
-    if (!_wasAlreadyOpen) {
+    if (!sessionStorage.getItem(_TAB_KEY)) {
       sessionStorage.setItem(_TAB_KEY, '1');
 
       if (Date.now() - _lastBeat > _STALE_MS) {
