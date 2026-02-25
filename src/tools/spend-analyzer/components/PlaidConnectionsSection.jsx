@@ -24,7 +24,19 @@ const setCursor = (id, c) => localStorage.setItem(cursorKey(id), c);
 const clearCursor = id => localStorage.removeItem(cursorKey(id));
 
 async function callPlaidFetch(body) {
-  const { data: { session } } = await supabase.auth.getSession();
+  let { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not signed in — please sign in again');
+
+  // If the access token is expired or expiring within 60 s, refresh it.
+  // getSession() returns a cached token that can be stale after the tab is idle.
+  try {
+    const { exp } = JSON.parse(atob(session.access_token.split('.')[1]));
+    if (exp * 1000 < Date.now() + 60_000) {
+      const { data } = await supabase.auth.refreshSession();
+      if (data.session) session = data.session;
+    }
+  } catch { /* unparseable token — proceed and let the server reject it */ }
+
   const res = await fetch(`${SUPABASE_URL}/functions/v1/plaid-fetch`, {
     method: 'POST',
     headers: {
