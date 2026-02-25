@@ -180,19 +180,20 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
               onChange={e => setNewForm(f => ({ ...f, access_token: e.target.value }))}
               style={inputStyle}
             />
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Start</label>
               <input
                 type="date"
                 value={newForm.start}
                 onChange={e => setNewForm(f => ({ ...f, start: e.target.value }))}
-                style={{ ...dateInputStyle, width: 'auto' }}
+                style={{ ...inputStyle, fontSize: '11px', padding: '5px 6px' }}
               />
-              <span style={{ color: 'var(--muted)', fontSize: '11px', flexShrink: 0 }}>→</span>
+              <label style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>End</label>
               <input
                 type="date"
                 value={newForm.end}
                 onChange={e => setNewForm(f => ({ ...f, end: e.target.value }))}
-                style={{ ...dateInputStyle, width: 'auto' }}
+                style={{ ...inputStyle, fontSize: '11px', padding: '5px 6px' }}
               />
             </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--muted)', cursor: 'pointer' }}>
