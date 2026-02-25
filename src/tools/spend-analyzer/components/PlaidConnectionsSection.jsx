@@ -141,7 +141,11 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
     if (!newToken) return;
     setUpdatingToken(u => ({ ...u, [conn.id]: true }));
     try {
-      await supabase.from('plaid_connections').update({ access_token: newToken }).eq('id', conn.id);
+      const { error } = await supabase.from('plaid_connections').update({ access_token: newToken }).eq('id', conn.id);
+      if (error) {
+        setFetchErr(e => ({ ...e, [conn.id]: error.message }));
+        return;
+      }
       clearCursor(conn.id);
       onClear(conn.card_name);
       setLoadedKeys(s => { const n = new Set(s); n.delete(conn.id); return n; });
