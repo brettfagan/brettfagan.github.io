@@ -68,11 +68,11 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
     setFetching(f => ({ ...f, [conn.id]: true }));
     setFetchErr(e => ({ ...e, [conn.id]: '' }));
     try {
-      clearCursor(conn.id); // full sync always starts fresh
-      const { added, next_cursor } = await callPlaidFetch({
+      clearCursor(conn.id); // full fetch always starts fresh
+      const { transactions, next_cursor } = await callPlaidFetch({
         connection_id: conn.id,
       });
-      onLoad(conn.card_name, added.map(normPlaid));
+      onLoad(conn.card_name, transactions.map(normPlaid));
       setCursor(conn.id, next_cursor);
       setLoadedKeys(s => new Set([...s, conn.id]));
     } catch (e) {
@@ -105,12 +105,12 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
     setFetching(f => ({ ...f, new: true }));
     setFetchErr(e => ({ ...e, new: '' }));
     try {
-      const { added, next_cursor, connection_id } = await callPlaidFetch({
+      const { transactions, next_cursor, connection_id } = await callPlaidFetch({
         access_token: newForm.access_token,
         card_name: newForm.card_name,
         save: newForm.save,
       });
-      onLoad(newForm.card_name, added.map(normPlaid));
+      onLoad(newForm.card_name, transactions.map(normPlaid));
       const savedCardName = newForm.card_name;
       setShowAdd(false);
       setNewForm({ access_token: '', card_name: '', save: true });

@@ -14,12 +14,108 @@ function json(data: unknown, status = 200) {
   });
 }
 
+// Full historical fetch via /transactions/get (offset-based pagination).
+// Returns all transactions within the date window.
+async function fetchAllTransactions(
+  plaidBase: string,
+  clientId: string,
+  secret: string,
+  token: string,
+  startDate: string,
+  endDate: string
+): Promise<unknown[]> {
+  const allTransactions: unknown[] = [];
+  let offset = 0;
+  let totalTransactions = Infinity;
+
+  while (allTransactions.length < totalTransactions) {
+    const res = await fetch(`${plaidBase}/transactions/get`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: clientId,
+        secret,
+        access_token: token,
+        start_date: startDate,
+        end_date: endDate,
+        options: {
+          count: 500,
+          offset,
+          include_personal_finance_category: true,
+        },
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.error_code) {
+      throw new Error(data.error_message || data.error_code);
+    }
+    if (!res.ok) {
+      throw new Error(`Plaid HTTP ${res.status}`);
+    }
+
+    totalTransactions = data.total_transactions ?? 0;
+    const batch: unknown[] = data.transactions ?? [];
+    allTransactions.push(...batch);
+    offset += batch.length;
+
+    if (batch.length === 0) break; // Safety: avoid infinite loop
+  }
+
+  return allTransactions;
+}
+
+// Prime the sync cursor by paging through /transactions/sync with no cursor.
+// We discard the transactions and keep only the final next_cursor so that
+// future Sync calls return only true incremental changes.
+async function primeSyncCursor(
+  plaidBase: string,
+  clientId: string,
+  secret: string,
+  token: string
+): Promise<string> {
+  let cursor: string | undefined = undefined;
+
+  while (true) {
+    const body: Record<string, unknown> = {
+      client_id: clientId,
+      secret,
+      access_token: token,
+      options: { include_personal_finance_category: true },
+    };
+    if (cursor !== undefined) body.cursor = cursor;
+
+    const res = await fetch(`${plaidBase}/transactions/sync`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    if (data.error_code) {
+      throw new Error(data.error_message || data.error_code);
+    }
+    if (!res.ok) {
+      throw new Error(`Plaid HTTP ${res.status}`);
+    }
+
+    cursor = data.next_cursor;
+    if (!data.has_more) break;
+  }
+
+  return cursor as string;
+}
+
+// Incremental sync via /transactions/sync (cursor-based pagination).
+// Returns added/modified/removed deltas and the new next_cursor.
 async function syncTransactions(
   plaidBase: string,
   clientId: string,
   secret: string,
   token: string,
-  entryCursor: string | undefined
+  entryCursor: string
 ): Promise<{
   added: unknown[];
   modified: unknown[];
@@ -29,7 +125,7 @@ async function syncTransactions(
   const added: unknown[] = [];
   const modified: unknown[] = [];
   const removed: unknown[] = [];
-  let currentCursor: string | undefined = entryCursor;
+  let currentCursor: string = entryCursor;
   let retryCount = 0;
 
   while (true) {
@@ -37,9 +133,9 @@ async function syncTransactions(
       client_id: clientId,
       secret,
       access_token: token,
+      cursor: currentCursor,
       options: { include_personal_finance_category: true },
     };
-    if (currentCursor !== undefined) body.cursor = currentCursor;
 
     const res = await fetch(`${plaidBase}/transactions/sync`, {
       method: "POST",
@@ -74,7 +170,7 @@ async function syncTransactions(
     if (!data.has_more) break;
   }
 
-  return { added, modified, removed, next_cursor: currentCursor as string };
+  return { added, modified, removed, next_cursor: currentCursor };
 }
 
 Deno.serve(async (req: Request) => {
@@ -141,24 +237,27 @@ Deno.serve(async (req: Request) => {
         ? "https://sandbox.plaid.com"
         : "https://production.plaid.com";
 
-    // cursor absent or empty string = full sync (no cursor passed to Plaid)
-    const entryCursor: string | undefined = cursor || undefined;
+    if (cursor) {
+      // Incremental sync — use /transactions/sync with the stored cursor
+      const { added, modified, removed, next_cursor } = await syncTransactions(
+        plaidBase, clientId, secret, token!, cursor
+      );
+      return json({ added, modified, removed, next_cursor, connection_id: resolvedConnectionId });
+    } else {
+      // Full historical fetch — use /transactions/get for complete history,
+      // then prime the sync cursor so future Sync calls return only deltas
+      const endDate = new Date().toISOString().split("T")[0];
+      const startDate = new Date(Date.now() - 730 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0];
 
-    const { added, modified, removed, next_cursor } = await syncTransactions(
-      plaidBase,
-      clientId,
-      secret,
-      token!,
-      entryCursor
-    );
+      const [transactions, next_cursor] = await Promise.all([
+        fetchAllTransactions(plaidBase, clientId, secret, token!, startDate, endDate),
+        primeSyncCursor(plaidBase, clientId, secret, token!),
+      ]);
 
-    return json({
-      added,
-      modified,
-      removed,
-      next_cursor,
-      connection_id: resolvedConnectionId,
-    });
+      return json({ transactions, next_cursor, connection_id: resolvedConnectionId });
+    }
   } catch (err) {
     return json({ error: String(err) }, 500);
   }
