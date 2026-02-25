@@ -7,55 +7,36 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Session guard: synchronously clear stale auth before the Supabase client
+// initializes, so no stale session is ever hydrated into app state.
+//
+// A heartbeat is written to localStorage every 5 min while any app tab is open.
+// On first load in a new tab, if the heartbeat is stale (>15 min) the stored
+// Supabase auth keys are removed before createClient() runs. This covers both
+// browser-close and all-tabs-closed scenarios; distinguishing the two is not
+// possible in client-side JS without a service worker, and the stricter behavior
+// (sign out after 15 min of no open tabs) is acceptable for a personal financial app.
+const _HEARTBEAT_KEY = 'sb-heartbeat';
+const _TAB_KEY = 'sb-tab-init';
+const _STALE_MS = 15 * 60 * 1000; // 15 minutes
 
-// Session guard: sign the user out when the browser is reopened after being closed.
-//
-// Each tab writes a heartbeat to localStorage every 5 min while the app is open.
-// On first load in a new tab, a BroadcastChannel query asks any other open app
-// tabs if the browser session is still active. If a response arrives within 100 ms,
-// auth is preserved (the browser session is confirmed live). If no response arrives,
-// the pre-load heartbeat is checked: stale (>15 min) means the browser was closed
-// and supabase.auth.signOut() is called to clear the local session.
-//
-// This distinguishes "app tab closed, browser still running" (BC response or fresh
-// heartbeat) from "browser was closed" (no BC response + stale heartbeat).
 try {
-  const _HEARTBEAT_KEY = 'sb-heartbeat';
-  const _TAB_KEY = 'sb-tab-init';
-  const _STALE_MS = 15 * 60 * 1000; // 15 minutes
-
-  // Capture the heartbeat written by previous tabs before this tab updates it.
   const _lastBeat = parseInt(localStorage.getItem(_HEARTBEAT_KEY) || '0', 10);
-
-  // Keep the heartbeat alive while this tab is open.
-  const _writeHeartbeat = () => localStorage.setItem(_HEARTBEAT_KEY, Date.now().toString());
-  _writeHeartbeat();
-  setInterval(_writeHeartbeat, 5 * 60 * 1000);
-
-  const _bc = new BroadcastChannel('sb-session');
-
-  // Answer liveness queries from newly opened tabs.
-  _bc.addEventListener('message', (e) => {
-    if (e.data === 'alive?') _bc.postMessage('alive');
-  });
 
   if (!sessionStorage.getItem(_TAB_KEY)) {
     sessionStorage.setItem(_TAB_KEY, '1');
-
-    // Ask other open tabs if the browser session is still active.
-    let _confirmed = false;
-    const _onAlive = (e) => { if (e.data === 'alive') _confirmed = true; };
-    _bc.addEventListener('message', _onAlive);
-    _bc.postMessage('alive?');
-
-    setTimeout(() => {
-      _bc.removeEventListener('message', _onAlive);
-      if (!_confirmed && Date.now() - _lastBeat > _STALE_MS) {
-        supabase.auth.signOut({ scope: 'local' });
-      }
-    }, 100);
+    if (Date.now() - _lastBeat > _STALE_MS) {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('sb-') && k !== _HEARTBEAT_KEY)
+        .forEach(k => localStorage.removeItem(k));
+    }
   }
+
+  const _writeHeartbeat = () => localStorage.setItem(_HEARTBEAT_KEY, Date.now().toString());
+  _writeHeartbeat();
+  setInterval(_writeHeartbeat, 5 * 60 * 1000);
 } catch {
-  // BroadcastChannel or Web Storage unavailable — skip session guard.
+  // Storage unavailable (e.g. strict privacy settings) — skip session guard.
 }
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
