@@ -184,7 +184,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
             </thead>
             <tbody>
               {excluded.sort((a, b) => (a.date < b.date ? 1 : -1)).map((tx, i) => (
-                <tr key={i} style={{ opacity: 0.6 }}>
+                <tr key={i} style={{ opacity: 0.6, cursor: 'pointer' }} onClick={() => setModalTx(tx)}>
                   <td className="td-date">{tx.date}</td>
                   <td className="td-merchant" title={tx.merchant}>
                     <div className="merchant-cell">
@@ -208,7 +208,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
                   </td>
                   <td style={{ padding: '0 6px 0 0', textAlign: 'right' }}>
                     <button
-                      onClick={() => setPendingDeleteExcluded(tx)}
+                      onClick={e => { e.stopPropagation(); setPendingDeleteExcluded(tx); }}
                       title="Delete transaction"
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '11px', padding: '4px', lineHeight: 1, opacity: 0.5 }}
                     >✕</button>
