@@ -14,8 +14,16 @@ function json(data: unknown, status = 200) {
   });
 }
 
+// Derives a summary account type from an array of Plaid account objects.
+// Returns 'credit', 'depository', or 'mixed'.
+function deriveAccountType(accounts: { type?: string }[]): string {
+  const types = [...new Set(accounts.map((a) => a.type).filter(Boolean))];
+  if (types.length === 1) return types[0] as string;
+  return "mixed";
+}
+
 // Full historical fetch via /transactions/get (offset-based pagination).
-// Returns all transactions within the date window.
+// Returns all transactions within the date window, plus the accounts array.
 async function fetchAllTransactions(
   plaidBase: string,
   clientId: string,
@@ -23,8 +31,9 @@ async function fetchAllTransactions(
   token: string,
   startDate: string,
   endDate: string
-): Promise<unknown[]> {
+): Promise<{ transactions: unknown[]; accounts: { type?: string }[] }> {
   const allTransactions: unknown[] = [];
+  let accounts: { type?: string }[] = [];
   let offset = 0;
   let totalTransactions = Infinity;
 
@@ -55,6 +64,11 @@ async function fetchAllTransactions(
       throw new Error(`Plaid HTTP ${res.status}`);
     }
 
+    // Accounts are the same on every page; capture once
+    if (accounts.length === 0 && Array.isArray(data.accounts)) {
+      accounts = data.accounts;
+    }
+
     totalTransactions = data.total_transactions ?? 0;
     const batch: unknown[] = data.transactions ?? [];
     allTransactions.push(...batch);
@@ -63,7 +77,7 @@ async function fetchAllTransactions(
     if (batch.length === 0) break; // Safety: avoid infinite loop
   }
 
-  return allTransactions;
+  return { transactions: allTransactions, accounts };
 }
 
 // Prime the sync cursor by paging through /transactions/sync with no cursor.
@@ -116,7 +130,7 @@ async function primeSyncCursor(
 }
 
 // Incremental sync via /transactions/sync (cursor-based pagination).
-// Returns added/modified/removed deltas and the new next_cursor.
+// Returns added/modified/removed deltas, the new next_cursor, and accounts.
 async function syncTransactions(
   plaidBase: string,
   clientId: string,
@@ -128,10 +142,12 @@ async function syncTransactions(
   modified: unknown[];
   removed: unknown[];
   next_cursor: string;
+  accounts: { type?: string }[];
 }> {
   const added: unknown[] = [];
   const modified: unknown[] = [];
   const removed: unknown[] = [];
+  let accounts: { type?: string }[] = [];
   let currentCursor: string = entryCursor;
   let retryCount = 0;
 
@@ -158,6 +174,7 @@ async function syncTransactions(
       added.length = 0;
       modified.length = 0;
       removed.length = 0;
+      accounts = [];
       currentCursor = entryCursor;
       continue;
     }
@@ -169,6 +186,11 @@ async function syncTransactions(
       throw new Error(`Plaid HTTP ${res.status}`);
     }
 
+    // Accounts are the same on every page; capture once
+    if (accounts.length === 0 && Array.isArray(data.accounts)) {
+      accounts = data.accounts;
+    }
+
     added.push(...(data.added ?? []));
     modified.push(...(data.modified ?? []));
     removed.push(...(data.removed ?? []));
@@ -177,7 +199,7 @@ async function syncTransactions(
     if (!data.has_more) break;
   }
 
-  return { added, modified, removed, next_cursor: currentCursor };
+  return { added, modified, removed, next_cursor: currentCursor, accounts };
 }
 
 Deno.serve(async (req: Request) => {
@@ -246,10 +268,11 @@ Deno.serve(async (req: Request) => {
 
     if (cursor) {
       // Incremental sync — use /transactions/sync with the stored cursor
-      const { added, modified, removed, next_cursor } = await syncTransactions(
+      const { added, modified, removed, next_cursor, accounts } = await syncTransactions(
         plaidBase, clientId, secret, token!, cursor
       );
-      return json({ added, modified, removed, next_cursor, connection_id: resolvedConnectionId });
+      const account_type = accounts.length > 0 ? deriveAccountType(accounts) : undefined;
+      return json({ added, modified, removed, next_cursor, connection_id: resolvedConnectionId, account_type });
     } else {
       // Full historical fetch — use /transactions/get for complete history,
       // then prime the sync cursor so future Sync calls return only deltas
@@ -258,10 +281,19 @@ Deno.serve(async (req: Request) => {
         .toISOString()
         .split("T")[0];
 
-      const transactions = await fetchAllTransactions(plaidBase, clientId, secret, token!, startDate, endDate);
+      const { transactions, accounts } = await fetchAllTransactions(plaidBase, clientId, secret, token!, startDate, endDate);
       const next_cursor = await primeSyncCursor(plaidBase, clientId, secret, token!);
+      const account_type = accounts.length > 0 ? deriveAccountType(accounts) : undefined;
 
-      return json({ transactions, next_cursor, connection_id: resolvedConnectionId });
+      // Persist account_type on new connections so the UI can badge them
+      if (resolvedConnectionId && account_type) {
+        await supabase
+          .from("plaid_connections")
+          .update({ account_type })
+          .eq("id", resolvedConnectionId);
+      }
+
+      return json({ transactions, next_cursor, connection_id: resolvedConnectionId, account_type });
     }
   } catch (err) {
     return json({ error: String(err) }, 500);

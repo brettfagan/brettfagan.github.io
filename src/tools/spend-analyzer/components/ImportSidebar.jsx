@@ -37,7 +37,7 @@ export default function ImportSidebar({ loadedCount, onLoad, onClear, onSync, on
       )}
 
       <div className="sidebar-footer">
-        Auto-filtered: credit card payments<br />
+        Transfers &amp; payments auto-excluded<br />
         ✓ JSON and CSV both supported<br />
         ✓ Multi-card import supported
       </div>
