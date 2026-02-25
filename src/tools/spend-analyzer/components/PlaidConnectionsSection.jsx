@@ -93,9 +93,15 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
         connection_id: conn.id,
         cursor: storedCursor,
       });
-      onSync(conn.card_name, added.map(normPlaid), modified.map(normPlaid), removed);
-      setCursor(conn.id, next_cursor);
-      setLoadedKeys(s => new Set([...s, conn.id]));
+      // Guard: if the connection was removed while the fetch was in flight, discard results
+      setConnections(existing => {
+        if (existing.some(c => c.id === conn.id)) {
+          onSync(conn.card_name, added.map(normPlaid), modified.map(normPlaid), removed);
+          setCursor(conn.id, next_cursor);
+          setLoadedKeys(s => new Set([...s, conn.id]));
+        }
+        return existing;
+      });
     } catch (e) {
       setFetchErr(f => ({ ...f, [conn.id]: e.message }));
     } finally {

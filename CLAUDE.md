@@ -10,7 +10,7 @@
 5. Open a PR: `gh pr create --title "..." --body "..."`
 6. User reviews and merges — merge to `main` triggers auto-deploy to GitHub Pages
 
-**Warning signal:** If `git push` outputs `[new branch]` instead of updating an existing branch, stop immediately — the remote branch was likely deleted after a merge. Run `git checkout main && git pull` and create a fresh branch before continuing.
+**Warning signal:** If `git push` (to a branch you've already pushed before) outputs `[new branch]` instead of updating the existing remote branch, stop immediately — the remote branch was likely deleted after a merge. Run `git checkout main && git pull` and create a fresh branch before continuing. Note: `[new branch]` is expected and correct on the *first* push of a brand-new branch (`git push -u origin <branch>`) — that is not a warning.
 
 ## Tech Stack
 - **Frontend:** React 18 + Vite, deployed to GitHub Pages

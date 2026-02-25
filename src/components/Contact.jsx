@@ -7,7 +7,7 @@ function Contact() {
           Interested in collaborating or learning more about my work? Reach out
           via GitHub and let&apos;s connect.
         </p>
-        <a className="btn btn-primary" href="https://github.com/your-username">
+        <a className="btn btn-primary" href="https://github.com/brettfagan">
           Visit GitHub
         </a>
       </div>

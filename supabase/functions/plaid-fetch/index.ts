@@ -76,6 +76,7 @@ async function primeSyncCursor(
   token: string
 ): Promise<string> {
   let cursor: string | undefined = undefined;
+  let retryCount = 0;
 
   while (true) {
     const body: Record<string, unknown> = {
@@ -93,6 +94,12 @@ async function primeSyncCursor(
     });
 
     const data = await res.json();
+
+    if (data.error_code === "TRANSACTIONS_SYNC_MUTATION_DURING_PAGINATION") {
+      if (++retryCount > 10) throw new Error("Sync retry limit exceeded");
+      cursor = undefined; // restart from the beginning
+      continue;
+    }
 
     if (data.error_code) {
       throw new Error(data.error_message || data.error_code);
@@ -189,7 +196,7 @@ Deno.serve(async (req: Request) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const jwt = authHeader.replace("Bearer ", "");
+    const jwt = authHeader.replace(/^bearer /i, "");
     const {
       data: { user },
       error: authError,
@@ -251,10 +258,8 @@ Deno.serve(async (req: Request) => {
         .toISOString()
         .split("T")[0];
 
-      const [transactions, next_cursor] = await Promise.all([
-        fetchAllTransactions(plaidBase, clientId, secret, token!, startDate, endDate),
-        primeSyncCursor(plaidBase, clientId, secret, token!),
-      ]);
+      const transactions = await fetchAllTransactions(plaidBase, clientId, secret, token!, startDate, endDate);
+      const next_cursor = await primeSyncCursor(plaidBase, clientId, secret, token!);
 
       return json({ transactions, next_cursor, connection_id: resolvedConnectionId });
     }
