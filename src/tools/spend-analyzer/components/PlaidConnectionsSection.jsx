@@ -6,16 +6,6 @@ import { CARDS } from '../lib/constants';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-function defaultDates() {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(start.getDate() - 30);
-  return {
-    start: start.toISOString().split('T')[0],
-    end: end.toISOString().split('T')[0],
-  };
-}
-
 const inputStyle = {
   fontSize: '12px',
   padding: '6px 8px',
@@ -56,7 +46,8 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
   const [newForm, setNewForm] = useState({
     access_token: '',
     card_name: '',
-    ...defaultDates(),
+    start: '',
+    end: '',
     save: true,
   });
   const [fetching, setFetching] = useState({});   // { [id | 'new']: bool }
@@ -75,15 +66,15 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
       .order('created_at', { ascending: false });
     if (data) {
       setConnections(data);
-      const dates = defaultDates();
       const init = {};
-      data.forEach(c => { init[c.id] = { ...dates }; });
+      data.forEach(c => { init[c.id] = { start: '', end: '' }; });
       setConnDates(init);
     }
+    return data || [];
   }
 
   async function fetchSaved(conn) {
-    const dates = connDates[conn.id] || defaultDates();
+    const dates = connDates[conn.id] || { start: '', end: '' };
     setFetching(f => ({ ...f, [conn.id]: true }));
     setFetchErr(e => ({ ...e, [conn.id]: '' }));
     try {
@@ -115,8 +106,13 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
       });
       onLoad(newForm.card_name, transactions.map(normPlaid));
       setShowAdd(false);
-      setNewForm({ access_token: '', card_name: '', ...defaultDates(), save: true });
-      if (newForm.save) await loadConnections();
+      const savedCardName = newForm.card_name;
+      setNewForm({ access_token: '', card_name: '', start: '', end: '', save: true });
+      if (newForm.save) {
+        const conns = await loadConnections();
+        const newConn = conns.find(c => c.card_name === savedCardName);
+        if (newConn) setLoadedKeys(s => new Set([...s, newConn.id]));
+      }
     } catch (e) {
       setFetchErr(f => ({ ...f, new: e.message }));
     } finally {
@@ -210,7 +206,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
             <button
               className="cm-btn primary"
               onClick={addConnection}
-              disabled={fetching.new || !newForm.access_token || !newForm.card_name}
+              disabled={fetching.new || !newForm.access_token || !newForm.card_name || !newForm.start || !newForm.end}
               style={{ width: '100%' }}
             >
               {fetching.new ? 'Fetching…' : 'Fetch Transactions'}
@@ -221,7 +217,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
 
       {/* Saved connections */}
       {connections.map(conn => {
-        const dates = connDates[conn.id] || defaultDates();
+        const dates = connDates[conn.id] || { start: '', end: '' };
         const isLoaded = loadedKeys.has(conn.id);
         return (
           <div
@@ -277,7 +273,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
                 <button
                   className="cm-btn primary"
                   onClick={() => fetchSaved(conn)}
-                  disabled={fetching[conn.id]}
+                  disabled={fetching[conn.id] || !dates.start || !dates.end}
                   style={{ width: '100%', fontSize: '12px' }}
                 >
                   {fetching[conn.id] ? 'Fetching…' : 'Fetch Transactions'}
