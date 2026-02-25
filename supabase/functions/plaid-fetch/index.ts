@@ -30,10 +30,11 @@ Deno.serve(async (req: Request) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
+    const jwt = authHeader.replace("Bearer ", "");
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await supabase.auth.getUser(jwt);
     if (authError || !user) return json({ error: "Unauthorized" }, 401);
 
     const body = await req.json();
