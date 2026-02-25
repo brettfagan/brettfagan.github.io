@@ -16,18 +16,23 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const _HEARTBEAT_KEY = 'sb-heartbeat';
 const _TAB_KEY = 'sb-tab-init';
 
-if (!sessionStorage.getItem(_TAB_KEY)) {
-  const lastBeat = parseInt(localStorage.getItem(_HEARTBEAT_KEY) || '0', 10);
-  if (Date.now() - lastBeat > 90_000) {
-    Object.keys(localStorage)
-      .filter(k => k.startsWith('sb-') && k !== _HEARTBEAT_KEY)
-      .forEach(k => localStorage.removeItem(k));
+try {
+  if (!sessionStorage.getItem(_TAB_KEY)) {
+    const lastBeat = parseInt(localStorage.getItem(_HEARTBEAT_KEY) || '0', 10);
+    if (Date.now() - lastBeat > 90_000) {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('sb-') && k !== _HEARTBEAT_KEY)
+        .forEach(k => localStorage.removeItem(k));
+    }
+    sessionStorage.setItem(_TAB_KEY, '1');
   }
-  sessionStorage.setItem(_TAB_KEY, '1');
-}
 
-const _writeHeartbeat = () => localStorage.setItem(_HEARTBEAT_KEY, Date.now().toString());
-_writeHeartbeat();
-setInterval(_writeHeartbeat, 30_000);
+  const _writeHeartbeat = () => localStorage.setItem(_HEARTBEAT_KEY, Date.now().toString());
+  _writeHeartbeat();
+  setInterval(_writeHeartbeat, 30_000);
+} catch {
+  // Storage unavailable (e.g. strict privacy settings) — skip session guard
+  // and let Supabase initialize normally without persistent session support.
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
