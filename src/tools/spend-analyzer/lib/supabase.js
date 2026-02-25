@@ -58,7 +58,13 @@ export const sessionGuardReady = new Promise((resolve) => {
         setTimeout(async () => {
           _bc.removeEventListener('message', _onAlive);
           if (!_confirmed) {
-            await supabase.auth.signOut({ scope: 'local' });
+            const { error } = await supabase.auth.signOut({ scope: 'local' });
+            if (error) {
+              // Fallback: clear auth keys directly if the SDK call fails.
+              Object.keys(localStorage)
+                .filter(k => k.startsWith('sb-') && k !== _HEARTBEAT_KEY)
+                .forEach(k => localStorage.removeItem(k));
+            }
           }
           resolve();
         }, 100);

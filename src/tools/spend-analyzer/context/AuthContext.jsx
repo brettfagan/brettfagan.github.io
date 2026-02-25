@@ -8,23 +8,27 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Await the session guard before hydrating auth state. The guard checks
-    // whether a stale session should be cleared (via BroadcastChannel + heartbeat)
-    // and signs out locally if so. Delaying getSession() here ensures no stale
-    // session is ever read into app state — the existing loading=true covers the wait.
+    // Both the auth state listener and getSession() are deferred behind
+    // sessionGuardReady so that the INITIAL_SESSION event fires with the
+    // post-guard state. Registering onAuthStateChange before the guard
+    // completes would push a stale session into `user` before sign-out runs.
+    let subscription;
+
     sessionGuardReady.then(() => {
+      // Set up the listener first (recommended Supabase pattern to avoid races),
+      // then confirm the current session.
+      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+      });
+      subscription = sub;
+
       supabase.auth.getSession().then(({ data: { session } }) => {
         setUser(session?.user ?? null);
         setLoading(false);
       });
     });
 
-    // Listen for auth state changes (sign in, sign out, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => subscription?.unsubscribe();
   }, []);
 
   async function signInWithGoogle() {
