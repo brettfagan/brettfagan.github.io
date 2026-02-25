@@ -185,14 +185,14 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
                 type="date"
                 value={newForm.start}
                 onChange={e => setNewForm(f => ({ ...f, start: e.target.value }))}
-                style={dateInputStyle}
+                style={{ ...dateInputStyle, width: 'auto' }}
               />
               <span style={{ color: 'var(--muted)', fontSize: '11px', flexShrink: 0 }}>→</span>
               <input
                 type="date"
                 value={newForm.end}
                 onChange={e => setNewForm(f => ({ ...f, end: e.target.value }))}
-                style={dateInputStyle}
+                style={{ ...dateInputStyle, width: 'auto' }}
               />
             </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--muted)', cursor: 'pointer' }}>
