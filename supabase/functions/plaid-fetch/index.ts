@@ -14,6 +14,69 @@ function json(data: unknown, status = 200) {
   });
 }
 
+async function syncTransactions(
+  plaidBase: string,
+  clientId: string,
+  secret: string,
+  token: string,
+  entryCursor: string | undefined
+): Promise<{
+  added: unknown[];
+  modified: unknown[];
+  removed: unknown[];
+  next_cursor: string;
+}> {
+  const added: unknown[] = [];
+  const modified: unknown[] = [];
+  const removed: unknown[] = [];
+  let currentCursor: string | undefined = entryCursor;
+  let retryCount = 0;
+
+  while (true) {
+    const body: Record<string, unknown> = {
+      client_id: clientId,
+      secret,
+      access_token: token,
+      options: { include_personal_finance_category: true },
+    };
+    if (currentCursor !== undefined) body.cursor = currentCursor;
+
+    const res = await fetch(`${plaidBase}/transactions/sync`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    if (data.error_code === "TRANSACTIONS_SYNC_MUTATION_DURING_PAGINATION") {
+      if (++retryCount > 10) throw new Error("Sync retry limit exceeded");
+      // Reset accumulators and restart from the original entry cursor
+      added.length = 0;
+      modified.length = 0;
+      removed.length = 0;
+      currentCursor = entryCursor;
+      continue;
+    }
+
+    if (data.error_code) {
+      throw new Error(data.error_message || data.error_code);
+    }
+    if (!res.ok) {
+      throw new Error(`Plaid HTTP ${res.status}`);
+    }
+
+    added.push(...(data.added ?? []));
+    modified.push(...(data.modified ?? []));
+    removed.push(...(data.removed ?? []));
+    currentCursor = data.next_cursor;
+
+    if (!data.has_more) break;
+  }
+
+  return { added, modified, removed, next_cursor: currentCursor as string };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: CORS_HEADERS });
@@ -38,20 +101,10 @@ Deno.serve(async (req: Request) => {
     if (authError || !user) return json({ error: "Unauthorized" }, 401);
 
     const body = await req.json();
-    const {
-      connection_id,
-      access_token,
-      card_name,
-      start_date,
-      end_date,
-      save,
-    } = body;
-
-    if (!start_date || !end_date) {
-      return json({ error: "start_date and end_date are required" }, 400);
-    }
+    const { connection_id, access_token, card_name, cursor, save } = body;
 
     let token: string;
+    let resolvedConnectionId: string | undefined = connection_id;
 
     if (connection_id) {
       // Fetch saved connection — RLS ensures the user owns this row
@@ -65,9 +118,12 @@ Deno.serve(async (req: Request) => {
     } else if (access_token) {
       token = access_token;
       if (save && card_name) {
-        await supabase
+        const { data: inserted } = await supabase
           .from("plaid_connections")
-          .insert({ user_id: user.id, card_name, access_token });
+          .insert({ user_id: user.id, card_name, access_token })
+          .select("id")
+          .single();
+        if (inserted) resolvedConnectionId = inserted.id;
       }
     } else {
       return json({ error: "connection_id or access_token required" }, 400);
@@ -85,51 +141,24 @@ Deno.serve(async (req: Request) => {
         ? "https://sandbox.plaid.com"
         : "https://production.plaid.com";
 
-    // Paginated fetch
-    const allTransactions: unknown[] = [];
-    let offset = 0;
-    let totalTransactions = Infinity;
+    // cursor absent or empty string = full sync (no cursor passed to Plaid)
+    const entryCursor: string | undefined = cursor || undefined;
 
-    while (allTransactions.length < totalTransactions) {
-      const plaidRes = await fetch(`${plaidBase}/transactions/get`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          client_id: clientId,
-          secret,
-          access_token: token,
-          start_date,
-          end_date,
-          options: {
-            count: 500,
-            offset,
-            include_personal_finance_category: true,
-          },
-        }),
-      });
+    const { added, modified, removed, next_cursor } = await syncTransactions(
+      plaidBase,
+      clientId,
+      secret,
+      token!,
+      entryCursor
+    );
 
-      const plaidData = await plaidRes.json();
-
-      if (plaidData.error_code) {
-        return json(
-          { error: plaidData.error_message || plaidData.error_code },
-          400
-        );
-      }
-      if (!plaidRes.ok) {
-        return json({ error: `Plaid HTTP ${plaidRes.status}` }, 502);
-      }
-
-      totalTransactions = plaidData.total_transactions ?? 0;
-      const batch: unknown[] = plaidData.transactions ?? [];
-      allTransactions.push(...batch);
-      offset += batch.length;
-
-      // Safety: stop if Plaid returns an empty batch to avoid infinite loop
-      if (batch.length === 0) break;
-    }
-
-    return json({ transactions: allTransactions });
+    return json({
+      added,
+      modified,
+      removed,
+      next_cursor,
+      connection_id: resolvedConnectionId,
+    });
   } catch (err) {
     return json({ error: String(err) }, 500);
   }
