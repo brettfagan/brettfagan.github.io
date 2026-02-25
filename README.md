@@ -12,16 +12,19 @@ Personal portfolio site and tooling, built with React + Vite and deployed to Git
 ├── src/
 │   ├── main.jsx
 │   ├── styles.css
-│   └── components/
-│       ├── Hero.jsx
-│       ├── About.jsx
-│       ├── Projects.jsx
-│       ├── Contact.jsx
-│       └── Footer.jsx
-├── public/
+│   ├── components/             # Portfolio page sections (Hero, About, Projects, etc.)
 │   └── tools/
-│       └── spend-analyzer/
-│           └── index.html      # Standalone Spend Analyzer tool
+│       └── spend-analyzer/     # Spend Analyzer app
+│           ├── SpendAnalyzer.jsx
+│           ├── components/
+│           ├── context/        # Auth, Categories, CsvRules, DetailLabels
+│           ├── lib/            # supabase.js, parse.js, constants.js, format.js
+│           └── main.jsx
+├── supabase/
+│   └── functions/
+│       └── plaid-fetch/        # Edge Function: live Plaid transaction fetch + sync
+├── docs/
+│   └── plaid-setup.md          # Step-by-step guide for Plaid token setup
 ├── .github/
 │   └── workflows/
 │       └── deploy-pages.yml    # CI/CD → GitHub Pages
@@ -54,10 +57,17 @@ The repository must be **public** for GitHub Pages to be available on a free pla
 
 ## Spend Analyzer
 
-A client-side financial transaction analysis tool available at `/tools/spend-analyzer/`. All processing happens in the browser — no data is sent to any server.
+A personal financial transaction analysis tool available at `/tools/spend-analyzer/`. Requires Google sign-in to access persistent features.
+
+### Architecture
+
+- **Frontend:** React 18 + Vite, hosted on GitHub Pages
+- **Backend:** Supabase (Google OAuth, Postgres DB, Edge Functions)
+- **Plaid integration:** via the `plaid-fetch` Edge Function (Deno/TypeScript)
 
 ### Features
 
+#### Import & analysis (session-only)
 - **Multi-card import** — load up to 4 accounts simultaneously, each as Plaid JSON or CSV
 - **Plaid JSON support** — paste or drag-drop a `/transactions/get` response; parses all Plaid fields natively
 - **CSV support** — auto-detects column layout from Chase, Mint, Capital One, and generic exports
@@ -70,6 +80,36 @@ A client-side financial transaction analysis tool available at `/tools/spend-ana
 - **Sortable columns** — click Date, Merchant, or Amount headers to sort
 - **Low confidence indicator** — merchant names with low Plaid categorization confidence are outlined in red
 - **Summary stats** — cards, total posted spend, pending spend, credits, and net spend at a glance
+
+#### Live Plaid connections (requires sign-in)
+- **Saved Plaid connections** — paste an access token once; it's saved to the DB and auto-loaded on future sessions
+- **Account type badging** — connections display "Bank", "Credit Card", or "Mixed" based on Plaid account types
+- **Fetch All** — pulls up to 2 years of transaction history
+- **Sync** — incremental update since last fetch using Plaid's cursor-based sync API
+- See [docs/plaid-setup.md](docs/plaid-setup.md) for the full token setup walkthrough
+
+#### Persistent storage (requires sign-in)
+- **Save to My Spending** — import analyzed transactions into the DB with duplicate detection
+- **My Spending page** — view and manage all saved transactions across sessions
+- **Per-card summary** — count and date range for each saved card/account
+- **Bulk recategorization** — reassign a transaction's category; optionally apply to all transactions with the same merchant
+
+#### Customization (requires sign-in)
+- **Custom categories** — add, edit, or delete spending categories; configure exclusions (e.g. loan payments, transfers)
+- **CSV rules** — regex-based rules that auto-categorize CSV imports by merchant name
+- **Detail labels** — human-readable names for Plaid subcategory codes (e.g. display "Coffee" instead of `FOOD_AND_DRINK_COFFEE`)
+
+### Supabase tables
+
+| Table | Purpose |
+|---|---|
+| `imported_transactions` | All saved transactions, scoped by `user_id` |
+| `plaid_connections` | Saved Plaid access tokens (card name, account type, cursor) |
+| `categories` | User-defined category config (key, label, color, excluded flag) |
+| `csv_rules` | Regex-based CSV categorization rules |
+| `detail_labels` | Human-readable subcategory labels |
+
+All tables use Row Level Security (RLS) scoped to `user_id`.
 
 ### Plaid fields used
 
