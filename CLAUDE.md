@@ -3,11 +3,14 @@
 ## Git / PR Workflow
 **Always use feature branches and PRs. Never commit directly to `main`.**
 
-1. Create a branch: `git checkout -b feat/short-description` (use `feat/`, `fix/`, or `chore/` prefix)
-2. Make changes and commit with conventional commit messages (`feat:`, `fix:`, `chore:` lowercase)
-3. Push: `git push -u origin <branch>`
-4. Open a PR: `gh pr create --title "..." --body "..."`
-5. User reviews and merges — merge to `main` triggers auto-deploy to GitHub Pages
+1. **Before starting any new task**, sync main first: `git checkout main && git pull`
+2. Create a branch: `git checkout -b feat/short-description` (use `feat/`, `fix/`, or `chore/` prefix)
+3. Make changes and commit with conventional commit messages (`feat:`, `fix:`, `chore:` lowercase)
+4. Push: `git push -u origin <branch>`
+5. Open a PR: `gh pr create --title "..." --body "..."`
+6. User reviews and merges — merge to `main` triggers auto-deploy to GitHub Pages
+
+**Warning signal:** If `git push` outputs `[new branch]` instead of updating an existing branch, stop immediately — the remote branch was likely deleted after a merge. Run `git checkout main && git pull` and create a fresh branch before continuing.
 
 ## Tech Stack
 - **Frontend:** React 18 + Vite, deployed to GitHub Pages
