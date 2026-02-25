@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, sessionGuardReady } from '../lib/supabase';
 
 const AuthContext = createContext(null);
 
@@ -8,18 +8,27 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
+    // Both the auth state listener and getSession() are deferred behind
+    // sessionGuardReady so that the INITIAL_SESSION event fires with the
+    // post-guard state. Registering onAuthStateChange before the guard
+    // completes would push a stale session into `user` before sign-out runs.
+    let subscription;
+
+    sessionGuardReady.then(() => {
+      // Set up the listener first (recommended Supabase pattern to avoid races),
+      // then confirm the current session.
+      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+      });
+      subscription = sub;
+
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      });
     });
 
-    // Listen for auth state changes (sign in, sign out, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => subscription?.unsubscribe();
   }, []);
 
   async function signInWithGoogle() {
