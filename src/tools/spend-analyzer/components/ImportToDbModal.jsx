@@ -46,22 +46,29 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
     const hasPlaid = toImport.some(tx => tx.transaction_id);
     const hasCsv   = toImport.some(tx => !tx.transaction_id);
 
-    const [plaidResult, csvResult] = await Promise.all([
+    // For Plaid: fetch existing IDs *and* all existing fingerprints as a safety
+    // net — if a prior import stored rows with plaid_transaction_id = null the
+    // ID check alone would miss them, causing double-imports.
+    const [plaidIdResult, plaidFpResult, csvResult] = await Promise.all([
       hasPlaid
         ? supabase.from('imported_transactions').select('plaid_transaction_id').eq('user_id', user.id).not('plaid_transaction_id', 'is', null)
+        : Promise.resolve({ data: [] }),
+      hasPlaid
+        ? supabase.from('imported_transactions').select('date, merchant, amount').eq('user_id', user.id)
         : Promise.resolve({ data: [] }),
       hasCsv
         ? supabase.from('imported_transactions').select('date, merchant, amount').eq('user_id', user.id).is('plaid_transaction_id', null)
         : Promise.resolve({ data: [] }),
     ]);
 
-    const existingPlaidIds = new Set((plaidResult.data || []).map(r => r.plaid_transaction_id));
+    const existingPlaidIds = new Set((plaidIdResult.data || []).map(r => r.plaid_transaction_id));
+    const existingPlaidFps = new Set((plaidFpResult.data || []).map(r => `${r.date}|${r.merchant}|${r.amount}`));
     const existingCsvPrints = new Set((csvResult.data || []).map(r => `${r.date}|${r.merchant}|${r.amount}`));
 
     const fp = tx => `${tx.date}|${tx.merchant}|${tx.amount}`;
 
     const isDupe = tx => tx.transaction_id
-      ? existingPlaidIds.has(tx.transaction_id)
+      ? existingPlaidIds.has(tx.transaction_id) || existingPlaidFps.has(fp(tx))
       : existingCsvPrints.has(fp(tx));
 
     const duplicates = toImport.filter(isDupe);
