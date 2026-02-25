@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { normPlaid } from '../lib/parse';
+import { CARDS } from '../lib/constants';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -130,6 +131,13 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
     setConnections(cs => cs.filter(c => c.id !== conn.id));
   }
 
+  const cardNameSuggestions = [
+    ...new Set([
+      ...CARDS.map(c => c.label),
+      ...connections.map(c => c.card_name),
+    ])
+  ];
+
   if (!user) return null;
 
   return (
@@ -158,7 +166,13 @@ export default function PlaidConnectionsSection({ onLoad, onClear }) {
               value={newForm.card_name}
               onChange={e => setNewForm(f => ({ ...f, card_name: e.target.value }))}
               style={inputStyle}
+              list="plaid-card-name-suggestions"
             />
+            <datalist id="plaid-card-name-suggestions">
+              {cardNameSuggestions.map(name => (
+                <option key={name} value={name} />
+              ))}
+            </datalist>
             <input
               type="password"
               placeholder="Plaid access token"
