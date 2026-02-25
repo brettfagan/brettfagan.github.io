@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { fmtShortDate } from '../lib/format';
 import ResultsView from './ResultsView';
 
 const MONTHS = [
@@ -105,6 +106,18 @@ export default function MySpendingPage() {
     return result;
   }, [transactions, todayYear]);
 
+  const cardSummary = useMemo(() => {
+    const map = {};
+    for (const tx of transactions) {
+      const card = tx._card || 'Unknown';
+      if (!map[card]) map[card] = { count: 0, minDate: tx.date, maxDate: tx.date };
+      map[card].count++;
+      if (tx.date < map[card].minDate) map[card].minDate = tx.date;
+      if (tx.date > map[card].maxDate) map[card].maxDate = tx.date;
+    }
+    return Object.entries(map).sort((a, b) => b[1].count - a[1].count);
+  }, [transactions]);
+
   const filteredTransactions = useMemo(() => {
     if (filterMode === 'all') return transactions;
     if (filterMode === 'month') {
@@ -132,8 +145,25 @@ export default function MySpendingPage() {
         </p>
       </div>
 
+      {/* ── Saved data card summary ──────────────────────────────────────── */}
+      {cardSummary.length > 0 && (
+        <div style={{ marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid var(--border)' }}>
+          <div className="stat-label" style={{ marginBottom: '10px' }}>Saved Data</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))', gap: '12px' }}>
+            {cardSummary.map(([card, { count, minDate, maxDate }]) => (
+              <div key={card} className="stat-card">
+                <div className="stat-label">{card}</div>
+                <div className="stat-value" style={{ fontSize: '22px' }}>{count}</div>
+                <div className="stat-sub">transactions</div>
+                <div className="stat-sub">{fmtShortDate(minDate)} – {fmtShortDate(maxDate)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Date range filter ────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '28px', paddingBottom: '20px', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '28px' }}>
         {/* Mode toggle */}
         <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: '5px', overflow: 'hidden' }}>
           {[['all', 'All Time'], ['month', 'Month'], ['custom', 'Custom Range']].map(([mode, label], i, arr) => (
