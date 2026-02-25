@@ -8,6 +8,7 @@ export default function TransactionModal({ tx, onClose, onReCategorize }) {
   const [editingCat, setEditingCat] = useState(false);
   const [selectedCat, setSelectedCat] = useState(tx?.cat || '');
   const [selectedDetail, setSelectedDetail] = useState(tx?.cat_detail || '');
+  const [applyToSimilar, setApplyToSimilar] = useState(false);
 
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose(); }
@@ -30,7 +31,7 @@ export default function TransactionModal({ tx, onClose, onReCategorize }) {
   const subOptions = SUBCATEGORIES[selectedCat] || [];
 
   function handleSaveCategory() {
-    onReCategorize(tx._id, selectedCat, selectedDetail || null);
+    onReCategorize(tx._id, selectedCat, selectedDetail || null, applyToSimilar);
     setEditingCat(false);
     onClose();
   }
@@ -38,6 +39,7 @@ export default function TransactionModal({ tx, onClose, onReCategorize }) {
   function handleCancelEdit() {
     setSelectedCat(tx.cat);
     setSelectedDetail(tx.cat_detail || '');
+    setApplyToSimilar(false);
     setEditingCat(false);
   }
 
@@ -123,6 +125,18 @@ export default function TransactionModal({ tx, onClose, onReCategorize }) {
                       </select>
                     </div>
                   )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingLeft: '90px', fontSize: '11px', color: 'var(--muted)' }}>
+                    <input
+                      type="checkbox"
+                      id="apply-to-similar"
+                      checked={applyToSimilar}
+                      onChange={e => setApplyToSimilar(e.target.checked)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <label htmlFor="apply-to-similar" style={{ cursor: 'pointer' }}>
+                      Apply to all similar transactions (same merchant &amp; category)
+                    </label>
+                  </div>
                   <div style={{ display: 'flex', gap: '8px', paddingLeft: '90px' }}>
                     <button onClick={handleSaveCategory} className="cm-btn primary" style={{ fontSize: '11px', padding: '5px 14px' }}>Save</button>
                     <button onClick={handleCancelEdit} className="cm-btn" style={{ fontSize: '11px', padding: '5px 14px' }}>Cancel</button>
