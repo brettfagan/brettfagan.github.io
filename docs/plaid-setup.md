@@ -45,9 +45,14 @@ Body:
   "products": ["transactions"],
   "country_codes": ["US"],
   "language": "en",
+  "transactions": {
+    "days_requested": 730
+  },
   "webhook": "https://webhook.site/<your-unique-id>"
 }
 ```
+
+> **`days_requested` is required for full history.** Without this field Plaid defaults to 90 days. Set it to `730` (the maximum) to enable the 2-year backfill that **Fetch All** relies on. This must be specified at link-token creation time — it cannot be changed after the item is connected.
 
 > **Webhook (optional but recommended for debugging):** The `webhook` field tells Plaid where to POST transaction update events. Use a [webhook.site](https://webhook.site) URL here to inspect live payloads during setup — see the [Monitoring Webhooks](#monitoring-webhook-events-webhooksite) section below.
 
