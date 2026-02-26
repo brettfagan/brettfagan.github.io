@@ -127,8 +127,13 @@ export default function SpendingCharts({ spending, credits, cats }) {
       {/* ── Monthly bar chart ──────────────────────────────────────────── */}
       {showMonthly && (
         <div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '12px' }}>
-            Monthly Spend
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#6b7280' }}>
+              Monthly Spend
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', color: '#6b7280' }}>
+              avg {fmt(monthlyData.reduce((s, d) => s + d.spend, 0) / monthlyData.length)}/mo
+            </div>
           </div>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart
