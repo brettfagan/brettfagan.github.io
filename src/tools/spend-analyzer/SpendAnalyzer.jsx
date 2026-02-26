@@ -6,6 +6,7 @@ import ResultsView from './components/ResultsView';
 import AuthButton from './components/AuthButton';
 import CategoryManager from './components/CategoryManager';
 import MySpendingPage from './components/MySpendingPage';
+import MyBudgetPage from './components/MyBudgetPage';
 import './SpendAnalyzer.css';
 
 export default function SpendAnalyzer() {
@@ -102,6 +103,12 @@ export default function SpendAnalyzer() {
               >
                 My Spending
               </button>
+              <button
+                className={`nav-tab${page === 'my-budget' ? ' active' : ''}`}
+                onClick={() => setPage('my-budget')}
+              >
+                My Budget
+              </button>
             </nav>
           )}
           {user && (
@@ -116,7 +123,7 @@ export default function SpendAnalyzer() {
         </div>
       </header>
 
-      <div className={`main${page === 'my-spending' ? ' main--full' : ''}`}>
+      <div className={`main${page === 'my-spending' || page === 'my-budget' ? ' main--full' : ''}`}>
         {page === 'analyzer' && (
           <ImportSidebar
             key={sidebarKey}
@@ -132,6 +139,8 @@ export default function SpendAnalyzer() {
         <div className="content">
           {page === 'my-spending' ? (
             <MySpendingPage />
+          ) : page === 'my-budget' ? (
+            <MyBudgetPage />
           ) : results ? (
             <ResultsView allTransactions={results} onReCategorize={handleReCategorize} onDeleteTransaction={handleDeleteTransaction} />
           ) : (
