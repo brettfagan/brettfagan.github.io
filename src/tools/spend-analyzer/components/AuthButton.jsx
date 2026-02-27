@@ -1,4 +1,5 @@
 import { useAuth } from '../context/AuthContext';
+import { Button } from '@/components/ui/button';
 
 export default function AuthButton() {
   const { user, loading, signInWithGoogle, signOut } = useAuth();
@@ -7,27 +8,39 @@ export default function AuthButton() {
 
   if (!user) {
     return (
-      <button className="auth-btn auth-btn--signin" onClick={signInWithGoogle}>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={signInWithGoogle}
+        className="gap-2 font-mono font-bold hover:border-primary"
+      >
         <GoogleIcon />
         Sign in with Google
-      </button>
+      </Button>
     );
   }
 
   return (
-    <div className="auth-user">
+    <div className="flex items-center gap-2.5">
       {user.user_metadata?.avatar_url && (
         <img
-          className="auth-avatar"
+          className="w-7 h-7 rounded-full border border-border flex-shrink-0"
           src={user.user_metadata.avatar_url}
           alt={user.user_metadata?.full_name ?? 'User avatar'}
           referrerPolicy="no-referrer"
         />
       )}
-      <span className="auth-name">{user.user_metadata?.full_name ?? user.email}</span>
-      <button className="auth-btn auth-btn--signout" onClick={signOut}>
+      <span className="text-xs text-muted-foreground max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap">
+        {user.user_metadata?.full_name ?? user.email}
+      </span>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={signOut}
+        className="h-auto px-2.5 py-[5px] text-[11px] font-mono font-bold text-muted-foreground hover:bg-transparent hover:border hover:border-destructive hover:text-destructive"
+      >
         Sign out
-      </button>
+      </Button>
     </div>
   );
 }
