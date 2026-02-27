@@ -34,10 +34,10 @@ export default function AuthButton() {
         {user.user_metadata?.full_name ?? user.email}
       </span>
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
         onClick={signOut}
-        className="h-auto px-2.5 py-[5px] text-[11px] font-mono font-bold text-muted-foreground hover:bg-transparent hover:border hover:border-destructive hover:text-destructive"
+        className="h-auto px-2.5 py-[5px] text-[11px] font-mono font-bold text-muted-foreground hover:border-destructive hover:text-destructive hover:bg-transparent"
       >
         Sign out
       </Button>
