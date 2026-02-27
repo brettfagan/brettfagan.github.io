@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { CARDS } from './lib/constants';
 import { useAuth } from './context/AuthContext';
+import { Button } from '@/components/ui/button';
 import ImportSidebar from './components/ImportSidebar';
 import ResultsView from './components/ResultsView';
 import AuthButton from './components/AuthButton';
@@ -81,49 +82,52 @@ export default function SpendAnalyzer() {
     setSidebarKey(k => k + 1);
   }
 
+  const isFull = page === 'my-spending' || page === 'my-budget';
+
   return (
     <>
-      <header>
-        <div className="header-left">
-          <h1>Spend Analyzer</h1>
-          <span>BrettLabs</span>
+      <header className="px-12 py-5 border-b border-border flex items-center justify-between gap-5">
+        <div className="flex items-baseline gap-5">
+          <h1 className="font-mono text-[28px] font-extrabold tracking-[-0.5px]">Spend Analyzer</h1>
+          <span className="text-muted-foreground text-xs">BrettLabs</span>
         </div>
-        <div className="header-right">
+        <div className="flex items-center">
           {user && (
-            <nav className="header-nav">
-              <button
-                className={`nav-tab${page === 'analyzer' ? ' active' : ''}`}
-                onClick={() => setPage('analyzer')}
-              >
-                Analyzer
-              </button>
-              <button
-                className={`nav-tab${page === 'my-spending' ? ' active' : ''}`}
-                onClick={() => setPage('my-spending')}
-              >
-                My Spending
-              </button>
-              <button
-                className={`nav-tab${page === 'my-budget' ? ' active' : ''}`}
-                onClick={() => setPage('my-budget')}
-              >
-                My Budget
-              </button>
+            <nav className="flex gap-0.5 mr-3">
+              {[
+                { id: 'analyzer', label: 'Analyzer' },
+                { id: 'my-spending', label: 'My Spending' },
+                { id: 'my-budget', label: 'My Budget' },
+              ].map(({ id, label }) => (
+                <button
+                  key={id}
+                  onClick={() => setPage(id)}
+                  className={`border-b-2 px-3 py-1.5 font-mono text-xs font-bold tracking-[0.3px] transition-colors bg-transparent border-x-0 border-t-0 cursor-pointer ${
+                    page === id
+                      ? 'text-primary border-b-primary'
+                      : 'text-muted-foreground border-b-transparent hover:text-foreground'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </nav>
           )}
           {user && (
-            <button
-              className="manage-cats-btn"
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setCatMgrOpen(true)}
+              className="font-mono text-[11px] font-bold tracking-[0.5px] mr-3 shadow-none hover:text-primary hover:border-primary"
             >
               ⚙ Settings
-            </button>
+            </Button>
           )}
           <AuthButton />
         </div>
       </header>
 
-      <div className={`main${page === 'my-spending' || page === 'my-budget' ? ' main--full' : ''}`}>
+      <div className={`grid min-h-[calc(100vh-89px)] ${isFull ? 'grid-cols-1' : 'grid-cols-[260px_1fr]'}`}>
         {page === 'analyzer' && (
           <ImportSidebar
             key={sidebarKey}
@@ -136,7 +140,7 @@ export default function SpendAnalyzer() {
           />
         )}
 
-        <div className="content">
+        <div className="px-9 py-7 overflow-y-auto">
           {page === 'my-spending' ? (
             <MySpendingPage />
           ) : page === 'my-budget' ? (
@@ -144,13 +148,13 @@ export default function SpendAnalyzer() {
           ) : results ? (
             <ResultsView allTransactions={results} onReCategorize={handleReCategorize} onDeleteTransaction={handleDeleteTransaction} />
           ) : (
-            <div className="empty-state">
-              <div className="empty-icon">◈</div>
+            <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground text-center">
+              <div className="text-[40px]">◈</div>
               <p style={{ maxWidth: '300px', lineHeight: 1.8 }}>
                 Import data from one or more cards via Plaid JSON or CSV, then click Analyze.
               </p>
               {!loading && !user && (
-                <p style={{ maxWidth: '300px', lineHeight: 1.8, marginTop: '12px', fontSize: '11px', color: 'var(--muted)' }}>
+                <p style={{ maxWidth: '300px', lineHeight: 1.8, marginTop: '12px', fontSize: '11px' }}>
                   Sign in to save imports and manage categories.
                 </p>
               )}
