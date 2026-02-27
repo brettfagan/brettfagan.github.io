@@ -28,7 +28,7 @@ export default function ImportSidebar({ loadedCount, onLoad, onClear, onSync, on
       <Button
         disabled={loadedCount === 0}
         onClick={onAnalyze}
-        className="w-full font-mono text-[13px] font-extrabold shadow-none disabled:opacity-30 hover:-translate-y-px hover:shadow-[0_4px_20px_rgba(37,99,235,0.25)]"
+        className="mx-2 font-mono text-[13px] font-extrabold shadow-none disabled:opacity-30 hover:-translate-y-px hover:shadow-[0_4px_20px_rgba(37,99,235,0.25)]"
       >
         Analyze →
       </Button>
@@ -37,7 +37,7 @@ export default function ImportSidebar({ loadedCount, onLoad, onClear, onSync, on
         <Button
           variant="outline"
           onClick={onStartOver}
-          className="w-full font-mono text-xs font-bold tracking-[0.5px] text-muted-foreground shadow-none hover:border-destructive hover:text-destructive hover:bg-transparent"
+          className="mx-2 font-mono text-xs font-bold tracking-[0.5px] text-muted-foreground shadow-none hover:border-destructive hover:text-destructive hover:bg-transparent"
         >
           Start Over
         </Button>
