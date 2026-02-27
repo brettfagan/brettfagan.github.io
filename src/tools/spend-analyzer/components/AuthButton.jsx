@@ -10,9 +10,8 @@ export default function AuthButton() {
     return (
       <Button
         variant="outline"
-        size="sm"
         onClick={signInWithGoogle}
-        className="gap-2 font-mono font-bold hover:border-primary"
+        className="h-auto gap-2 px-3.5 py-1.75 text-xs font-mono font-bold shadow-none hover:border-primary hover:bg-muted"
       >
         <GoogleIcon />
         Sign in with Google
@@ -24,20 +23,20 @@ export default function AuthButton() {
     <div className="flex items-center gap-2.5">
       {user.user_metadata?.avatar_url && (
         <img
-          className="w-7 h-7 rounded-full border border-border flex-shrink-0"
+          className="w-7 h-7 rounded-full border border-border shrink-0"
           src={user.user_metadata.avatar_url}
           alt={user.user_metadata?.full_name ?? 'User avatar'}
           referrerPolicy="no-referrer"
         />
       )}
-      <span className="text-xs text-muted-foreground max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap">
+      <span className="text-xs text-muted-foreground max-w-45 overflow-hidden text-ellipsis whitespace-nowrap">
         {user.user_metadata?.full_name ?? user.email}
       </span>
       <Button
         variant="outline"
         size="sm"
         onClick={signOut}
-        className="h-auto px-2.5 py-[5px] text-[11px] font-mono font-bold text-muted-foreground hover:border-destructive hover:text-destructive hover:bg-transparent"
+        className="h-auto px-2.5 py-1.25 text-[11px] font-mono font-bold text-muted-foreground shadow-none hover:border-destructive hover:text-destructive hover:bg-transparent"
       >
         Sign out
       </Button>
