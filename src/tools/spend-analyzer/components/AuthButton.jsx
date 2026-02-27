@@ -10,8 +10,9 @@ export default function AuthButton() {
     return (
       <Button
         variant="outline"
+        size="sm"
         onClick={signInWithGoogle}
-        className="h-auto gap-2 px-3.5 py-1.75 text-xs font-mono font-bold shadow-none hover:border-primary hover:bg-muted"
+        className="h-auto gap-2 px-3.5 py-1.75 font-mono font-bold shadow-none hover:border-primary hover:bg-muted"
       >
         <GoogleIcon />
         Sign in with Google
