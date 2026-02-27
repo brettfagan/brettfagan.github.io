@@ -43,7 +43,7 @@ export default function ImportSidebar({ loadedCount, onLoad, onClear, onSync, on
         </Button>
       )}
 
-      <div className="mt-4 pt-3 border-t border-border text-muted-foreground text-[11px] leading-[1.9]">
+      <div className="mt-4 pt-3 border-t border-border text-muted-foreground text-[11px] leading-[1.9] font-mono">
         Transfers &amp; payments auto-excluded<br />
         ✓ JSON and CSV both supported<br />
         ✓ Multi-card import supported
