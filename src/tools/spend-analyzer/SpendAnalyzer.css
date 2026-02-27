@@ -21,72 +21,6 @@ body {
   line-height: 1.6;
 }
 
-header {
-  padding: 20px 48px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.header-left {
-  display: flex;
-  align-items: baseline;
-  gap: 20px;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-}
-
-.header-nav {
-  display: flex;
-  gap: 2px;
-  margin-right: 12px;
-}
-
-.nav-tab {
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--muted);
-  cursor: pointer;
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  padding: 6px 12px;
-  transition: color 0.15s, border-color 0.15s;
-}
-.nav-tab:hover { color: var(--text); }
-.nav-tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-
-header h1 {
-  font-family: 'DM Mono', monospace;
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  color: var(--text);
-}
-
-header span {
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.main {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  min-height: calc(100vh - 89px);
-}
-.main--full {
-  grid-template-columns: 1fr;
-}
 
 /* IMPORT BLOCKS */
 
@@ -261,25 +195,6 @@ textarea:focus {
 
 
 /* CONTENT */
-.content {
-  padding: 28px 36px;
-  overflow-y: auto;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  gap: 12px;
-  color: var(--muted);
-  text-align: center;
-}
-
-.empty-icon {
-  font-size: 40px;
-}
 
 /* RESULTS */
 .stats-row {
@@ -868,28 +783,6 @@ tr:hover td { background: rgba(0, 0, 0, 0.02); }
 }
 
 /* ── Manage Categories header button ──────────────────────────────────────── */
-.manage-cats-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  background: transparent;
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  margin-right: 12px;
-  white-space: nowrap;
-  transition: border-color 0.15s, color 0.15s;
-}
-.manage-cats-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
 
 /* ── CategoryManager backdrop + panel ────────────────────────────────────── */
 .cm-backdrop {
