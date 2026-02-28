@@ -8,7 +8,7 @@
 3. Make changes and commit with conventional commit messages (`feat:`, `fix:`, `chore:` lowercase)
 4. Push: `git push -u origin <branch>`
 5. Open a PR: `gh pr create --title "..." --body "..."`
-6. User reviews and merges — merge to `main` triggers auto-deploy to GitHub Pages
+6. User reviews and merges — merge to `main` triggers auto-deploy to Vercel
 
 **Warning signal:** If `git push` (to a branch you've already pushed before) outputs `[new branch]` instead of updating the existing remote branch, stop immediately — the remote branch was likely deleted after a merge. Run `git checkout main && git pull` and create a fresh branch before continuing. Note: `[new branch]` is expected and correct on the *first* push of a brand-new branch (`git push -u origin <branch>`) — that is not a warning.
 
@@ -29,11 +29,11 @@ For each comment:
 Priority badges: **P1** (orange) = blocking, fix immediately; **P2** (yellow) = important, fix before merge.
 
 ## Tech Stack
-- **Frontend:** React 18 + Vite, deployed to GitHub Pages
+- **Frontend:** React 18 + Vite + Tailwind CSS v4 + shadcn/ui, deployed to Vercel
 - **Backend:** Supabase (auth, Postgres DB, Edge Functions)
 - **Charts:** Recharts
 - **Auth:** Google OAuth via Supabase (no passwords)
-- **Deploy:** GitHub Actions → GitHub Pages on push to `main`
+- **Deploy:** Vercel (auto-deploys on push to `main`)
 
 ## Project Structure
 ```
@@ -46,7 +46,6 @@ src/tools/spend-analyzer/     # Main app
     parse.js                  # normPlaid(), parseCSV(), guessCat()
     constants.js              # CARDS array, CAT_COLORS, EXCLUDED, SUBCATEGORIES
 supabase/functions/           # Edge Functions (Deno/TypeScript)
-.github/workflows/            # CI/CD
 ```
 
 ## Key Patterns
