@@ -3,19 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { normPlaid } from '../lib/parse';
 import { CARDS } from '../lib/constants';
+import { Button } from '@/components/ui/button';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-
-const inputStyle = {
-  fontSize: '12px',
-  padding: '6px 8px',
-  border: '1px solid var(--border)',
-  borderRadius: '5px',
-  background: 'var(--bg)',
-  color: 'var(--text)',
-  width: '100%',
-  boxSizing: 'border-box',
-};
 
 // localStorage cursor helpers
 const cursorKey = id => `plaid_cursor_${id}`;
@@ -137,7 +127,6 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
         save: newForm.save,
       });
       onLoad(newForm.card_name, transactions.map(normPlaid));
-      const savedCardName = newForm.card_name;
       setShowAdd(false);
       setNewForm({ access_token: '', card_name: '', save: true });
       if (newForm.save && connection_id) {
@@ -189,106 +178,102 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
 
   if (!user) return null;
 
+  const inputCls = "w-full bg-background border border-border rounded text-xs font-mono py-1.5 px-2 outline-none text-foreground placeholder:text-muted-foreground focus:border-primary transition-colors";
+  const iconBtnCls = "bg-transparent border-0 cursor-pointer text-muted-foreground text-[13px] p-0.5 leading-none hover:text-foreground transition-colors";
+
   return (
-    <div style={{ marginBottom: '16px' }}>
-      {/* Section header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+    <div className="mb-4">
+      {/* ── Section header ─────────────────────────────────────────────────── */}
+      <div className="flex justify-between items-center mb-2">
+        <span className="font-mono text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em]">
           Plaid API
         </span>
-        <button
-          className="cm-btn primary"
-          style={{ fontSize: '11px', padding: '3px 8px' }}
+        <Button
+          variant={showAdd ? 'outline' : 'default'}
+          size="sm"
+          className="font-mono text-[11px] font-bold h-auto py-0.5 px-2"
           onClick={() => setShowAdd(s => !s)}
         >
           {showAdd ? 'Cancel' : '+ Add'}
-        </button>
+        </Button>
       </div>
 
-      {/* Add connection form */}
+      {/* ── Add connection form ─────────────────────────────────────────────── */}
       {showAdd && (
-        <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', marginBottom: '8px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="bg-background border border-border rounded-lg p-3 mb-2 flex flex-col gap-2">
+          <input
+            type="text"
+            placeholder="Card name (e.g. Chase Sapphire)"
+            value={newForm.card_name}
+            onChange={e => setNewForm(f => ({ ...f, card_name: e.target.value }))}
+            className={inputCls}
+            list="plaid-card-name-suggestions"
+          />
+          <datalist id="plaid-card-name-suggestions">
+            {cardNameSuggestions.map(name => <option key={name} value={name} />)}
+          </datalist>
+          <input
+            type="password"
+            placeholder="Plaid access token"
+            value={newForm.access_token}
+            onChange={e => setNewForm(f => ({ ...f, access_token: e.target.value }))}
+            className={inputCls}
+          />
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
             <input
-              type="text"
-              placeholder="Card name (e.g. Chase Sapphire)"
-              value={newForm.card_name}
-              onChange={e => setNewForm(f => ({ ...f, card_name: e.target.value }))}
-              style={inputStyle}
-              list="plaid-card-name-suggestions"
+              type="checkbox"
+              checked={newForm.save}
+              onChange={e => setNewForm(f => ({ ...f, save: e.target.checked }))}
+              className="cursor-pointer"
             />
-            <datalist id="plaid-card-name-suggestions">
-              {cardNameSuggestions.map(name => (
-                <option key={name} value={name} />
-              ))}
-            </datalist>
-            <input
-              type="password"
-              placeholder="Plaid access token"
-              value={newForm.access_token}
-              onChange={e => setNewForm(f => ({ ...f, access_token: e.target.value }))}
-              style={inputStyle}
-            />
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--muted)', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={newForm.save}
-                onChange={e => setNewForm(f => ({ ...f, save: e.target.checked }))}
-              />
-              Save connection for future use
-            </label>
-            {fetchErr.new && (
-              <div style={{ color: 'var(--warn)', fontSize: '11px' }}>✗ {fetchErr.new}</div>
-            )}
-            <button
-              className="cm-btn primary"
-              onClick={addConnection}
-              disabled={fetching.new || !newForm.access_token || !newForm.card_name}
-              style={{ width: '100%' }}
-            >
-              {fetching.new ? 'Fetching…' : 'Fetch Transactions'}
-            </button>
-          </div>
+            Save connection for future use
+          </label>
+          {fetchErr.new && (
+            <div className="text-destructive text-[11px]">✗ {fetchErr.new}</div>
+          )}
+          <Button
+            size="sm"
+            className="w-full font-mono text-[11px] font-bold"
+            onClick={addConnection}
+            disabled={fetching.new || !newForm.access_token || !newForm.card_name}
+          >
+            {fetching.new ? 'Fetching…' : 'Fetch Transactions'}
+          </Button>
         </div>
       )}
 
-      {/* Saved connections */}
+      {/* ── Saved connections ───────────────────────────────────────────────── */}
       {connections.map(conn => {
         const isLoaded = loadedKeys.has(conn.id);
         return (
           <div
             key={conn.id}
-            style={{
-              background: isLoaded ? 'rgba(5,150,105,0.06)' : 'var(--bg)',
-              border: `1px solid ${isLoaded ? 'var(--accent)' : 'var(--border)'}`,
-              borderRadius: '8px',
-              padding: '10px 12px',
-              marginBottom: '6px',
-            }}
+            className={`rounded-lg px-3 py-2.5 mb-1.5 border transition-colors ${
+              isLoaded ? 'bg-emerald-600/[0.06] border-primary' : 'bg-background border-border'
+            }`}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isLoaded ? '0' : '8px' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 500 }}>{conn.card_name}</span>
+            <div className={`flex justify-between items-center${isLoaded ? '' : ' mb-2'}`}>
+              <span className="flex items-center gap-1.5">
+                <span className="text-[13px] font-medium">{conn.card_name}</span>
                 {conn.account_type && (
-                  <span style={{ fontSize: '10px', color: 'var(--muted)', background: 'var(--border)', borderRadius: '4px', padding: '1px 5px', fontWeight: 500 }}>
+                  <span className="text-[10px] text-muted-foreground bg-muted border border-border rounded px-1.5 py-px font-medium">
                     {conn.account_type === 'depository' ? 'Bank' : conn.account_type === 'credit' ? 'Credit Card' : 'Mixed'}
                   </span>
                 )}
               </span>
-              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+              <div className="flex gap-1.5 items-center">
                 {isLoaded && (
                   <>
-                    <span style={{ fontSize: '10px', color: 'var(--accent)', fontWeight: 600, textTransform: 'uppercase' }}>
-                      loaded
-                    </span>
-                    <button
-                      className="cm-btn"
+                    <span className="text-[10px] text-primary font-semibold uppercase tracking-wide">loaded</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-mono text-[11px] font-bold h-auto py-0.5 px-2"
                       onClick={() => syncConnection(conn)}
                       disabled={fetching[`sync_${conn.id}`]}
-                      style={{ fontSize: '11px', padding: '3px 8px' }}
                     >
                       {fetching[`sync_${conn.id}`] ? 'Syncing…' : 'Sync'}
-                    </button>
+                    </Button>
                   </>
                 )}
                 <button
@@ -297,14 +282,14 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
                       ? (({ [conn.id]: _, ...rest }) => rest)(e)
                       : { ...e, [conn.id]: '' }
                   )}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '13px', padding: '2px 4px', lineHeight: 1 }}
+                  className={iconBtnCls}
                   title={editingToken[conn.id] !== undefined ? 'Cancel update' : 'Update access token'}
                 >
                   {editingToken[conn.id] !== undefined ? '↩' : '✎'}
                 </button>
                 <button
                   onClick={() => removeConnection(conn)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '13px', padding: '2px 4px', lineHeight: 1 }}
+                  className={iconBtnCls}
                   title="Remove connection"
                 >
                   ✕
@@ -313,73 +298,68 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
             </div>
 
             {editingToken[conn.id] !== undefined && (
-              <div style={{ marginTop: '8px', display: 'flex', gap: '6px' }}>
+              <div className="mt-2 flex gap-1.5">
                 <input
                   type="password"
                   placeholder="New access token"
                   value={editingToken[conn.id]}
                   onChange={e => setEditingToken(et => ({ ...et, [conn.id]: e.target.value }))}
-                  style={{ ...inputStyle, flex: 1 }}
+                  className={`${inputCls} flex-1`}
                   autoFocus
                 />
-                <button
-                  className="cm-btn primary"
+                <Button
+                  size="sm"
+                  className="font-mono text-[11px] font-bold whitespace-nowrap h-auto py-0.5 px-2.5"
                   onClick={() => updateToken(conn)}
                   disabled={updatingToken[conn.id] || !editingToken[conn.id]}
-                  style={{ fontSize: '11px', padding: '3px 10px', whiteSpace: 'nowrap' }}
                 >
                   {updatingToken[conn.id] ? 'Saving…' : 'Update'}
-                </button>
+                </Button>
               </div>
             )}
 
             {!isLoaded && (
               <>
                 {fetchErr[conn.id] && (
-                  <div style={{ color: 'var(--warn)', fontSize: '11px', marginBottom: '4px' }}>
-                    ✗ {fetchErr[conn.id]}
-                  </div>
+                  <div className="text-destructive text-[11px] mb-1">✗ {fetchErr[conn.id]}</div>
                 )}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div className="flex flex-col gap-1.5">
                   {getCursor(conn.id) && (
-                    <button
-                      className="cm-btn primary"
+                    <Button
+                      size="sm"
+                      className="w-full font-mono text-[11px] font-bold"
                       onClick={() => syncConnection(conn)}
                       disabled={fetching[conn.id] || fetching[`sync_${conn.id}`]}
-                      style={{ width: '100%', fontSize: '12px' }}
                     >
                       {fetching[`sync_${conn.id}`] ? 'Syncing…' : 'Sync New'}
-                    </button>
+                    </Button>
                   )}
-                  <button
-                    className={getCursor(conn.id) ? 'cm-btn' : 'cm-btn primary'}
+                  <Button
+                    variant={getCursor(conn.id) ? 'outline' : 'default'}
+                    size="sm"
+                    className="w-full font-mono text-[11px] font-bold"
                     onClick={() => fetchSaved(conn)}
                     disabled={fetching[conn.id] || fetching[`sync_${conn.id}`]}
-                    style={{ width: '100%', fontSize: '12px' }}
                   >
                     {fetching[conn.id] ? 'Fetching…' : 'Fetch All'}
-                  </button>
+                  </Button>
                 </div>
               </>
             )}
 
             {isLoaded && fetchErr[conn.id] && (
-              <div style={{ color: 'var(--warn)', fontSize: '11px', marginTop: '6px' }}>
-                ✗ {fetchErr[conn.id]}
-              </div>
+              <div className="text-destructive text-[11px] mt-1.5">✗ {fetchErr[conn.id]}</div>
             )}
           </div>
         );
       })}
 
       {connections.length === 0 && !showAdd && (
-        <div style={{ fontSize: '11px', color: 'var(--muted)', padding: '2px 0 4px' }}>
-          No saved connections
-        </div>
+        <div className="text-[11px] text-muted-foreground py-0.5 pb-1">No saved connections</div>
       )}
 
-      {/* Divider before existing card blocks */}
-      <div style={{ borderTop: '1px solid var(--border)', marginTop: connections.length > 0 || showAdd ? '12px' : '8px' }} />
+      {/* ── Divider before existing card blocks ────────────────────────────── */}
+      <div className={`border-t border-border ${connections.length > 0 || showAdd ? 'mt-3' : 'mt-2'}`} />
     </div>
   );
 }
