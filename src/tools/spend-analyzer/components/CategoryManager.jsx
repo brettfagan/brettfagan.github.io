@@ -7,6 +7,18 @@ import { Sheet, SheetContent, SheetTitle, SheetClose } from '@/components/ui/she
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 
+// ── Shared class strings ──────────────────────────────────────────────────────
+const rowCls      = "grid grid-cols-[18px_1fr_auto_auto_auto_auto] items-center gap-2.5 px-2.5 py-2 rounded-md border border-transparent hover:bg-muted hover:border-border transition-colors";
+const editingCls  = "bg-muted border border-border rounded-md py-3.5 px-4";
+const blockCls    = "flex flex-col gap-2.5";
+const editRowCls  = "flex items-center gap-2.5";
+const labelCls    = "text-[10px] font-bold tracking-[1px] uppercase text-muted-foreground w-30 shrink-0";
+const inputCls    = "flex-1 bg-background border border-border rounded font-mono text-xs text-foreground py-1.5 px-2.5 outline-none focus:border-primary transition-colors";
+const iconBtnCls  = "bg-transparent border-0 cursor-pointer text-[13px] text-muted-foreground p-0.5 px-1.5 rounded leading-none hover:text-primary hover:bg-blue-100 transition-colors";
+const dangerBtnCls = "bg-transparent border-0 cursor-pointer text-[13px] text-muted-foreground p-0.5 px-1.5 rounded leading-none hover:text-destructive hover:bg-red-100 transition-colors";
+const addNewBtnCls = "w-full border border-dashed border-border rounded font-mono text-[11px] font-bold text-muted-foreground py-2 px-3 bg-transparent cursor-pointer tracking-[0.5px] mb-6 hover:text-primary hover:border-primary hover:bg-blue-50 transition-colors";
+const addFormCls  = "bg-muted border border-border rounded-lg p-4 flex flex-col gap-2.5 mb-6";
+
 // ── ColorPicker ───────────────────────────────────────────────────────────────
 function ColorPicker({ value, onChange }) {
   return (
@@ -55,19 +67,17 @@ function CategoryRow({ cat, onSave, onDelete }) {
   if (!editing) {
     return (
       <div className="flex flex-col">
-        <div className="cm-row">
-          <span className="cm-swatch" style={{ background: cat.color }} />
-          <span className="cm-row-label">{cat.label}</span>
+        <div className={rowCls}>
+          <span className="w-3.5 h-3.5 rounded-[3px] shrink-0 inline-block" style={{ background: cat.color }} />
+          <span className="text-xs font-semibold overflow-hidden text-ellipsis whitespace-nowrap">{cat.label}</span>
           <span className="text-[10px] text-muted-foreground tracking-[0.3px] whitespace-nowrap">{cat.key}</span>
           <span className={`text-[9px] px-1.5 py-0.5 rounded-full whitespace-nowrap tracking-[0.3px] ${
-            cat.excluded
-              ? 'bg-amber-100 text-amber-800'
-              : 'bg-muted text-muted-foreground'
+            cat.excluded ? 'bg-amber-100 text-amber-800' : 'bg-muted text-muted-foreground'
           }`}>
             {cat.excluded ? 'excluded' : 'included'}
           </span>
-          <button className="cm-btn-icon" onClick={() => setEditing(true)} title="Edit">✎</button>
-          <button className="cm-btn-icon danger" onClick={() => onDelete(cat.key)} title="Delete">✕</button>
+          <button className={iconBtnCls} onClick={() => setEditing(true)} title="Edit">✎</button>
+          <button className={dangerBtnCls} onClick={() => onDelete(cat.key)} title="Delete">✕</button>
         </div>
         {subs.length > 0 && (
           <div className="px-2.5 pb-1.5 pl-[38px]">
@@ -96,38 +106,29 @@ function CategoryRow({ cat, onSave, onDelete }) {
   }
 
   return (
-    <div className="cm-row editing">
-      <div className="cm-edit-block">
-        <div className="cm-edit-row">
-          <label className="cm-edit-label">Label</label>
-          <input
-            className="cm-input"
-            value={label}
-            onChange={e => setLabel(e.target.value)}
-            maxLength={40}
-          />
+    <div className={editingCls}>
+      <div className={blockCls}>
+        <div className={editRowCls}>
+          <label className={labelCls}>Label</label>
+          <input className={inputCls} value={label} onChange={e => setLabel(e.target.value)} maxLength={40} />
         </div>
-        <div className="cm-edit-row">
-          <label className="cm-edit-label">Key</label>
+        <div className={editRowCls}>
+          <label className={labelCls}>Key</label>
           <span className="text-[11px] text-muted-foreground tracking-[0.5px]">{cat.key}</span>
         </div>
-        <div className="cm-edit-row">
-          <label className="cm-edit-label">Color</label>
+        <div className={editRowCls}>
+          <label className={labelCls}>Color</label>
           <ColorPicker value={color} onChange={setColor} />
         </div>
-        <div className="cm-edit-row">
-          <label className="cm-edit-label">Exclude from totals</label>
-          <input
-            type="checkbox"
-            checked={excluded}
-            onChange={e => setExcluded(e.target.checked)}
-          />
+        <div className={editRowCls}>
+          <label className={labelCls}>Exclude from totals</label>
+          <input type="checkbox" checked={excluded} onChange={e => setExcluded(e.target.checked)} />
         </div>
-        <div className="cm-edit-actions">
-          <button className="cm-btn primary" onClick={handleSave} disabled={saving}>
+        <div className="flex gap-2 mt-1">
+          <Button size="sm" onClick={handleSave} disabled={saving} className="font-mono text-[11px] font-bold">
             {saving ? 'Saving…' : 'Save'}
-          </button>
-          <button className="cm-btn" onClick={handleCancel}>Cancel</button>
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleCancel} className="font-mono text-[11px] font-bold">Cancel</Button>
         </div>
       </div>
     </div>
@@ -171,56 +172,41 @@ function AddCategoryForm({ onAdd }) {
   }
 
   if (!open) {
-    return (
-      <button className="cm-btn add-new" onClick={() => setOpen(true)}>
-        + Add Category
-      </button>
-    );
+    return <button className={addNewBtnCls} onClick={() => setOpen(true)}>+ Add Category</button>;
   }
 
   return (
-    <form className="cm-add-form" onSubmit={handleSubmit}>
-      <div className="cm-edit-row">
-        <label className="cm-edit-label">Label</label>
-        <input
-          className="cm-input"
-          value={label}
-          onChange={handleLabelChange}
-          maxLength={40}
-          placeholder="e.g. Subscriptions"
-          autoFocus
-        />
+    <form className={addFormCls} onSubmit={handleSubmit}>
+      <div className={editRowCls}>
+        <label className={labelCls}>Label</label>
+        <input className={inputCls} value={label} onChange={handleLabelChange} maxLength={40} placeholder="e.g. Subscriptions" autoFocus />
       </div>
-      <div className="cm-edit-row">
-        <label className="cm-edit-label">Key (auto)</label>
+      <div className={editRowCls}>
+        <label className={labelCls}>Key (auto)</label>
         <input
-          className="cm-input"
+          className={inputCls}
           value={key}
           onChange={e => setKey(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ''))}
           maxLength={40}
           placeholder="SUBSCRIPTIONS"
         />
       </div>
-      <div className="cm-edit-row">
-        <label className="cm-edit-label">Color</label>
+      <div className={editRowCls}>
+        <label className={labelCls}>Color</label>
         <ColorPicker value={color} onChange={setColor} />
       </div>
-      <div className="cm-edit-row">
-        <label className="cm-edit-label">Exclude from totals</label>
-        <input
-          type="checkbox"
-          checked={excluded}
-          onChange={e => setExcluded(e.target.checked)}
-        />
+      <div className={editRowCls}>
+        <label className={labelCls}>Exclude from totals</label>
+        <input type="checkbox" checked={excluded} onChange={e => setExcluded(e.target.checked)} />
       </div>
-      {error && <p className="cm-error">{error}</p>}
-      <div className="cm-edit-actions">
-        <button className="cm-btn primary" type="submit" disabled={saving}>
+      {error && <p className="text-[11px] text-destructive">{error}</p>}
+      <div className="flex gap-2 mt-1">
+        <Button size="sm" type="submit" disabled={saving} className="font-mono text-[11px] font-bold">
           {saving ? 'Adding…' : 'Add'}
-        </button>
-        <button className="cm-btn" type="button" onClick={() => { setOpen(false); setError(''); }}>
+        </Button>
+        <Button size="sm" variant="outline" type="button" onClick={() => { setOpen(false); setError(''); }} className="font-mono text-[11px] font-bold">
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -274,23 +260,18 @@ export default function CategoryManager({ open, onClose }) {
 
           <TabsContent value="categories" className="flex-1 overflow-y-auto px-6 py-4 pb-8 mt-0 data-[state=inactive]:hidden">
             {loading ? (
-              <p className="cm-loading">Loading…</p>
+              <p className="text-muted-foreground py-6 text-xs">Loading…</p>
             ) : (
               <>
-                <div className="cm-list">
+                <div className="flex flex-col gap-0.5 mb-5">
                   {categories.map(cat => (
-                    <CategoryRow
-                      key={cat.key}
-                      cat={cat}
-                      onSave={saveCategory}
-                      onDelete={deleteCategory}
-                    />
+                    <CategoryRow key={cat.key} cat={cat} onSave={saveCategory} onDelete={deleteCategory} />
                   ))}
                 </div>
 
                 <AddCategoryForm onAdd={saveCategory} />
 
-                <div className="cm-reset-section">
+                <div className="border-t border-border pt-5">
                   <Button
                     variant="outline"
                     size="sm"
