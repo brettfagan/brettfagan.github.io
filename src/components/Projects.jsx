@@ -17,6 +17,14 @@ function Projects() {
               >
                 Open App
               </a>
+              <a
+                className="inline-block py-[0.7rem] px-[1.1rem] rounded-[0.55rem] border no-underline font-semibold transition-transform duration-200 hover:-translate-y-px bg-[#e9eefb] text-[#20305c] border-[#ccd7f2]"
+                href="https://github.com/brettfagan"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Visit GitHub
+              </a>
             </div>
           </article>
         </div>
