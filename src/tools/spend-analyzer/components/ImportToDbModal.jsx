@@ -2,24 +2,32 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { fmt } from '../lib/format';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 // ── Breakdown row helper ──────────────────────────────────────────────────────
-function BreakdownRow({ label, count, sum, color, sign = '' }) {
+function BreakdownRow({ label, count, sum, colorClass = 'text-foreground', sign = '' }) {
   if (count === 0) return null;
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', color: 'var(--muted)' }}>{label}</span>
-      <span style={{ display: 'flex', gap: '20px', alignItems: 'baseline' }}>
-        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', color: 'var(--muted)' }}>
+    <div className="flex justify-between items-baseline py-1.5 border-b border-border">
+      <span className="font-mono text-[11px] text-muted-foreground">{label}</span>
+      <span className="flex gap-5 items-baseline">
+        <span className="font-mono text-[11px] text-muted-foreground">
           {count} transaction{count !== 1 ? 's' : ''}
         </span>
-        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '13px', fontWeight: 700, color: color || 'var(--text)', minWidth: '80px', textAlign: 'right' }}>
+        <span className={`font-mono text-[13px] font-bold min-w-[80px] text-right ${colorClass}`}>
           {sign}{fmt(sum)}
         </span>
       </span>
     </div>
   );
 }
+
+const SectionLabel = ({ children }) => (
+  <div className="font-mono text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground mb-1">
+    {children}
+  </div>
+);
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ImportToDbModal({ spending, credits, onClose }) {
@@ -139,157 +147,121 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
     setStep('done');
   }
 
-  const overlay = (
-    <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 400 }}
-      onClick={step !== 'importing' ? onClose : undefined}
-    />
-  );
-
-  const modalBox = (children) => (
-    <div style={{
-      position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-      background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px',
-      padding: '28px 28px 24px', zIndex: 401, width: '460px', maxWidth: '94vw',
-      boxShadow: '0 12px 40px rgba(0,0,0,0.2)',
-    }}>
-      {children}
-    </div>
-  );
-
-  const sectionLabel = (text) => (
-    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '4px' }}>
-      {text}
-    </div>
-  );
-
-  // ── Preview step ─────────────────────────────────────────────────────────────
-  if (step === 'preview') return (
-    <>
-      {overlay}
-      {modalBox(
-        <>
-          {sectionLabel('Import to Database')}
-          <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '4px 0 20px', lineHeight: 1.6 }}>
-            Save this session's transactions to your account for future reference.
-          </p>
-
-          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '20px', fontSize: '13px', color: 'var(--text)' }}>
-            <input
-              type="checkbox"
-              checked={includePending}
-              onChange={e => setIncludePending(e.target.checked)}
-              style={{ width: '15px', height: '15px', cursor: 'pointer' }}
-            />
-            Include pending transactions
-          </label>
-
-          <div style={{ background: 'var(--surface)', borderRadius: '8px', padding: '4px 12px', marginBottom: '20px' }}>
-            <BreakdownRow label="Posted"            count={posted.length}  sum={posted.reduce((s, t) => s + t.amount, 0)}               color="var(--text)" />
-            <BreakdownRow label="Credits / Refunds" count={credits.length} sum={Math.abs(credits.reduce((s, t) => s + t.amount, 0))} color="var(--accent2)" sign="-" />
-            {includePending && (
-              <BreakdownRow label="Pending" count={pending.length} sum={pending.reduce((s, t) => s + t.amount, 0)} color="var(--warn)" />
-            )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0 2px', fontFamily: "'DM Mono',monospace", fontSize: '12px', fontWeight: 700 }}>
-              <span>Total</span>
-              <span>{toImport.length} transaction{toImport.length !== 1 ? 's' : ''}</span>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-            <button className="cm-btn" onClick={onClose}>Cancel</button>
-            <button className="cm-btn primary" onClick={handleImport} disabled={toImport.length === 0}>
-              Import {toImport.length} Transaction{toImport.length !== 1 ? 's' : ''}
-            </button>
-          </div>
-        </>
-      )}
-    </>
-  );
-
-  // ── Importing step ───────────────────────────────────────────────────────────
-  if (step === 'importing') return (
-    <>
-      {overlay}
-      {modalBox(
-        <div style={{ textAlign: 'center', padding: '16px 0' }}>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '13px', color: 'var(--muted)', marginBottom: '8px' }}>Importing…</div>
-          <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Saving {toImport.length} transactions to your account</div>
-        </div>
-      )}
-    </>
-  );
-
-  // ── Error step ───────────────────────────────────────────────────────────────
-  if (step === 'error') return (
-    <>
-      {overlay}
-      {modalBox(
-        <>
-          {sectionLabel('Import Failed')}
-          <p style={{ fontSize: '13px', color: 'var(--danger)', margin: '8px 0 20px', lineHeight: 1.6 }}>{errorMsg}</p>
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-            <button className="cm-btn" onClick={onClose}>Close</button>
-            <button className="cm-btn primary" onClick={() => setStep('preview')}>Try Again</button>
-          </div>
-        </>
-      )}
-    </>
-  );
-
-  // ── Done step ────────────────────────────────────────────────────────────────
   return (
-    <>
-      {overlay}
-      {modalBox(
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <span style={{ fontSize: '20px', color: 'var(--accent2)' }}>✓</span>
-            <div>
-              {sectionLabel('Import Complete')}
-              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
-                {summary.total} transaction{summary.total !== 1 ? 's' : ''} saved
-                {summary.duplicateCount > 0 && (
-                  <span style={{ fontWeight: 400, color: 'var(--muted)', marginLeft: '8px' }}>
-                    · {summary.duplicateCount} skipped
-                  </span>
-                )}
+    <Dialog open onOpenChange={open => { if (!open && step !== 'importing') onClose(); }}>
+      <DialogContent className="sm:max-w-[460px]" showCloseButton={step !== 'importing'}>
+
+        {/* ── Preview ───────────────────────────────────────────────────────── */}
+        {step === 'preview' && (
+          <>
+            <SectionLabel>Import to Database</SectionLabel>
+            <p className="text-[13px] text-muted-foreground mt-1 mb-5 leading-relaxed">
+              Save this session's transactions to your account for future reference.
+            </p>
+
+            <label className="flex items-center gap-2.5 cursor-pointer mb-5 text-sm">
+              <input
+                type="checkbox"
+                checked={includePending}
+                onChange={e => setIncludePending(e.target.checked)}
+                className="w-[15px] h-[15px] cursor-pointer"
+              />
+              Include pending transactions
+            </label>
+
+            <div className="bg-muted rounded-lg px-3 py-1 mb-5">
+              <BreakdownRow label="Posted"            count={posted.length}  sum={posted.reduce((s, t) => s + t.amount, 0)} />
+              <BreakdownRow label="Credits / Refunds" count={credits.length} sum={Math.abs(credits.reduce((s, t) => s + t.amount, 0))} colorClass="text-cyan-600" sign="-" />
+              {includePending && (
+                <BreakdownRow label="Pending" count={pending.length} sum={pending.reduce((s, t) => s + t.amount, 0)} colorClass="text-amber-600" />
+              )}
+              <div className="flex justify-between py-2 font-mono text-xs font-bold">
+                <span>Total</span>
+                <span>{toImport.length} transaction{toImport.length !== 1 ? 's' : ''}</span>
               </div>
             </div>
-          </div>
 
-          <div style={{ background: 'var(--surface)', borderRadius: '8px', padding: '4px 12px', marginBottom: summary.duplicateCount > 0 ? '12px' : '20px' }}>
-            <BreakdownRow label="Posted"            count={summary.posted}  sum={summary.postedSum}  color="var(--text)" />
-            <BreakdownRow label="Credits / Refunds" count={summary.credits} sum={summary.creditsSum} color="var(--accent2)" sign="-" />
-            {summary.includedPending && (
-              <BreakdownRow label="Pending" count={summary.pending} sum={summary.pendingSum} color="var(--warn)" />
-            )}
-          </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={onClose} className="font-mono text-[11px] font-bold">Cancel</Button>
+              <Button size="sm" onClick={handleImport} disabled={toImport.length === 0} className="font-mono text-[11px] font-bold">
+                Import {toImport.length} Transaction{toImport.length !== 1 ? 's' : ''}
+              </Button>
+            </div>
+          </>
+        )}
 
-          {summary.duplicateCount > 0 && (
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '6px' }}>
-                Skipped — already in database ({summary.duplicateCount})
-              </div>
-              <div style={{ background: 'var(--surface)', borderRadius: '8px', padding: '4px 12px', maxHeight: '140px', overflowY: 'auto' }}>
-                {summary.duplicateList.map((t, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '5px 0', borderBottom: i < summary.duplicateList.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '240px' }}>{t.merchant}</span>
-                    <span style={{ display: 'flex', gap: '12px', alignItems: 'baseline', flexShrink: 0 }}>
-                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', color: 'var(--muted)' }}>{t.date}</span>
-                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: '12px', fontWeight: 700, color: 'var(--muted)' }}>{fmt(Math.abs(t.amount))}</span>
+        {/* ── Importing ─────────────────────────────────────────────────────── */}
+        {step === 'importing' && (
+          <div className="text-center py-4">
+            <div className="font-mono text-[13px] text-muted-foreground mb-2">Importing…</div>
+            <div className="text-[11px] text-muted-foreground">Saving {toImport.length} transactions to your account</div>
+          </div>
+        )}
+
+        {/* ── Error ─────────────────────────────────────────────────────────── */}
+        {step === 'error' && (
+          <>
+            <SectionLabel>Import Failed</SectionLabel>
+            <p className="text-[13px] text-destructive mt-2 mb-5 leading-relaxed">{errorMsg}</p>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={onClose} className="font-mono text-[11px] font-bold">Close</Button>
+              <Button size="sm" onClick={() => setStep('preview')} className="font-mono text-[11px] font-bold">Try Again</Button>
+            </div>
+          </>
+        )}
+
+        {/* ── Done ──────────────────────────────────────────────────────────── */}
+        {step === 'done' && summary && (
+          <>
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className="text-[20px] text-cyan-600">✓</span>
+              <div>
+                <SectionLabel>Import Complete</SectionLabel>
+                <div className="text-[13px] font-semibold">
+                  {summary.total} transaction{summary.total !== 1 ? 's' : ''} saved
+                  {summary.duplicateCount > 0 && (
+                    <span className="font-normal text-muted-foreground ml-2">
+                      · {summary.duplicateCount} skipped
                     </span>
-                  </div>
-                ))}
+                  )}
+                </div>
               </div>
             </div>
-          )}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button className="cm-btn primary" onClick={onClose}>Done</button>
-          </div>
-        </>
-      )}
-    </>
+            <div className="bg-muted rounded-lg px-3 py-1 mb-4">
+              <BreakdownRow label="Posted"            count={summary.posted}  sum={summary.postedSum} />
+              <BreakdownRow label="Credits / Refunds" count={summary.credits} sum={summary.creditsSum} colorClass="text-cyan-600" sign="-" />
+              {summary.includedPending && (
+                <BreakdownRow label="Pending" count={summary.pending} sum={summary.pendingSum} colorClass="text-amber-600" />
+              )}
+            </div>
+
+            {summary.duplicateCount > 0 && (
+              <div className="mb-5">
+                <div className="font-mono text-[11px] font-bold tracking-[1px] uppercase text-muted-foreground mb-1.5">
+                  Skipped — already in database ({summary.duplicateCount})
+                </div>
+                <div className="bg-muted rounded-lg px-3 py-1 max-h-[140px] overflow-y-auto">
+                  {summary.duplicateList.map((t, i) => (
+                    <div key={i} className={`flex justify-between items-baseline py-1.5 ${i < summary.duplicateList.length - 1 ? 'border-b border-border' : ''}`}>
+                      <span className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap max-w-[240px]">{t.merchant}</span>
+                      <span className="flex gap-3 items-baseline shrink-0">
+                        <span className="font-mono text-[11px] text-muted-foreground">{t.date}</span>
+                        <span className="font-mono text-xs font-bold text-muted-foreground">{fmt(Math.abs(t.amount))}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end">
+              <Button size="sm" onClick={onClose} className="font-mono text-[11px] font-bold">Done</Button>
+            </div>
+          </>
+        )}
+
+      </DialogContent>
+    </Dialog>
   );
 }
