@@ -90,17 +90,12 @@ export default function SpendingCharts({ spending, credits, cats }) {
   const barSize = monthlyData.length <= 6 ? 28 : monthlyData.length <= 12 ? 18 : undefined;
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: showMonthly && showDonut ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)',
-      gap: '24px',
-      marginBottom: '28px',
-    }}>
+    <div className={`grid gap-6 mb-7 ${showMonthly && showDonut ? 'grid-cols-2' : 'grid-cols-1'}`}>
 
       {/* ── Category donut ─────────────────────────────────────────────── */}
       {showDonut && (
         <div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '12px' }}>
+          <div className="font-mono text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground mb-3">
             Category Mix
           </div>
           <ResponsiveContainer width="100%" height={240}>
@@ -127,11 +122,11 @@ export default function SpendingCharts({ spending, credits, cats }) {
       {/* ── Monthly bar chart ──────────────────────────────────────────── */}
       {showMonthly && (
         <div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '12px' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#6b7280' }}>
+          <div className="flex items-baseline gap-3 mb-3">
+            <div className="font-mono text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground">
               Monthly Spend
             </div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', color: '#6b7280' }}>
+            <div className="font-mono text-[11px] text-muted-foreground">
               avg {fmt(monthlyData.reduce((s, d) => s + d.spend, 0) / monthlyData.length)}/mo
             </div>
           </div>
