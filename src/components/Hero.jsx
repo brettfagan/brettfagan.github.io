@@ -2,7 +2,7 @@ function Hero() {
   return (
     <section className="pt-24 pb-20 max-[680px]:pt-[4.5rem]">
       <div className="w-[min(1080px,92%)] mx-auto flex items-center gap-12 max-[680px]:flex-col-reverse max-[680px]:gap-8">
-        <div className="flex-1 min-w-0">
+        <div>
           <p className="uppercase tracking-[0.08em] text-[0.8rem] text-[#536189] font-bold">Welcome</p>
           <h1 className="text-[clamp(2rem,5vw,3.6rem)] leading-[1.2] tracking-[-0.02em] mb-4">
             Hi, I&apos;m Brett Fagan. 👋
