@@ -4,10 +4,12 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables.');
+  console.warn('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables. Supabase features will be unavailable.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = supabaseUrl && supabaseAnonKey
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 // Session guard: sign out when no app tab has been open for >15 min.
 //
@@ -19,6 +21,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // on a stale heartbeat. This prevents false sign-outs when JS timers are paused
 // by system sleep or background throttling while a tab is still open.
 export const sessionGuardReady = new Promise((resolve) => {
+  if (!supabase) {
+    resolve();
+    return;
+  }
+
   const _HEARTBEAT_KEY = 'sb-heartbeat';
   const _TAB_KEY = 'sb-tab-init';
   const _STALE_MS = 15 * 60 * 1000; // 15 minutes
