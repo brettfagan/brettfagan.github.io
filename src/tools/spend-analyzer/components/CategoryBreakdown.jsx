@@ -22,21 +22,12 @@ export default function CategoryBreakdown({
   }
 
   return (
-    <div className="categories">
-      <div className="section-title">
+    <div className="mb-9">
+      <div className="font-mono text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground mb-3.5 pb-2.5 border-b border-border">
         Spending by Category
         {pendingCount > 0 && (
-          <span
-            style={{
-              fontWeight: 400,
-              fontSize: "10px",
-              color: "var(--warn)",
-              letterSpacing: 0,
-            }}
-          >
-            {" "}
-            ({pendingCount} pending transaction{pendingCount !== 1 ? "s" : ""}{" "}
-            excluded)
+          <span className="font-normal text-[10px] tracking-normal text-amber-600">
+            {" "}({pendingCount} pending transaction{pendingCount !== 1 ? "s" : ""} excluded)
           </span>
         )}
       </div>
@@ -66,58 +57,54 @@ export default function CategoryBreakdown({
 
         return (
           <div key={cat}>
-            <div className="category-row" onClick={() => handleCatClick(cat)}>
-              <div className="cat-name" style={{ color }}>
+            <div
+              className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-2.5 border-b border-border cursor-pointer rounded transition-colors hover:bg-black/[0.025] hover:px-2 hover:-mx-2"
+              onClick={() => handleCatClick(cat)}
+            >
+              <div className="font-mono text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis" style={{ color }}>
                 {fmtCat(cat)}
                 {subs.length > 0 && (
-                  <span style={{ fontSize: "9px", opacity: 0.6 }}>
-                    {" "}
-                    {isOpen ? "▼" : "▶"}
-                  </span>
+                  <span className="text-[9px] opacity-60"> {isOpen ? "▼" : "▶"}</span>
                 )}
               </div>
-              <div className="cat-bar-wrap">
+              <div className="bg-muted rounded-sm h-1.5 overflow-hidden">
                 <div
-                  className="cat-bar"
+                  className="h-full rounded-sm transition-[width] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
                   style={{
                     width: `${((Math.abs(d.total) / maxCat) * 100).toFixed(1)}%`,
                     background: color,
                   }}
                 />
               </div>
-              <div className="cat-total">
+              <div className="text-right font-medium">
                 {fmt(d.total)}
                 {catCreditAbs > 0 && (
-                  <div
-                    style={{
-                      fontSize: "9px",
-                      color: "var(--accent2)",
-                      fontWeight: 400,
-                    }}
-                  >
+                  <div className="text-[9px] text-cyan-600 font-normal">
                     -{fmt(catCreditAbs)} refund{catCreditAbs !== 1 ? "s" : ""}
                   </div>
                 )}
               </div>
-              <div className="cat-count">
+              <div className="text-right text-muted-foreground text-[11px]">
                 {d.count} txn{d.count !== 1 ? "s" : ""}
               </div>
             </div>
 
-            <div className={`subcat-panel${isOpen ? " open" : ""}`}>
+            <div className={`overflow-hidden transition-[max-height] duration-[350ms] ease-in-out ${isOpen ? 'max-h-[600px]' : 'max-h-0'}`}>
               {subs.map(([detail, sd]) => (
                 <div
                   key={detail}
-                  className="subcat-row"
+                  className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-1.5 pl-4 border-b border-border cursor-pointer hover:bg-black/[0.025]"
                   onClick={(e) => {
                     e.stopPropagation();
                     onFilter(cat, detail);
                   }}
                 >
-                  <div className="subcat-name">{getDetailLabel(detail)}</div>
-                  <div className="cat-bar-wrap">
+                  <div className="font-mono text-[11px] font-medium text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+                    {getDetailLabel(detail)}
+                  </div>
+                  <div className="bg-muted rounded-sm h-1.5 overflow-hidden">
                     <div
-                      className="cat-bar"
+                      className="h-full rounded-sm transition-[width] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
                       style={{
                         width: `${((Math.abs(sd.total) / Math.abs(maxCat)) * 100).toFixed(1)}%`,
                         background: color,
@@ -125,10 +112,10 @@ export default function CategoryBreakdown({
                       }}
                     />
                   </div>
-                  <div className="subcat-total" style={{ color }}>
+                  <div className="font-mono text-[11px] font-semibold text-right" style={{ color }}>
                     {fmt(sd.total)}
                   </div>
-                  <div className="subcat-count">
+                  <div className="text-[10px] text-muted-foreground text-right">
                     {sd.count} txn{sd.count !== 1 ? "s" : ""}
                   </div>
                 </div>
@@ -138,45 +125,12 @@ export default function CategoryBreakdown({
         );
       })}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "200px 1fr 90px 80px",
-          alignItems: "center",
-          gap: "16px",
-          padding: "12px 0",
-          borderTop: "2px solid var(--border)",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "'DM Mono',monospace",
-            fontSize: "12px",
-            fontWeight: 700,
-          }}
-        >
-          Total
-        </div>
+      <div className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-3 border-t-2 border-border">
+        <div className="font-mono text-xs font-bold">Total</div>
         <div />
-        <div
-          style={{
-            textAlign: "right",
-            fontFamily: "'DM Mono',monospace",
-            fontSize: "13px",
-            fontWeight: 800,
-          }}
-        >
-          {fmt(grandTotal)}
-        </div>
-        <div
-          style={{
-            textAlign: "right",
-            color: "var(--muted)",
-            fontSize: "11px",
-          }}
-        >
-          {spending.filter((t) => !t.pending).length} posted · {credits.length}{" "}
-          refund{credits.length !== 1 ? "s" : ""}
+        <div className="text-right font-mono text-[13px] font-extrabold">{fmt(grandTotal)}</div>
+        <div className="text-right text-muted-foreground text-[11px]">
+          {spending.filter((t) => !t.pending).length} posted · {credits.length} refund{credits.length !== 1 ? "s" : ""}
         </div>
       </div>
     </div>
