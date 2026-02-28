@@ -14,7 +14,7 @@ function Hero() {
           <div className="flex gap-[0.85rem] flex-wrap mt-6">
             <a
               className="inline-block py-[0.7rem] px-[1.1rem] rounded-[0.55rem] border border-transparent no-underline font-semibold transition-transform duration-200 hover:-translate-y-px bg-[#3158d4] text-white shadow-[0_8px_20px_-12px_#3158d4]"
-              href="#projects"
+              href="#personal-projects"
             >
               View Projects
             </a>

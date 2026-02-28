@@ -1,8 +1,8 @@
 function Projects() {
   return (
-    <section id="projects" className="py-[4.5rem] bg-[#f0f4fb] max-[680px]:py-14">
+    <section id="personal-projects" className="py-18 bg-[#f0f4fb] max-[680px]:py-14">
       <div className="w-[min(1080px,92%)] mx-auto">
-        <h2 className="text-[clamp(1.6rem,4vw,2.4rem)] leading-[1.2] tracking-[-0.02em] mb-4">Projects</h2>
+        <h2 className="text-[clamp(1.6rem,4vw,2.4rem)] leading-[1.2] tracking-[-0.02em] mb-4">Personal Projects</h2>
         <div className="grid grid-cols-1 gap-4">
           <article className="bg-white border border-[#dde5f3] rounded-[0.9rem] p-[1.4rem] shadow-[0_8px_24px_-20px_#6679ac]">
             <h3 className="text-[1.3rem] leading-[1.2] tracking-[-0.02em] mb-4">Credit Card Spending Analyzer (WIP)</h3>
