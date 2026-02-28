@@ -7,6 +7,7 @@ import SpendingCharts from './SpendingCharts';
 import TransactionTable from './TransactionTable';
 import TransactionModal from './TransactionModal';
 import ImportToDbModal from './ImportToDbModal';
+import { Button } from '@/components/ui/button';
 
 export default function ResultsView({ allTransactions, onReCategorize, onDeleteTransaction, hideImport = false, hideExcluded = false }) {
   const { user } = useAuth();
@@ -61,63 +62,63 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
   }
 
   return (
-    <div className="results-section">
-      <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '16px', marginTop: '-8px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+    <div>
+      {/* ── Date range / totals bar ──────────────────────────────────────── */}
+      <div className="flex justify-between items-baseline text-[11px] text-muted-foreground mb-4 -mt-2">
         {dateRange
-          ? <span>Transaction date range: <span style={{ fontWeight: 600, color: 'var(--text)' }}>{dateRange}</span></span>
+          ? <span>Transaction date range: <span className="font-semibold text-foreground">{dateRange}</span></span>
           : <span />
         }
         <span>
           Total transactions analyzed:{' '}
-          <span style={{ fontWeight: 700, color: 'var(--text)' }}>
+          <span className="font-bold text-foreground">
             {pendingSpend.length + postedSpend.length + credits.length + excluded.length}
           </span>
         </span>
       </div>
 
-      <div className="stats-row" style={hideExcluded ? { gridTemplateColumns: 'repeat(5, 1fr)' } : undefined}>
-        <div className="stat-card">
-          <div className="stat-label">Cards</div>
-          <div className="stat-value">{cardSet.size}</div>
-          <div className="stat-sub">{[...cardSet].join(' · ')}</div>
+      {/* ── Stat cards ───────────────────────────────────────────────────── */}
+      <div className={`grid gap-4 mb-8 ${hideExcluded ? 'grid-cols-5' : 'grid-cols-6'}`}>
+        <div className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+          <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Cards</div>
+          <div className="font-mono text-[24px] font-extrabold text-primary">{cardSet.size}</div>
+          <div className="text-[11px] text-muted-foreground mt-1">{[...cardSet].join(' · ')}</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">Total Posted Spend</div>
-          <div className="stat-value">{fmt(postedTotal)}</div>
-          <div className="stat-sub">{postedSpend.length} transactions</div>
+        <div className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+          <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Total Posted Spend</div>
+          <div className="font-mono text-[24px] font-extrabold text-primary">{fmt(postedTotal)}</div>
+          <div className="text-[11px] text-muted-foreground mt-1">{postedSpend.length} transactions</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">Credits / Refunds</div>
-          <div className="stat-value" style={{ color: 'var(--accent2)' }}>{fmt(totalCredits)}</div>
-          <div className="stat-sub">{credits.length} transaction{credits.length !== 1 ? 's' : ''}</div>
+        <div className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+          <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Credits / Refunds</div>
+          <div className="font-mono text-[24px] font-extrabold text-cyan-600">{fmt(totalCredits)}</div>
+          <div className="text-[11px] text-muted-foreground mt-1">{credits.length} transaction{credits.length !== 1 ? 's' : ''}</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">Total Net Spend</div>
-          <div className="stat-value" style={{ color: 'var(--text)' }}>{fmt(postedTotal - totalCredits)}</div>
-          <div className="stat-sub">posted minus refunds</div>
+        <div className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+          <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Total Net Spend</div>
+          <div className="font-mono text-[24px] font-extrabold text-foreground">{fmt(postedTotal - totalCredits)}</div>
+          <div className="text-[11px] text-muted-foreground mt-1">posted minus refunds</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">Total Pending Spend</div>
-          <div className="stat-value" style={{ color: 'var(--warn)' }}>{fmt(pendingTotal)}</div>
-          <div className="stat-sub">{pendingSpend.length} transactions</div>
+        <div className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+          <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Total Pending Spend</div>
+          <div className="font-mono text-[24px] font-extrabold text-amber-600">{fmt(pendingTotal)}</div>
+          <div className="text-[11px] text-muted-foreground mt-1">{pendingSpend.length} transactions</div>
         </div>
         {!hideExcluded && (
-          <div className="stat-card">
-            <div className="stat-label">Excluded Transactions</div>
-            <div className="stat-value" style={{ color: 'var(--muted)' }}>{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))}</div>
-            <div className="stat-sub">{excluded.length} transaction{excluded.length !== 1 ? 's' : ''}</div>
+          <div className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+            <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Excluded Transactions</div>
+            <div className="font-mono text-[24px] font-extrabold text-muted-foreground">{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))}</div>
+            <div className="text-[11px] text-muted-foreground mt-1">{excluded.length} transaction{excluded.length !== 1 ? 's' : ''}</div>
           </div>
         )}
       </div>
 
+      {/* ── Save to Database button ──────────────────────────────────────── */}
       {user && !hideImport && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '-4px 0 20px' }}>
-          <button
-            onClick={() => setImportModalOpen(true)}
-            style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, padding: '6px 14px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--muted)', cursor: 'pointer', letterSpacing: '0.5px' }}
-          >
+        <div className="flex justify-end -mt-1 mb-5">
+          <Button variant="outline" size="sm" onClick={() => setImportModalOpen(true)} className="font-mono text-[11px] font-bold">
             ↑ Save to Database
-          </button>
+          </Button>
         </div>
       )}
 
@@ -133,7 +134,10 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         onFilter={handleCategoryFilter}
       />
 
-      <div className="section-title">Transactions</div>
+      {/* ── Transactions heading ─────────────────────────────────────────── */}
+      <div className="font-mono text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground mb-3.5 pb-2.5 border-b border-border">
+        Transactions
+      </div>
       <TransactionTable
         key={tableFilterSignal ? `${tableFilterSignal.cat}-${tableFilterSignal.ts}` : 'initial'}
         spending={spending}
@@ -147,19 +151,20 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
 
       {modalTx && <TransactionModal tx={modalTx} onClose={() => setModalTx(null)} onReCategorize={onReCategorize} />}
 
+      {/* ── Excluded transactions ────────────────────────────────────────── */}
       {excluded.length > 0 && (
         <>
           <div
             onClick={() => setExcludedOpen(o => !o)}
-            style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '32px', marginBottom: excludedOpen ? '10px' : '0', paddingBottom: '8px', borderBottom: '1px solid var(--border)', cursor: 'pointer', userSelect: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            className={`font-mono text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground mt-8 pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${excludedOpen ? 'mb-2.5' : 'mb-0'}`}
           >
             <span>
               Excluded{' '}
-              <span style={{ fontWeight: 400 }}>{excluded.length} transaction{excluded.length !== 1 ? 's' : ''}</span>
-              <span style={{ fontWeight: 400, fontSize: '10px', marginLeft: '8px' }}>— categories marked "excluded" in Settings</span>
-              {!excludedOpen && <span style={{ fontWeight: 400, color: 'var(--text)', marginLeft: '12px' }}>{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))} total</span>}
+              <span className="font-normal">{excluded.length} transaction{excluded.length !== 1 ? 's' : ''}</span>
+              <span className="font-normal text-[10px] ml-2">— categories marked "excluded" in Settings</span>
+              {!excludedOpen && <span className="font-normal text-foreground ml-3">{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))} total</span>}
             </span>
-            <span style={{ fontSize: '9px', opacity: 0.6, letterSpacing: 0 }}>{excludedOpen ? '▼ hide' : '▶ show'}</span>
+            <span className="text-[9px] opacity-60 tracking-normal">{excludedOpen ? '▼ hide' : '▶ show'}</span>
           </div>
           {excludedOpen && <><table>
             <colgroup>
@@ -217,22 +222,23 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
               ))}
             </tbody>
           </table>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', padding: '10px 0', color: 'var(--muted)' }}>
+          <div className="flex justify-between items-center text-[11px] py-2.5 text-muted-foreground">
             <span>{excluded.length} excluded transaction{excluded.length !== 1 ? 's' : ''}</span>
-            <span style={{ fontWeight: 700 }}>{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))} total</span>
+            <span className="font-bold">{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))} total</span>
           </div>
           </>}
 
+          {/* ── Delete confirm modal ─────────────────────────────────────── */}
           {pendingDeleteExcluded && (
             <>
-              <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 300 }} onClick={() => setPendingDeleteExcluded(null)} />
-              <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '10px', padding: '28px 24px', zIndex: 301, minWidth: '320px', maxWidth: '90vw', boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '12px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '12px' }}>Delete Transaction</div>
-                <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px' }}>{pendingDeleteExcluded.merchant}</div>
-                <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '20px' }}>{pendingDeleteExcluded.date} · {fmt(Math.abs(pendingDeleteExcluded.amount))}</div>
-                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  <button className="cm-btn" onClick={() => setPendingDeleteExcluded(null)}>Cancel</button>
-                  <button className="cm-btn danger-outline" onClick={() => { onDeleteTransaction(pendingDeleteExcluded._id); setPendingDeleteExcluded(null); }}>Delete</button>
+              <div className="fixed inset-0 bg-black/45 z-[300]" onClick={() => setPendingDeleteExcluded(null)} />
+              <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background border border-border rounded-[10px] p-7 z-[301] min-w-[320px] max-w-[90vw] shadow-2xl">
+                <div className="font-mono text-xs font-bold tracking-[1px] uppercase text-muted-foreground mb-3">Delete Transaction</div>
+                <div className="font-semibold text-sm mb-1">{pendingDeleteExcluded.merchant}</div>
+                <div className="text-xs text-muted-foreground mb-5">{pendingDeleteExcluded.date} · {fmt(Math.abs(pendingDeleteExcluded.amount))}</div>
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" size="sm" onClick={() => setPendingDeleteExcluded(null)}>Cancel</Button>
+                  <Button variant="destructive" size="sm" onClick={() => { onDeleteTransaction(pendingDeleteExcluded._id); setPendingDeleteExcluded(null); }}>Delete</Button>
                 </div>
               </div>
             </>
