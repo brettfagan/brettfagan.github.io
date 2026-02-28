@@ -8,7 +8,6 @@ import AuthButton from './components/AuthButton';
 import CategoryManager from './components/CategoryManager';
 import MySpendingPage from './components/MySpendingPage';
 import MyBudgetPage from './components/MyBudgetPage';
-import './SpendAnalyzer.css';
 
 export default function SpendAnalyzer() {
   const { user, loading } = useAuth();

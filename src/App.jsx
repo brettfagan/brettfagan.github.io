@@ -6,16 +6,19 @@ import Footer from './components/Footer';
 
 function App() {
   return (
-    <div className="app">
-      <header className="site-header">
-        <nav className="nav container" aria-label="Main navigation">
-          <a className="logo" href="#top">
+    <div className="min-h-screen bg-gradient-to-b from-white via-[#f7f9fc] to-[#eef2f9]">
+      <header className="sticky top-0 z-10 backdrop-blur-[8px] bg-white/85 border-b border-[#e7ecf5]">
+        <nav
+          className="w-[min(1080px,92%)] mx-auto flex items-center justify-between min-h-16 gap-4 max-[680px]:flex-col max-[680px]:items-start max-[680px]:py-3"
+          aria-label="Main navigation"
+        >
+          <a className="font-bold text-[#1a2340] no-underline" href="#top">
             Brett Fagan
           </a>
-          <div className="nav-links">
-            <a href="#about">About</a>
-            <a href="#projects">Projects</a>
-            <a href="#contact">Contact</a>
+          <div className="flex gap-4">
+            <a className="no-underline text-[#2a3657] font-medium" href="#about">About</a>
+            <a className="no-underline text-[#2a3657] font-medium" href="#projects">Projects</a>
+            <a className="no-underline text-[#2a3657] font-medium" href="#contact">Contact</a>
           </div>
         </nav>
       </header>
