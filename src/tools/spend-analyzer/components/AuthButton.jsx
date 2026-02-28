@@ -7,7 +7,10 @@ export default function AuthButton() {
 
   if (!user) {
     return (
-      <button className="auth-btn auth-btn--signin" onClick={signInWithGoogle}>
+      <button
+        className="inline-flex items-center gap-2 border border-border rounded-md font-mono text-xs font-bold px-3.5 py-1.75 cursor-pointer transition-all bg-background text-foreground hover:bg-muted hover:border-primary whitespace-nowrap"
+        onClick={signInWithGoogle}
+      >
         <GoogleIcon />
         Sign in with Google
       </button>
@@ -15,17 +18,22 @@ export default function AuthButton() {
   }
 
   return (
-    <div className="auth-user">
+    <div className="flex items-center gap-2.5">
       {user.user_metadata?.avatar_url && (
         <img
-          className="auth-avatar"
+          className="w-7 h-7 rounded-full border border-border shrink-0"
           src={user.user_metadata.avatar_url}
           alt={user.user_metadata?.full_name ?? 'User avatar'}
           referrerPolicy="no-referrer"
         />
       )}
-      <span className="auth-name">{user.user_metadata?.full_name ?? user.email}</span>
-      <button className="auth-btn auth-btn--signout" onClick={signOut}>
+      <span className="text-xs text-muted-foreground max-w-45 overflow-hidden text-ellipsis whitespace-nowrap">
+        {user.user_metadata?.full_name ?? user.email}
+      </span>
+      <button
+        className="inline-flex items-center gap-2 border border-border rounded-md font-mono text-[11px] font-bold px-2.5 py-1.25 cursor-pointer transition-all bg-transparent text-muted-foreground hover:border-destructive hover:text-destructive whitespace-nowrap"
+        onClick={signOut}
+      >
         Sign out
       </button>
     </div>
