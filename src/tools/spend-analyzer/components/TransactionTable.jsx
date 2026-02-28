@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useCategories } from '../context/CategoriesContext';
 import { fmt, fmtCat } from '../lib/format';
 import { useDetailLabels } from '../context/DetailLabelsContext';
+import { Button } from '@/components/ui/button';
 
 export default function TransactionTable({ spending, credits, categories, initialCatFilter = '', initialDetailFilter = '', onOpenModal, onDeleteTransaction }) {
   const { getCatColor } = useCategories();
@@ -63,15 +64,20 @@ export default function TransactionTable({ spending, credits, categories, initia
 
   const hasFilters = q || catFilter || detailFilter || cardFilter;
 
+  // ── Shared class strings ───────────────────────────────────────────────────
+  const ctrlCls = "bg-muted border border-border rounded text-xs font-mono py-1.5 px-3 outline-none cursor-pointer text-foreground";
+  const thCls   = "font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border cursor-pointer select-none whitespace-nowrap overflow-hidden hover:text-foreground";
+  const tdCls   = "px-3 py-1.5 border-b border-border align-middle overflow-hidden group-hover:bg-black/[0.02]";
+
   const colgroup = (
     <colgroup>
-      <col className="c-date" />
-      <col className="c-merchant" />
-      <col className="c-category" />
-      <col className="c-subcat" />
-      <col className="c-channel" />
-      <col className="c-card" />
-      <col className="c-amount" />
+      <col style={{ width: '100px' }} />
+      <col style={{ width: '180px' }} />
+      <col style={{ width: '160px' }} />
+      <col style={{ width: '190px' }} />
+      <col style={{ width: '90px' }} />
+      <col style={{ width: '110px' }} />
+      <col style={{ width: '90px' }} />
       <col style={{ width: '28px' }} />
     </colgroup>
   );
@@ -79,14 +85,14 @@ export default function TransactionTable({ spending, credits, categories, initia
   const thead = (
     <thead>
       <tr>
-        <th onClick={() => handleSort('date')}>Date{sortArrow('date')}</th>
-        <th onClick={() => handleSort('merchant')}>Merchant{sortArrow('merchant')}</th>
-        <th>Category</th>
-        <th>Subcategory</th>
-        <th>Channel</th>
-        <th>Card</th>
-        <th onClick={() => handleSort('amount')} style={{ textAlign: 'right' }}>Amount{sortArrow('amount')}</th>
-        <th />
+        <th className={thCls} onClick={() => handleSort('date')}>Date{sortArrow('date')}</th>
+        <th className={thCls} onClick={() => handleSort('merchant')}>Merchant{sortArrow('merchant')}</th>
+        <th className={thCls}>Category</th>
+        <th className={thCls}>Subcategory</th>
+        <th className={thCls}>Channel</th>
+        <th className={thCls}>Card</th>
+        <th className={`${thCls} text-right`} onClick={() => handleSort('amount')}>Amount{sortArrow('amount')}</th>
+        <th className={thCls} />
       </tr>
     </thead>
   );
@@ -94,41 +100,57 @@ export default function TransactionTable({ spending, credits, categories, initia
   function TxRow({ tx, creditStyle }) {
     const color = getCatColor(tx.cat);
     return (
-      <tr onClick={() => onOpenModal(tx)} style={{ cursor: 'pointer' }}>
-        <td className="td-date">{tx.date}</td>
-        <td className="td-merchant" title={tx.merchant}>
-          <div className="merchant-cell">
+      <tr onClick={() => onOpenModal(tx)} className="cursor-pointer even:bg-[#f7f8fa] group">
+        <td className={`${tdCls} text-muted-foreground whitespace-nowrap text-xs`}>{tx.date}</td>
+        <td className={`${tdCls} font-medium`} title={tx.merchant}>
+          <div className="flex items-center gap-2 min-w-0 w-full">
             {(tx.logo_url || tx.cat_icon_url)
-              ? <img className="merchant-logo" src={tx.logo_url || tx.cat_icon_url} alt="" onError={e => { e.target.classList.add('merchant-logo-placeholder'); e.target.removeAttribute('src'); }} />
-              : <span className="merchant-logo-placeholder" />
+              ? <img
+                  className="w-[30px] h-[30px] rounded object-contain shrink-0 bg-muted border border-border"
+                  src={tx.logo_url || tx.cat_icon_url}
+                  alt=""
+                  onError={e => e.target.removeAttribute('src')}
+                />
+              : <span className="w-[30px] h-[30px] rounded shrink-0 inline-block bg-muted border border-border" />
             }
-            <span className={`merchant-name${tx.cat_confidence === 'LOW' ? ' low-confidence' : ''}`}
-              title={tx.cat_confidence === 'LOW' ? 'Low categorization confidence' : undefined}>
+            <span
+              className={`overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0 text-xs${tx.cat_confidence === 'LOW' ? ' border border-destructive rounded-[3px] px-0.5' : ''}`}
+              title={tx.cat_confidence === 'LOW' ? 'Low categorization confidence' : undefined}
+            >
               {tx.merchant}
             </span>
-            {tx.source === 'csv' && <span style={{ fontSize: '9px', color: 'var(--accent2)', marginLeft: '5px' }}>CSV</span>}
+            {tx.source === 'csv' && <span className="text-[9px] text-cyan-600 ml-1">CSV</span>}
           </div>
         </td>
-        <td><span className="badge" style={{ borderColor: color, color }}>{fmtCat(tx.cat)}</span></td>
-        <td style={{ fontSize: '11px', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <td className={tdCls}>
+          <span
+            className="inline-block text-[10px] font-mono px-[7px] py-0.5 rounded-[3px] border whitespace-nowrap"
+            style={{ borderColor: color, color }}
+          >
+            {fmtCat(tx.cat)}
+          </span>
+        </td>
+        <td className={`${tdCls} text-[11px] text-muted-foreground text-ellipsis whitespace-nowrap`}>
           {tx.cat_detail ? getDetailLabel(tx.cat_detail) : ''}
         </td>
-        <td>
+        <td className={tdCls}>
           {tx.payment_channel && (
-            <span className="channel-tag">{tx.payment_channel.replace(/_/g, ' ')}</span>
+            <span className="inline-block text-[9px] px-1 py-0.5 rounded-[3px] bg-muted border border-border text-muted-foreground whitespace-nowrap">
+              {tx.payment_channel.replace(/_/g, ' ')}
+            </span>
           )}
         </td>
-        <td style={{ color: 'var(--muted)', fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <td className={`${tdCls} text-muted-foreground text-[11px] text-ellipsis whitespace-nowrap`}>
           {tx._card}
         </td>
-        <td className="td-amount" style={creditStyle ? { color: 'var(--accent2)' } : undefined}>
+        <td className={`${tdCls} text-right font-medium whitespace-nowrap`} style={creditStyle ? { color: 'var(--accent2)' } : undefined}>
           {creditStyle ? `-${fmt(Math.abs(tx.amount))}` : fmt(tx.amount)}
         </td>
-        <td style={{ padding: '0 6px 0 0', textAlign: 'right' }}>
+        <td className={`${tdCls} pr-1.5 text-right`}>
           <button
             onClick={e => { e.stopPropagation(); setPendingDelete(tx); }}
             title="Delete transaction"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '11px', padding: '4px', lineHeight: 1, opacity: 0.5 }}
+            className="bg-transparent border-0 cursor-pointer text-muted-foreground text-[11px] p-1 leading-none opacity-50 hover:opacity-100"
           >✕</button>
         </td>
       </tr>
@@ -137,126 +159,140 @@ export default function TransactionTable({ spending, credits, categories, initia
 
   return (
     <>
-      <div className="table-controls">
+      {/* ── Filters ───────────────────────────────────────────────────────── */}
+      <div className="flex gap-2.5 mb-3.5 items-center flex-wrap">
         <input
-          className="search-input"
+          className={`${ctrlCls} flex-1 min-w-[180px] transition-colors focus:border-primary`}
           placeholder="Search merchant..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        <select value={catFilter} onChange={e => handleCatChange(e.target.value)}>
+        <select className={ctrlCls} value={catFilter} onChange={e => handleCatChange(e.target.value)}>
           <option value="">All categories</option>
           {categories.map(([c]) => <option key={c} value={c}>{fmtCat(c)}</option>)}
         </select>
         {detailOptions.length > 0 && (
-          <select value={detailFilter} onChange={e => setDetailFilter(e.target.value)}>
+          <select className={ctrlCls} value={detailFilter} onChange={e => setDetailFilter(e.target.value)}>
             <option value="">All sub-categories</option>
             {detailOptions.map(d => <option key={d} value={d}>{getDetailLabel(d)}</option>)}
           </select>
         )}
-        <select value={cardFilter} onChange={e => setCardFilter(e.target.value)}>
+        <select className={ctrlCls} value={cardFilter} onChange={e => setCardFilter(e.target.value)}>
           <option value="">All cards</option>
           {cardSet.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         {hasFilters && (
-          <button
-            style={{ padding: '7px 14px', background: 'transparent', border: '1px solid #d0d3db', borderRadius: '4px', color: '#6b7280', fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => { setSearch(''); setCatFilter(''); setDetailFilter(''); setCardFilter(''); }}
+            className="font-mono text-[11px] font-bold whitespace-nowrap"
           >
             ✕ Clear filters
-          </button>
+          </Button>
         )}
       </div>
 
       {!filtered.length
-        ? <div style={{ color: 'var(--muted)', padding: '24px 0' }}>No transactions match.</div>
+        ? <div className="text-muted-foreground py-6">No transactions match.</div>
         : <>
+          {/* ── Pending section ─────────────────────────────────────────── */}
           {pending.length > 0 && (
             <>
               <div
                 onClick={() => setPendingOpen(o => !o)}
-                style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--warn)', marginBottom: pendingOpen ? '10px' : '24px', paddingBottom: '8px', borderBottom: '1px solid var(--border)', cursor: 'pointer', userSelect: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                className={`font-mono text-[11px] font-bold tracking-[2px] uppercase text-amber-600 pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${pendingOpen ? 'mb-2.5' : 'mb-6'}`}
               >
                 <span>
-                  Pending <span style={{ fontWeight: 400, color: 'var(--muted)' }}>{pending.length} transaction{pending.length !== 1 ? 's' : ''}</span>
-                  {!pendingOpen && <span style={{ fontWeight: 400, color: 'var(--text)', marginLeft: '12px' }}>{fmt(pending.reduce((s, t) => s + t.amount, 0))}</span>}
+                  Pending{' '}
+                  <span className="font-normal text-muted-foreground">{pending.length} transaction{pending.length !== 1 ? 's' : ''}</span>
+                  {!pendingOpen && <span className="font-normal text-foreground ml-3">{fmt(pending.reduce((s, t) => s + t.amount, 0))}</span>}
                 </span>
-                <span style={{ fontSize: '9px', opacity: 0.6, letterSpacing: 0 }}>{pendingOpen ? '▼ hide' : '▶ show'}</span>
+                <span className="text-[9px] opacity-60 tracking-normal">{pendingOpen ? '▼ hide' : '▶ show'}</span>
               </div>
               {pendingOpen && (
                 <>
-                  <table>{colgroup}{thead}<tbody>{pending.map((tx, i) => <TxRow key={i} tx={tx} />)}</tbody></table>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--muted)', fontSize: '11px', padding: '10px 0 24px' }}>
+                  <table className="w-full border-collapse table-fixed">{colgroup}{thead}<tbody>{pending.map((tx, i) => <TxRow key={i} tx={tx} />)}</tbody></table>
+                  <div className="flex justify-between items-center text-muted-foreground text-[11px] py-2.5 pb-6">
                     <span>{pending.length} pending transaction{pending.length !== 1 ? 's' : ''}</span>
-                    <span style={{ fontWeight: 700, color: 'var(--text)' }}>{fmt(pending.reduce((s, t) => s + t.amount, 0))}</span>
+                    <span className="font-bold text-foreground">{fmt(pending.reduce((s, t) => s + t.amount, 0))}</span>
                   </div>
                 </>
               )}
             </>
           )}
 
+          {/* ── Posted section ──────────────────────────────────────────── */}
           <div
             onClick={() => setPostedOpen(o => !o)}
-            style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: postedOpen ? '10px' : '0', paddingBottom: '8px', borderBottom: '1px solid var(--border)', cursor: 'pointer', userSelect: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            className={`font-mono text-[11px] font-bold tracking-[2px] uppercase text-primary pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${postedOpen ? 'mb-2.5' : 'mb-0'}`}
           >
             <span>
-              Posted <span style={{ fontWeight: 400, color: 'var(--muted)' }}>{posted.length} transaction{posted.length !== 1 ? 's' : ''}</span>
-              {!postedOpen && <span style={{ fontWeight: 400, color: 'var(--text)', marginLeft: '12px' }}>{fmt(posted.reduce((s, t) => s + t.amount, 0))}</span>}
+              Posted{' '}
+              <span className="font-normal text-muted-foreground">{posted.length} transaction{posted.length !== 1 ? 's' : ''}</span>
+              {!postedOpen && <span className="font-normal text-foreground ml-3">{fmt(posted.reduce((s, t) => s + t.amount, 0))}</span>}
             </span>
-            <span style={{ fontSize: '9px', opacity: 0.6, letterSpacing: 0 }}>{postedOpen ? '▼ hide' : '▶ show'}</span>
+            <span className="text-[9px] opacity-60 tracking-normal">{postedOpen ? '▼ hide' : '▶ show'}</span>
           </div>
           {postedOpen && <>
             {posted.length
-              ? <table>{colgroup}{thead}<tbody>{posted.map((tx, i) => <TxRow key={i} tx={tx} />)}</tbody></table>
-              : <div style={{ color: 'var(--muted)', padding: '16px 0' }}>No posted transactions match.</div>
+              ? <table className="w-full border-collapse table-fixed">{colgroup}{thead}<tbody>{posted.map((tx, i) => <TxRow key={i} tx={tx} />)}</tbody></table>
+              : <div className="text-muted-foreground py-4">No posted transactions match.</div>
             }
-            <div style={{ fontSize: '11px', padding: '10px 0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--muted)', marginBottom: '2px' }}>
+            <div className="text-[11px] py-2.5">
+              <div className="flex justify-between items-center text-muted-foreground mb-0.5">
                 <span>{posted.length} posted transaction{posted.length !== 1 ? 's' : ''}</span>
-                <span style={{ fontWeight: 700, color: 'var(--text)' }}>{fmt(posted.reduce((s, t) => s + t.amount, 0))}</span>
+                <span className="font-bold text-foreground">{fmt(posted.reduce((s, t) => s + t.amount, 0))}</span>
               </div>
-              <div style={{ color: 'var(--muted)' }}>{filtered.length} of {spending.length} total transactions</div>
+              <div className="text-muted-foreground">{filtered.length} of {spending.length} total transactions</div>
             </div>
           </>}
         </>
       }
 
+      {/* ── Credits section ───────────────────────────────────────────────── */}
       {filteredCredits.length > 0 && (
         <>
           <div
             onClick={() => setCreditsOpen(o => !o)}
-            style={{ fontFamily: "'DM Mono',monospace", fontSize: '11px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent2)', marginTop: '32px', marginBottom: creditsOpen ? '10px' : '0', paddingBottom: '8px', borderBottom: '1px solid var(--border)', cursor: 'pointer', userSelect: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            className={`font-mono text-[11px] font-bold tracking-[2px] uppercase text-cyan-600 mt-8 pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${creditsOpen ? 'mb-2.5' : 'mb-0'}`}
           >
             <span>
-              Credits / Refunds <span style={{ fontWeight: 400, color: 'var(--muted)' }}>{filteredCredits.length} transaction{filteredCredits.length !== 1 ? 's' : ''}</span>
-              {!creditsOpen && <span style={{ fontWeight: 400, color: 'var(--accent2)', marginLeft: '12px' }}>{fmt(filteredCredits.reduce((s, t) => s + Math.abs(t.amount), 0))} credited</span>}
+              Credits / Refunds{' '}
+              <span className="font-normal text-muted-foreground">{filteredCredits.length} transaction{filteredCredits.length !== 1 ? 's' : ''}</span>
+              {!creditsOpen && <span className="font-normal text-cyan-600 ml-3">{fmt(filteredCredits.reduce((s, t) => s + Math.abs(t.amount), 0))} credited</span>}
             </span>
-            <span style={{ fontSize: '9px', opacity: 0.6, letterSpacing: 0 }}>{creditsOpen ? '▼ hide' : '▶ show'}</span>
+            <span className="text-[9px] opacity-60 tracking-normal">{creditsOpen ? '▼ hide' : '▶ show'}</span>
           </div>
           {creditsOpen && <>
-            <table>{colgroup}{thead}<tbody>{filteredCredits.map((tx, i) => <TxRow key={i} tx={tx} creditStyle />)}</tbody></table>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', padding: '10px 0' }}>
-              <span style={{ color: 'var(--muted)' }}>{filteredCredits.length} refund{filteredCredits.length !== 1 ? 's' : ''}</span>
-              <span style={{ fontWeight: 700, color: 'var(--accent2)' }}>{fmt(filteredCredits.reduce((s, t) => s + Math.abs(t.amount), 0))} credited</span>
+            <table className="w-full border-collapse table-fixed">{colgroup}{thead}<tbody>{filteredCredits.map((tx, i) => <TxRow key={i} tx={tx} creditStyle />)}</tbody></table>
+            <div className="flex justify-between items-center text-[11px] py-2.5">
+              <span className="text-muted-foreground">{filteredCredits.length} refund{filteredCredits.length !== 1 ? 's' : ''}</span>
+              <span className="font-bold text-cyan-600">{fmt(filteredCredits.reduce((s, t) => s + Math.abs(t.amount), 0))} credited</span>
             </div>
           </>}
         </>
       )}
 
-      <div style={{ color: 'var(--muted)', fontSize: '10px', padding: '8px 0', display: 'flex', gap: '16px' }}>
-        <span><span className="low-confidence" style={{ fontSize: '10px' }}>ABC</span> Low categorization confidence</span>
+      {/* ── Legend ────────────────────────────────────────────────────────── */}
+      <div className="text-muted-foreground text-[10px] py-2 flex gap-4">
+        <span>
+          <span className="border border-destructive rounded-[3px] px-0.5 text-[10px]">ABC</span>
+          {' '}Low categorization confidence
+        </span>
       </div>
 
+      {/* ── Delete confirm modal ──────────────────────────────────────────── */}
       {pendingDelete && (
         <>
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 300 }} onClick={() => setPendingDelete(null)} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '10px', padding: '28px 24px', zIndex: 301, minWidth: '320px', maxWidth: '90vw', boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: '12px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '12px' }}>Delete Transaction</div>
-            <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px' }}>{pendingDelete.merchant}</div>
-            <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '20px' }}>{pendingDelete.date} · {fmt(Math.abs(pendingDelete.amount))}</div>
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button className="cm-btn" onClick={() => setPendingDelete(null)}>Cancel</button>
-              <button className="cm-btn danger-outline" onClick={() => { onDeleteTransaction(pendingDelete._id); setPendingDelete(null); }}>Delete</button>
+          <div className="fixed inset-0 bg-black/45 z-[300]" onClick={() => setPendingDelete(null)} />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background border border-border rounded-[10px] p-7 z-[301] min-w-[320px] max-w-[90vw] shadow-2xl">
+            <div className="font-mono text-xs font-bold tracking-[1px] uppercase text-muted-foreground mb-3">Delete Transaction</div>
+            <div className="font-semibold text-sm mb-1">{pendingDelete.merchant}</div>
+            <div className="text-xs text-muted-foreground mb-5">{pendingDelete.date} · {fmt(Math.abs(pendingDelete.amount))}</div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={() => setPendingDelete(null)}>Cancel</Button>
+              <Button variant="destructive" size="sm" onClick={() => { onDeleteTransaction(pendingDelete._id); setPendingDelete(null); }}>Delete</Button>
             </div>
           </div>
         </>
