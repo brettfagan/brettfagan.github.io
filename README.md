@@ -1,8 +1,8 @@
-# brettfagan.github.io
+# brettlabs.dev
 
-Personal portfolio site and tooling, built with React + Vite and deployed to GitHub Pages.
+Personal portfolio site and tooling, built with React + Vite and deployed to Vercel.
 
-**Live site:** [brettfagan.github.io](https://brettfagan.github.io)
+**Live site:** [brettlabs.dev](https://www.brettlabs.dev)
 
 ---
 
@@ -11,24 +11,27 @@ Personal portfolio site and tooling, built with React + Vite and deployed to Git
 ```
 ├── src/
 │   ├── main.jsx
-│   ├── styles.css
-│   ├── components/             # Portfolio page sections (Hero, About, Projects, etc.)
+│   ├── globals.css             # Tailwind v4 + shadcn/ui CSS variables (single CSS entry)
+│   ├── components/
+│   │   ├── ui/                 # shadcn/ui components (button, dialog, input, etc.)
+│   │   └── ...                 # Portfolio page sections (Hero, About, Projects, etc.)
+│   ├── lib/
+│   │   └── utils.js            # shadcn cn() utility
 │   └── tools/
 │       └── spend-analyzer/     # Spend Analyzer app
 │           ├── SpendAnalyzer.jsx
 │           ├── components/
 │           ├── context/        # Auth, Categories, CsvRules, DetailLabels
-│           ├── lib/            # supabase.js, parse.js, constants.js, format.js
-│           └── main.jsx
+│           └── lib/            # supabase.js, parse.js, constants.js, format.js
 ├── supabase/
 │   └── functions/
 │       └── plaid-fetch/        # Edge Function: live Plaid transaction fetch + sync
 ├── docs/
 │   └── plaid-setup.md          # Step-by-step guide for Plaid token setup
 ├── .github/
-│   └── workflows/
-│       └── deploy-pages.yml    # CI/CD → GitHub Pages
+│   └── PULL_REQUEST_TEMPLATE.md
 ├── vite.config.js
+├── components.json             # shadcn/ui config
 └── package.json
 ```
 
@@ -47,11 +50,9 @@ npm run preview   # preview production build locally
 
 ## Deployment
 
-Pushes to `main` trigger the GitHub Actions workflow (`.github/workflows/deploy-pages.yml`), which builds the site and deploys the `dist/` output to GitHub Pages automatically.
+Pushes to `main` automatically trigger a Vercel deployment. No manual steps required — Vercel detects the push, runs `npm run build`, and publishes the `dist/` output.
 
-**Required GitHub setting:** Settings → Pages → Build and deployment → Source → **GitHub Actions**
-
-The repository must be **public** for GitHub Pages to be available on a free plan.
+The site is live at [brettlabs.dev](https://www.brettlabs.dev).
 
 ---
 
@@ -61,7 +62,7 @@ A personal financial transaction analysis tool available at `/tools/spend-analyz
 
 ### Architecture
 
-- **Frontend:** React 18 + Vite, hosted on GitHub Pages
+- **Frontend:** React 18 + Vite + Tailwind CSS v4 + shadcn/ui, hosted on Vercel
 - **Backend:** Supabase (Google OAuth, Postgres DB, Edge Functions)
 - **Plaid integration:** via the `plaid-fetch` Edge Function (Deno/TypeScript)
 
