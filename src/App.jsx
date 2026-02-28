@@ -21,6 +21,9 @@ function App() {
             <a className="no-underline text-[#2a3657] font-medium" href="#my-work">My Work</a>
             <a className="no-underline text-[#2a3657] font-medium" href="#personal-projects">Personal Projects</a>
             <a className="no-underline text-[#2a3657] font-medium" href="#contact">Contact</a>
+            <a href="https://www.linkedin.com/in/brettfagan/" target="_blank" rel="noreferrer" className="flex items-center">
+              <img src="/linkedin.webp" alt="LinkedIn" className="h-5 w-5 object-contain" />
+            </a>
           </div>
         </nav>
       </header>
