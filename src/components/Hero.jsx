@@ -4,7 +4,7 @@ function Hero() {
       <div className="w-[min(1080px,92%)] mx-auto">
         <p className="uppercase tracking-[0.08em] text-[0.8rem] text-[#536189] font-bold">Welcome</p>
         <h1 className="text-[clamp(2rem,5vw,3.6rem)] leading-[1.2] tracking-[-0.02em] mb-4">
-          Hi, I&apos;m Brett Fagan.
+          Hi, I&apos;m Brett Fagan. 👋
         </h1>
         <p className="text-[1.1rem] text-[#33415f] max-w-[70ch] mb-[1.2rem]">
           I build practical web tools and experiments that solve everyday
