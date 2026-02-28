@@ -32,11 +32,13 @@ function Hero() {
             alt="Brett Fagan"
             className="w-56 h-56 rounded-full object-cover object-top shadow-[0_8px_32px_-12px_#6679ac] max-[680px]:w-36 max-[680px]:h-36"
           />
-          <img
-            src="/brettlabsicon.png"
-            alt="BrettLabs"
-            className="w-56 h-56 rounded-full object-contain p-9 shadow-[0_8px_32px_-12px_#6679ac] max-[680px]:w-36 max-[680px]:h-36 max-[680px]:p-6"
-          />
+          <div className="w-56 h-56 rounded-full shadow-[0_8px_32px_-12px_#6679ac] flex items-center justify-center shrink-0 max-[680px]:w-36 max-[680px]:h-36">
+            <img
+              src="/brettlabsicon.png"
+              alt="BrettLabs"
+              className="w-[67%] h-[67%] object-contain"
+            />
+          </div>
         </div>
       </div>
     </section>
