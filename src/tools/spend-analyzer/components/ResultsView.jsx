@@ -166,56 +166,58 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
             </span>
             <span className="text-[9px] opacity-60 tracking-normal">{excludedOpen ? '▼ hide' : '▶ show'}</span>
           </div>
-          {excludedOpen && <><table>
+          {excludedOpen && <><table className="w-full border-collapse table-fixed">
             <colgroup>
-              <col className="c-date" />
-              <col className="c-merchant" />
-              <col className="c-category" />
-              <col className="c-subcat" />
-              <col className="c-card" />
-              <col className="c-amount" />
+              <col style={{ width: '100px' }} />
+              <col style={{ width: '180px' }} />
+              <col style={{ width: '160px' }} />
+              <col style={{ width: '190px' }} />
+              <col style={{ width: '110px' }} />
+              <col style={{ width: '90px' }} />
               <col style={{ width: '28px' }} />
             </colgroup>
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Merchant</th>
-                <th>Category</th>
-                <th>Subcategory</th>
-                <th>Card</th>
-                <th style={{ textAlign: 'right' }}>Amount</th>
-                <th />
+                <th className="font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Date</th>
+                <th className="font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Merchant</th>
+                <th className="font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Category</th>
+                <th className="font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Subcategory</th>
+                <th className="font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Card</th>
+                <th className="font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-right px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Amount</th>
+                <th className="border-b border-border px-3 py-2" />
               </tr>
             </thead>
             <tbody>
               {excluded.sort((a, b) => (a.date < b.date ? 1 : -1)).map((tx, i) => (
-                <tr key={i} style={{ opacity: 0.6, cursor: 'pointer' }} onClick={() => setModalTx(tx)}>
-                  <td className="td-date">{tx.date}</td>
-                  <td className="td-merchant" title={tx.merchant}>
-                    <div className="merchant-cell">
+                <tr key={i} className="opacity-60 cursor-pointer even:bg-[#f7f8fa] group" onClick={() => setModalTx(tx)}>
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-muted-foreground whitespace-nowrap text-xs group-hover:bg-black/2">{tx.date}</td>
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden font-medium group-hover:bg-black/2" title={tx.merchant}>
+                    <div className="flex items-center gap-2 min-w-0 w-full">
                       {(tx.logo_url || tx.cat_icon_url)
-                        ? <img className="merchant-logo" src={tx.logo_url || tx.cat_icon_url} alt="" onError={e => { e.target.classList.add('merchant-logo-placeholder'); e.target.removeAttribute('src'); }} />
-                        : <span className="merchant-logo-placeholder" />
+                        ? <img className="w-7.5 h-7.5 rounded object-contain shrink-0 bg-muted border border-border" src={tx.logo_url || tx.cat_icon_url} alt="" onError={e => e.target.removeAttribute('src')} />
+                        : <span className="w-7.5 h-7.5 rounded shrink-0 inline-block bg-muted border border-border" />
                       }
-                      <span className="merchant-name">{tx.merchant}</span>
-                      {tx.source === 'csv' && <span style={{ fontSize: '9px', color: 'var(--accent2)', marginLeft: '5px' }}>CSV</span>}
+                      <span className="overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0 text-xs">{tx.merchant}</span>
+                      {tx.source === 'csv' && <span className="text-[9px] text-cyan-600 ml-1">CSV</span>}
                     </div>
                   </td>
-                  <td><span className="badge" style={{ borderColor: 'var(--muted)', color: 'var(--muted)' }}>{fmtCat(tx.cat)}</span></td>
-                  <td style={{ fontSize: '11px', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden group-hover:bg-black/2">
+                    <span className="inline-block text-[10px] font-mono px-1.75 py-0.5 rounded-[3px] border whitespace-nowrap text-muted-foreground border-muted-foreground/40">{fmtCat(tx.cat)}</span>
+                  </td>
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-[11px] text-muted-foreground text-ellipsis whitespace-nowrap group-hover:bg-black/2">
                     {tx.cat_detail ? fmtDetail(tx.cat_detail) : ''}
                   </td>
-                  <td style={{ color: 'var(--muted)', fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-muted-foreground text-[11px] text-ellipsis whitespace-nowrap group-hover:bg-black/2">
                     {tx._card}
                   </td>
-                  <td className="td-amount" style={{ color: 'var(--muted)' }}>
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-right font-medium whitespace-nowrap text-muted-foreground group-hover:bg-black/2">
                     {tx.amount < 0 ? `-${fmt(Math.abs(tx.amount))}` : fmt(tx.amount)}
                   </td>
-                  <td style={{ padding: '0 6px 0 0', textAlign: 'right' }}>
+                  <td className="px-1.5 py-1.5 border-b border-border align-middle text-right group-hover:bg-black/2">
                     <button
                       onClick={e => { e.stopPropagation(); setPendingDeleteExcluded(tx); }}
                       title="Delete transaction"
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '11px', padding: '4px', lineHeight: 1, opacity: 0.5 }}
+                      className="bg-transparent border-0 cursor-pointer text-muted-foreground text-[11px] p-1 leading-none opacity-50 hover:opacity-100"
                     >✕</button>
                   </td>
                 </tr>
