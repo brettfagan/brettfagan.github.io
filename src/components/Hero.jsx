@@ -35,7 +35,7 @@ function Hero() {
           <img
             src="/brettlabsicon.png"
             alt="BrettLabs"
-            className="w-56 h-56 rounded-full object-contain bg-white p-4 shadow-[0_8px_32px_-12px_#6679ac] max-[680px]:w-36 max-[680px]:h-36"
+            className="w-32 h-32 object-contain max-[680px]:w-20 max-[680px]:h-20"
           />
         </div>
       </div>
