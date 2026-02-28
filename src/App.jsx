@@ -1,5 +1,6 @@
 import Hero from './components/Hero';
 import About from './components/About';
+import MyWork from './components/MyWork';
 import Projects from './components/Projects';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
@@ -17,7 +18,8 @@ function App() {
           </a>
           <div className="flex gap-4">
             <a className="no-underline text-[#2a3657] font-medium" href="#about">About</a>
-            <a className="no-underline text-[#2a3657] font-medium" href="#projects">Projects</a>
+            <a className="no-underline text-[#2a3657] font-medium" href="#my-work">My Work</a>
+            <a className="no-underline text-[#2a3657] font-medium" href="#personal-projects">Personal Projects</a>
             <a className="no-underline text-[#2a3657] font-medium" href="#contact">Contact</a>
           </div>
         </nav>
@@ -26,6 +28,7 @@ function App() {
       <main id="top">
         <Hero />
         <About />
+        <MyWork />
         <Projects />
         <Contact />
       </main>
