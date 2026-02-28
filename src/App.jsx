@@ -13,7 +13,8 @@ function App() {
           className="w-[min(1080px,92%)] mx-auto flex items-center justify-between min-h-16 gap-4 max-[680px]:flex-col max-[680px]:items-start max-[680px]:py-3"
           aria-label="Main navigation"
         >
-          <a className="font-bold text-[#1a2340] no-underline" href="#top">
+          <a className="font-bold text-[#1a2340] no-underline flex items-center gap-2" href="#top">
+            <img src="/brettlabsicon.png" alt="" className="h-6 w-6 object-contain" />
             Brett Fagan
           </a>
           <div className="flex gap-4">
