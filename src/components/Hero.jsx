@@ -1,6 +1,6 @@
 function Hero() {
   return (
-    <section className="pt-24 pb-20 max-[680px]:pt-[4.5rem]">
+    <section className="pt-24 pb-20 max-[680px]:pt-18">
       <div className="w-[min(1080px,92%)] mx-auto flex items-center gap-12 max-[680px]:flex-col-reverse max-[680px]:gap-8">
         <div>
           <p className="uppercase tracking-[0.08em] text-[0.8rem] text-[#536189] font-bold">Welcome</p>
