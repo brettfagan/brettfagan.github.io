@@ -28,54 +28,6 @@ body {
 
 /* CONTENT */
 
-/* RESULTS */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 18px 20px;
-}
-
-.stat-label {
-  font-size: 10px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-
-.stat-value {
-  font-family: 'DM Mono', monospace;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--accent);
-}
-
-.stat-sub {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-.section-title {
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
-}
-
 
 /* TRANSACTION TABLE */
 .table-controls {
@@ -230,15 +182,6 @@ tr:hover td { background: rgba(0, 0, 0, 0.02); }
   padding: 0 3px;
 }
 
-/* RESULTS ANIMATION */
-.results-section {
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: none; }
-}
 
 /* TRANSACTION MODAL */
 #tx-modal-overlay {
