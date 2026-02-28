@@ -8,6 +8,12 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!supabase) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     // Both the auth state listener and getSession() are deferred behind
     // sessionGuardReady so that the INITIAL_SESSION event fires with the
     // post-guard state. Registering onAuthStateChange before the guard
@@ -32,6 +38,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function signInWithGoogle() {
+    if (!supabase) return;
     const redirectTo = `${window.location.origin}${window.location.pathname}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -41,6 +48,7 @@ export function AuthProvider({ children }) {
   }
 
   async function signOut() {
+    if (!supabase) return;
     const { error } = await supabase.auth.signOut();
     if (error) console.error('Sign out error:', error.message);
   }
