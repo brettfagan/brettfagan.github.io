@@ -9,18 +9,6 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-const selectStyle = {
-  background: 'var(--surface)',
-  border: '1px solid var(--border)',
-  borderRadius: '4px',
-  color: 'var(--text)',
-  fontFamily: "'DM Mono', monospace",
-  fontSize: '12px',
-  padding: '7px 12px',
-  outline: 'none',
-  cursor: 'pointer',
-};
-
 function mapRow(row) {
   return {
     _id:             row.id,
@@ -115,7 +103,6 @@ export default function MySpendingPage() {
     }
   }, [user, transactions]);
 
-  // Years derived from loaded data, current year always included
   const availableYears = useMemo(() => {
     const yrs = new Set(transactions.map(tx => tx.date?.substring(0, 4)).filter(Boolean));
     const result = [...yrs].sort().reverse();
@@ -141,7 +128,6 @@ export default function MySpendingPage() {
       const prefix = `${filterMonth.year}-${String(filterMonth.month).padStart(2, '0')}`;
       return transactions.filter(tx => tx.date?.startsWith(prefix));
     }
-    // custom
     return transactions.filter(tx => {
       if (!tx.date) return false;
       if (filterStart && tx.date < filterStart) return false;
@@ -150,29 +136,27 @@ export default function MySpendingPage() {
     });
   }, [transactions, filterMode, filterMonth, filterStart, filterEnd]);
 
+  const controlCls = "bg-muted border border-border rounded text-xs font-mono py-1.5 px-3 outline-none cursor-pointer text-foreground";
+
   return (
     <>
       {/* ── Page heading ────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: '20px' }}>
-        <h2 style={{ fontFamily: "'DM Mono',monospace", fontSize: '22px', fontWeight: 800, letterSpacing: '-0.3px', color: 'var(--text)' }}>
-          My Spending
-        </h2>
-        <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>
-          All transactions saved to your account.
-        </p>
+      <div className="mb-5">
+        <h2 className="font-mono text-[22px] font-extrabold tracking-[-0.3px]">My Spending</h2>
+        <p className="text-xs text-muted-foreground mt-1">All transactions saved to your account.</p>
       </div>
 
       {/* ── Saved data card summary ──────────────────────────────────────── */}
       {cardSummary.length > 0 && (
-        <div style={{ marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid var(--border)' }}>
-          <div className="stat-label" style={{ marginBottom: '10px' }}>Saved Data</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))', gap: '12px' }}>
+        <div className="mb-6 pb-6 border-b border-border">
+          <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2.5">Saved Data</div>
+          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))' }}>
             {cardSummary.map(([card, { count, minDate, maxDate }]) => (
-              <div key={card} className="stat-card">
-                <div className="stat-label">{card}</div>
-                <div className="stat-value" style={{ fontSize: '22px' }}>{count}</div>
-                <div className="stat-sub">transactions</div>
-                <div className="stat-sub">{fmtShortDate(minDate)} – {fmtShortDate(maxDate)}</div>
+              <div key={card} className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+                <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">{card}</div>
+                <div className="font-mono text-[22px] font-extrabold text-primary">{count}</div>
+                <div className="text-[11px] text-muted-foreground mt-1">transactions</div>
+                <div className="text-[11px] text-muted-foreground mt-1">{fmtShortDate(minDate)} – {fmtShortDate(maxDate)}</div>
               </div>
             ))}
           </div>
@@ -180,94 +164,61 @@ export default function MySpendingPage() {
       )}
 
       {/* ── Date range filter ────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '28px' }}>
-        {/* Mode toggle */}
-        <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: '5px', overflow: 'hidden' }}>
+      <div className="flex gap-3 items-center flex-wrap mb-7">
+        <div className="flex border border-border rounded-md overflow-hidden">
           {[['all', 'All Time'], ['month', 'Month'], ['custom', 'Custom Range']].map(([mode, label], i, arr) => (
             <button
               key={mode}
               onClick={() => setFilterMode(mode)}
-              style={{
-                fontFamily: "'DM Mono', monospace",
-                fontSize: '11px',
-                fontWeight: 700,
-                padding: '6px 14px',
-                background: filterMode === mode ? 'var(--accent)' : 'transparent',
-                color: filterMode === mode ? '#fff' : 'var(--muted)',
-                border: 'none',
-                borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
-                cursor: 'pointer',
-                transition: 'background 0.15s, color 0.15s',
-                whiteSpace: 'nowrap',
-              }}
+              className={`font-mono text-[11px] font-bold px-3.5 py-1.5 cursor-pointer transition-colors border-0 whitespace-nowrap ${i < arr.length - 1 ? 'border-r border-border' : ''} ${filterMode === mode ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:text-foreground'}`}
             >
               {label}
             </button>
           ))}
         </div>
 
-        {/* Month picker */}
         {filterMode === 'month' && (
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <select
-              value={filterMonth.month}
-              onChange={e => setFilterMonth(p => ({ ...p, month: +e.target.value }))}
-              style={selectStyle}
-            >
+          <div className="flex gap-2 items-center">
+            <select className={controlCls} value={filterMonth.month} onChange={e => setFilterMonth(p => ({ ...p, month: +e.target.value }))}>
               {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
             </select>
-            <select
-              value={filterMonth.year}
-              onChange={e => setFilterMonth(p => ({ ...p, year: +e.target.value }))}
-              style={selectStyle}
-            >
+            <select className={controlCls} value={filterMonth.year} onChange={e => setFilterMonth(p => ({ ...p, year: +e.target.value }))}>
               {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>
         )}
 
-        {/* Custom date range */}
         {filterMode === 'custom' && (
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <input
-              type="date"
-              value={filterStart}
-              onChange={e => setFilterStart(e.target.value)}
-              style={selectStyle}
-            />
-            <span style={{ color: 'var(--muted)', fontSize: '12px' }}>—</span>
-            <input
-              type="date"
-              value={filterEnd}
-              onChange={e => setFilterEnd(e.target.value)}
-              style={selectStyle}
-            />
+          <div className="flex gap-2 items-center">
+            <input type="date" className={controlCls} value={filterStart} onChange={e => setFilterStart(e.target.value)} />
+            <span className="text-muted-foreground text-xs">—</span>
+            <input type="date" className={controlCls} value={filterEnd} onChange={e => setFilterEnd(e.target.value)} />
           </div>
         )}
       </div>
 
       {/* ── States ──────────────────────────────────────────────────────── */}
       {loading && (
-        <div style={{ padding: '48px 0', textAlign: 'center', color: 'var(--muted)', fontFamily: "'DM Mono',monospace", fontSize: '13px' }}>
+        <div className="py-12 text-center text-muted-foreground font-mono text-[13px]">
           Loading transactions…
         </div>
       )}
 
       {!loading && error && (
-        <div style={{ padding: '32px 0', color: 'var(--danger)', fontSize: '13px' }}>
+        <div className="py-8 text-destructive text-[13px]">
           Error loading transactions: {error}
         </div>
       )}
 
       {!loading && !error && transactions.length === 0 && (
-        <div style={{ padding: '48px 0', textAlign: 'center', color: 'var(--muted)', fontFamily: "'DM Mono',monospace", fontSize: '13px', lineHeight: 2 }}>
+        <div className="py-12 text-center text-muted-foreground font-mono text-[13px] leading-[2]">
           No saved transactions yet.<br />
           Use the Analyzer to import transactions to your account.
         </div>
       )}
 
       {!loading && !error && transactions.length > 0 && filteredTransactions.length === 0 && (
-        <div style={{ padding: '48px 0', textAlign: 'center', color: 'var(--muted)', fontFamily: "'DM Mono',monospace", fontSize: '13px' }}>
+        <div className="py-12 text-center text-muted-foreground font-mono text-[13px]">
           No transactions for this period.
         </div>
       )}
