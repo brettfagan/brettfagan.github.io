@@ -3,6 +3,15 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useCategories } from '../context/CategoriesContext';
 import { SUBCATEGORIES } from '../lib/constants';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 // Build a composite key for a budget item
 function itemKey(category, subcategory) {
@@ -27,31 +36,13 @@ function fmtSubcat(key) {
   return key.replace(/_/g, ' ').replace(/\b\w/g, x => x.toUpperCase());
 }
 
-function ConfirmModal({ label, onConfirm, onCancel }) {
-  return (
-    <>
-      <div className="budget-modal-overlay" onClick={onCancel} />
-      <div className="budget-modal">
-        <div className="budget-modal-inner">
-          <p className="budget-modal-text">
-            Remove <strong>{label}</strong> from your budget?
-          </p>
-          <p className="budget-modal-sub">
-            You can restore it from the Hidden section at the bottom of the page.
-          </p>
-          <div className="budget-modal-actions">
-            <button className="budget-btn budget-btn--ghost" onClick={onCancel}>
-              Cancel
-            </button>
-            <button className="budget-btn budget-btn--danger" onClick={onConfirm}>
-              Remove
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
+// ── Shared class strings ──────────────────────────────────────────────────────
+const rowColsCls  = "grid grid-cols-[20px_1fr_172px_164px] gap-x-3 items-center px-4";
+const amountWrapCls = "flex items-center bg-muted border border-border rounded px-2 w-[140px] transition-colors focus-within:border-primary";
+const amountInputCls = "bg-transparent border-0 outline-none font-mono text-xs text-foreground w-full text-right py-[7px] pl-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-muted-foreground";
+const rowActionsCls = "flex items-center justify-end gap-0.5";
+const iconBtnCls  = "flex items-center gap-1 bg-transparent border-0 cursor-pointer font-mono text-[11px] font-semibold text-muted-foreground px-[7px] py-[5px] rounded-[3px] transition-colors hover:bg-muted hover:text-foreground whitespace-nowrap";
+const deleteBtnCls = `${iconBtnCls} text-lg font-light leading-none px-[7px] py-1 hover:text-destructive`;
 
 export default function MyBudgetPage() {
   const { user } = useAuth();
@@ -192,40 +183,40 @@ export default function MyBudgetPage() {
   return (
     <>
       {/* ── Page heading ──────────────────────────────────────────────── */}
-      <div className="budget-header">
+      <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="budget-title">My Budget</h2>
-          <p className="budget-subtitle">Set monthly spending targets for each category.</p>
+          <h2 className="font-mono text-[22px] font-extrabold tracking-[-0.3px] text-foreground">My Budget</h2>
+          <p className="text-xs text-muted-foreground mt-1">Set monthly spending targets for each category.</p>
         </div>
-        <div className="budget-header-actions">
-          {saveSuccess && <span className="budget-save-success">Saved!</span>}
-          {error && <span className="budget-save-error">{error}</span>}
-          <button
-            className="budget-btn budget-btn--primary"
+        <div className="flex items-center gap-3 shrink-0">
+          {saveSuccess && <span className="text-xs font-bold text-emerald-600">Saved!</span>}
+          {error && <span className="text-[11px] text-destructive max-w-[220px]">{error}</span>}
+          <Button
             onClick={handleSave}
             disabled={saving || !dirty}
+            className="font-mono text-[11px] font-bold"
           >
             {saving ? 'Saving…' : 'Save Budget'}
-          </button>
+          </Button>
         </div>
       </div>
 
       {loading && (
-        <div className="budget-empty">Loading…</div>
+        <div className="py-12 text-center text-muted-foreground text-[13px]">Loading…</div>
       )}
 
       {!loading && (
         <>
           {/* ── Column headers ────────────────────────────────────────── */}
-          <div className="budget-col-headers">
+          <div className={`${rowColsCls} pb-1.5 text-[10px] font-bold uppercase tracking-[1px] text-muted-foreground`}>
             <div />
             <div>Category</div>
-            <div className="budget-col-headers-amount">Monthly Budget</div>
+            <div className="text-right">Monthly Budget</div>
             <div />
           </div>
 
           {/* ── Category list ─────────────────────────────────────────── */}
-          <div className="budget-list">
+          <div className="flex flex-col gap-1">
             {visibleCategories.map(cat => {
               const catKey = cat.key;
               const catItem = getItem(catKey);
@@ -236,20 +227,20 @@ export default function MyBudgetPage() {
               );
 
               return (
-                <div key={catKey} className="budget-cat-group">
+                <div key={catKey} className="border border-border rounded-md overflow-hidden">
                   {/* Category row */}
-                  <div className="budget-row budget-row--cat">
+                  <div className={`${rowColsCls} bg-background min-h-[44px]`}>
                     <div
-                      className="budget-color-dot"
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
                       style={{ background: getCatColor(catKey) }}
                     />
-                    <div className="budget-cat-name">{getCatLabel(catKey)}</div>
-                    <div className="budget-col-amount">
-                      <div className="budget-amount-wrap">
-                        <span className="budget-amount-prefix">$</span>
+                    <div className="text-[13px] font-semibold">{getCatLabel(catKey)}</div>
+                    <div className="flex justify-end">
+                      <div className={amountWrapCls}>
+                        <span className="text-xs text-muted-foreground shrink-0 select-none">$</span>
                         <input
                           type="number"
-                          className="budget-amount-input"
+                          className={amountInputCls}
                           min="0"
                           step="0.01"
                           placeholder="—"
@@ -258,21 +249,21 @@ export default function MyBudgetPage() {
                         />
                       </div>
                     </div>
-                    <div className="budget-row-actions">
+                    <div className={rowActionsCls}>
                       {subcats.length > 0 && (
                         <button
-                          className="budget-btn-icon"
+                          className={iconBtnCls}
                           onClick={() => toggleExpanded(catKey)}
                           title={isExpanded ? 'Collapse subcategories' : 'Expand subcategories'}
                         >
-                          <span className={`budget-chevron${isExpanded ? ' budget-chevron--open' : ''}`}>›</span>
-                          <span className="budget-expand-label">
+                          <span className={`inline-block text-[14px] transition-transform duration-200${isExpanded ? ' rotate-90' : ''}`}>›</span>
+                          <span className="text-[10px] uppercase tracking-[0.5px]">
                             {isExpanded ? 'Less' : 'Subcategories'}
                           </span>
                         </button>
                       )}
                       <button
-                        className="budget-btn-icon budget-btn-delete"
+                        className={deleteBtnCls}
                         onClick={() => requestHide(catKey, getCatLabel(catKey))}
                         title="Remove from budget"
                       >
@@ -283,20 +274,20 @@ export default function MyBudgetPage() {
 
                   {/* Subcategory rows */}
                   {isExpanded && (
-                    <div className="budget-subcat-list">
+                    <div>
                       {visibleSubcats.map(sub => {
                         const subKey = itemKey(catKey, sub);
                         const subItem = getItem(subKey);
                         return (
-                          <div key={subKey} className="budget-row budget-row--sub">
+                          <div key={subKey} className={`${rowColsCls} bg-muted border-t border-border min-h-[44px]`}>
                             <div />
-                            <div className="budget-subcat-name">{fmtSubcat(sub)}</div>
-                            <div className="budget-col-amount">
-                              <div className="budget-amount-wrap">
-                                <span className="budget-amount-prefix">$</span>
+                            <div className="text-xs text-muted-foreground pl-2.5">{fmtSubcat(sub)}</div>
+                            <div className="flex justify-end">
+                              <div className={amountWrapCls}>
+                                <span className="text-xs text-muted-foreground shrink-0 select-none">$</span>
                                 <input
                                   type="number"
-                                  className="budget-amount-input"
+                                  className={amountInputCls}
                                   min="0"
                                   step="0.01"
                                   placeholder="—"
@@ -305,9 +296,9 @@ export default function MyBudgetPage() {
                                 />
                               </div>
                             </div>
-                            <div className="budget-row-actions">
+                            <div className={rowActionsCls}>
                               <button
-                                className="budget-btn-icon budget-btn-delete"
+                                className={deleteBtnCls}
                                 onClick={() =>
                                   requestHide(
                                     subKey,
@@ -324,9 +315,9 @@ export default function MyBudgetPage() {
                       })}
 
                       {visibleSubcats.length === 0 && (
-                        <div className="budget-row budget-row--sub budget-all-hidden">
+                        <div className={`${rowColsCls} bg-muted border-t border-border min-h-[44px]`}>
                           <div />
-                          <div style={{ gridColumn: '2 / -1', color: 'var(--muted)', fontStyle: 'italic', fontSize: '11px' }}>
+                          <div className="col-span-3 text-[11px] text-muted-foreground italic">
                             All subcategories hidden.
                           </div>
                         </div>
@@ -340,30 +331,32 @@ export default function MyBudgetPage() {
 
           {/* ── Hidden items ──────────────────────────────────────────── */}
           {hiddenItems.length > 0 && (
-            <div className="budget-hidden-section">
+            <div className="mt-4 pt-4 border-t border-border">
               <button
-                className="budget-hidden-toggle"
+                className="flex items-center gap-1.5 bg-transparent border-0 cursor-pointer font-mono text-[11px] font-bold uppercase tracking-[0.5px] text-muted-foreground p-0 hover:text-foreground transition-colors"
                 onClick={() => setShowHidden(p => !p)}
               >
-                <span className={`budget-chevron${showHidden ? ' budget-chevron--open' : ''}`}>›</span>
+                <span className={`inline-block text-[14px] transition-transform duration-200${showHidden ? ' rotate-90' : ''}`}>›</span>
                 Hidden ({hiddenItems.length})
               </button>
               {showHidden && (
-                <div className="budget-hidden-list">
+                <div className="mt-2.5 flex flex-col">
                   {hiddenItems.map(key => {
                     const { category, subcategory } = parseKey(key);
                     const label = subcategory
                       ? `${getCatLabel(category)} › ${fmtSubcat(subcategory)}`
                       : getCatLabel(category);
                     return (
-                      <div key={key} className="budget-hidden-item">
+                      <div key={key} className="flex items-center justify-between py-2 text-xs text-muted-foreground border-b border-border last:border-b-0">
                         <span>{label}</span>
-                        <button
-                          className="budget-btn budget-btn--ghost budget-btn--sm"
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => restoreItem(key)}
+                          className="font-mono text-[10px] font-bold py-1 px-2.5 h-auto"
                         >
                           Restore
-                        </button>
+                        </Button>
                       </div>
                     );
                   })}
@@ -375,13 +368,26 @@ export default function MyBudgetPage() {
       )}
 
       {/* ── Confirmation modal ────────────────────────────────────────── */}
-      {confirmModal && (
-        <ConfirmModal
-          label={confirmModal.label}
-          onConfirm={confirmHide}
-          onCancel={() => setConfirmModal(null)}
-        />
-      )}
+      <Dialog open={!!confirmModal} onOpenChange={open => { if (!open) setConfirmModal(null); }}>
+        <DialogContent className="w-[360px] max-w-[calc(100vw-32px)]">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold">
+              Remove <strong>{confirmModal?.label}</strong> from your budget?
+            </DialogTitle>
+            <DialogDescription>
+              You can restore it from the Hidden section at the bottom of the page.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2.5 justify-end">
+            <Button variant="outline" onClick={() => setConfirmModal(null)} className="font-mono text-[11px] font-bold">
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmHide} className="font-mono text-[11px] font-bold">
+              Remove
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
