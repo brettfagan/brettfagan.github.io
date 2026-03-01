@@ -2,9 +2,6 @@ import { useState } from 'react';
 import { useCategories, COLOR_PALETTE } from '../context/CategoriesContext';
 import { fmtDetail } from '../lib/format';
 import { SUBCATEGORIES } from '../lib/constants';
-import CsvRulesManager from './CsvRulesManager';
-import { Sheet, SheetContent, SheetTitle, SheetClose } from '@/components/ui/sheet';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 
 // ── Shared class strings ──────────────────────────────────────────────────────
@@ -212,11 +209,10 @@ function AddCategoryForm({ onAdd }) {
   );
 }
 
-// ── CategoryManager (slide-out panel) ────────────────────────────────────────
-export default function CategoryManager({ open, onClose }) {
+// ── CategoryContent ───────────────────────────────────────────────────────────
+export default function CategoryContent() {
   const { categories, loading, saveCategory, deleteCategory, resetToDefaults } = useCategories();
   const [resetting, setResetting] = useState(false);
-  const [activeTab, setActiveTab] = useState('categories');
 
   async function handleReset() {
     if (!confirm('Reset all categories to defaults? This will delete any custom categories.')) return;
@@ -225,72 +221,29 @@ export default function CategoryManager({ open, onClose }) {
     setResetting(false);
   }
 
-  const triggerCls = "rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none bg-transparent font-mono text-[11px] font-bold tracking-[0.5px] uppercase px-4 py-2.5 mb-[-1px] text-muted-foreground hover:text-foreground transition-colors";
+  if (loading) return <p className="text-muted-foreground py-6 text-xs">Loading…</p>;
 
   return (
-    <Sheet open={open} onOpenChange={o => { if (!o) onClose(); }}>
-      <SheetContent
-        side="right"
-        showCloseButton={false}
-        className="w-120 max-w-[95vw] p-0 gap-0 flex flex-col"
-      >
-        {/* ── Header ─────────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
-          <SheetTitle className="text-base font-extrabold tracking-tight">
-            {activeTab === 'categories' ? 'Manage Categories' : 'Rules Manager'}
-          </SheetTitle>
-          <SheetClose asChild>
-            <button
-              className="bg-transparent border-0 cursor-pointer text-muted-foreground text-lg px-2 py-1 leading-none rounded hover:text-foreground hover:bg-muted transition-colors"
-              title="Close"
-            >✕</button>
-          </SheetClose>
-        </div>
+    <>
+      <div className="flex flex-col gap-0.5 mb-5">
+        {categories.map(cat => (
+          <CategoryRow key={cat.key} cat={cat} onSave={saveCategory} onDelete={deleteCategory} />
+        ))}
+      </div>
 
-        {/* ── Tabs ───────────────────────────────────────────────────────── */}
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="flex flex-col flex-1 min-h-0"
+      <AddCategoryForm onAdd={saveCategory} />
+
+      <div className="border-t border-border pt-5">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleReset}
+          disabled={resetting}
+          className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive font-mono text-[11px] font-bold"
         >
-          <TabsList className="px-6 h-auto rounded-none border-b border-border bg-transparent justify-start gap-0 p-0 shrink-0">
-            <TabsTrigger value="categories" className={triggerCls}>Categories</TabsTrigger>
-            <TabsTrigger value="rules" className={triggerCls}>Rules</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="categories" className="flex-1 overflow-y-auto px-6 py-4 pb-8 mt-0 data-[state=inactive]:hidden">
-            {loading ? (
-              <p className="text-muted-foreground py-6 text-xs">Loading…</p>
-            ) : (
-              <>
-                <div className="flex flex-col gap-0.5 mb-5">
-                  {categories.map(cat => (
-                    <CategoryRow key={cat.key} cat={cat} onSave={saveCategory} onDelete={deleteCategory} />
-                  ))}
-                </div>
-
-                <AddCategoryForm onAdd={saveCategory} />
-
-                <div className="border-t border-border pt-5">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleReset}
-                    disabled={resetting}
-                    className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive font-mono text-[11px] font-bold"
-                  >
-                    {resetting ? 'Resetting…' : 'Reset to Defaults'}
-                  </Button>
-                </div>
-              </>
-            )}
-          </TabsContent>
-
-          <TabsContent value="rules" className="flex-1 overflow-y-auto px-6 py-4 pb-8 mt-0 data-[state=inactive]:hidden">
-            <CsvRulesManager />
-          </TabsContent>
-        </Tabs>
-      </SheetContent>
-    </Sheet>
+          {resetting ? 'Resetting…' : 'Reset to Defaults'}
+        </Button>
+      </div>
+    </>
   );
 }
