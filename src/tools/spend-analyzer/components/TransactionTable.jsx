@@ -4,7 +4,7 @@ import { fmt, fmtCat } from '../lib/format';
 import { useDetailLabels } from '../context/DetailLabelsContext';
 import { Button } from '@/components/ui/button';
 
-export default function TransactionTable({ spending, credits, categories, initialCatFilter = '', initialDetailFilter = '', onOpenModal, onDeleteTransaction }) {
+export default function TransactionTable({ spending, credits, categories, initialCatFilter = '', initialDetailFilter = '', onOpenModal, onDeleteTransaction, onClearFilters }) {
   const { getCatColor } = useCategories();
   const { getDetailLabel } = useDetailLabels();
   const [search, setSearch] = useState('');
@@ -185,7 +185,7 @@ export default function TransactionTable({ spending, credits, categories, initia
           <Button
             variant="outline"
             size="sm"
-            onClick={() => { setSearch(''); setCatFilter(''); setDetailFilter(''); setCardFilter(''); }}
+            onClick={() => { setSearch(''); setCatFilter(''); setDetailFilter(''); setCardFilter(''); onClearFilters?.(); }}
             className="font-mono text-[11px] font-bold whitespace-nowrap"
           >
             ✕ Clear filters
