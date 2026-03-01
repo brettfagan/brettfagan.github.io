@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTheme } from 'next-themes';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
@@ -9,7 +10,7 @@ import { fmt, fmtCat } from '../lib/format';
 const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 const TOOLTIP_STYLE = {
-  background: 'var(--bg)',
+  background: 'var(--background)',
   border: '1px solid var(--border)',
   borderRadius: '6px',
   padding: '8px 12px',
@@ -24,8 +25,8 @@ function BarTooltipContent({ active, payload }) {
   const d = payload[0].payload;
   return (
     <div style={TOOLTIP_STYLE}>
-      <div style={{ fontWeight: 700, color: '#1a1b1e' }}>{d.label}</div>
-      <div style={{ color: '#1a1b1e' }}>Spend: {fmt(d.spend)}</div>
+      <div style={{ fontWeight: 700, color: 'var(--foreground)' }}>{d.label}</div>
+      <div style={{ color: 'var(--foreground)' }}>Spend: {fmt(d.spend)}</div>
       {d.credits > 0 && <div style={{ color: '#0891b2' }}>Credits: -{fmt(d.credits)}</div>}
     </div>
   );
@@ -37,14 +38,16 @@ function DonutTooltipContent({ active, payload }) {
   return (
     <div style={TOOLTIP_STYLE}>
       <div style={{ fontWeight: 700, color: d.payload.color }}>{d.name}</div>
-      <div style={{ color: '#1a1b1e' }}>{fmt(d.value)}</div>
-      <div style={{ color: '#6b7280' }}>{d.payload.pct.toFixed(1)}%</div>
+      <div style={{ color: 'var(--foreground)' }}>{fmt(d.value)}</div>
+      <div style={{ color: 'var(--muted-foreground)' }}>{d.payload.pct.toFixed(1)}%</div>
     </div>
   );
 }
 
 export default function SpendingCharts({ spending, credits, cats }) {
   const { getCatColor } = useCategories();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
 
   const monthlyData = useMemo(() => {
     const map = {};
@@ -85,7 +88,7 @@ export default function SpendingCharts({ spending, credits, cats }) {
 
   if (!showMonthly && !showDonut) return null;
 
-  const tickStyle = { fontFamily: "'DM Mono', monospace", fontSize: 10, fill: '#6b7280' };
+  const tickStyle = { fontFamily: "'DM Mono', monospace", fontSize: 10, fill: isDark ? '#9ca3af' : '#6b7280' };
   const fmtY = v => v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v.toFixed(0)}`;
   const barSize = monthlyData.length <= 6 ? 28 : monthlyData.length <= 12 ? 18 : undefined;
 
@@ -150,8 +153,8 @@ export default function SpendingCharts({ spending, credits, cats }) {
                 tickLine={false}
                 width={44}
               />
-              <Tooltip content={<BarTooltipContent />} cursor={{ fill: 'rgba(0,0,0,0.04)' }} isAnimationActive={false} />
-              <Bar dataKey="spend" fill="#2563eb" radius={[3, 3, 0, 0]} />
+              <Tooltip content={<BarTooltipContent />} cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }} isAnimationActive={false} />
+              <Bar dataKey="spend" fill={isDark ? '#5b8def' : '#2563eb'} radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -189,9 +189,9 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
             </thead>
             <tbody>
               {excluded.sort((a, b) => (a.date < b.date ? 1 : -1)).map((tx, i) => (
-                <tr key={i} className="opacity-60 cursor-pointer even:bg-[#f7f8fa] group" onClick={() => setModalTx(tx)}>
-                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-muted-foreground whitespace-nowrap text-xs group-hover:bg-black/2">{tx.date}</td>
-                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden font-medium group-hover:bg-black/2" title={tx.merchant}>
+                <tr key={i} className="opacity-60 cursor-pointer even:bg-[#f7f8fa] dark:even:bg-white/[0.03] group" onClick={() => setModalTx(tx)}>
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-muted-foreground whitespace-nowrap text-xs group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]">{tx.date}</td>
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden font-medium group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]" title={tx.merchant}>
                     <div className="flex items-center gap-2 min-w-0 w-full">
                       {(tx.logo_url || tx.cat_icon_url)
                         ? <img className="w-7.5 h-7.5 rounded object-contain shrink-0 bg-muted border border-border" src={tx.logo_url || tx.cat_icon_url} alt="" onError={e => e.target.removeAttribute('src')} />
@@ -201,19 +201,19 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
                       {tx.source === 'csv' && <span className="text-[9px] text-cyan-600 ml-1">CSV</span>}
                     </div>
                   </td>
-                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden group-hover:bg-black/2">
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]">
                     <span className="inline-block text-[10px] font-mono px-1.75 py-0.5 rounded-[3px] border whitespace-nowrap text-muted-foreground border-muted-foreground/40">{fmtCat(tx.cat)}</span>
                   </td>
-                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-[11px] text-muted-foreground text-ellipsis whitespace-nowrap group-hover:bg-black/2">
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-[11px] text-muted-foreground text-ellipsis whitespace-nowrap group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]">
                     {tx.cat_detail ? fmtDetail(tx.cat_detail) : ''}
                   </td>
-                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-muted-foreground text-[11px] text-ellipsis whitespace-nowrap group-hover:bg-black/2">
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-muted-foreground text-[11px] text-ellipsis whitespace-nowrap group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]">
                     {tx._card}
                   </td>
-                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-right font-medium whitespace-nowrap text-muted-foreground group-hover:bg-black/2">
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-right font-medium whitespace-nowrap text-muted-foreground group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]">
                     {tx.amount < 0 ? `-${fmt(Math.abs(tx.amount))}` : fmt(tx.amount)}
                   </td>
-                  <td className="px-1.5 py-1.5 border-b border-border align-middle text-right group-hover:bg-black/2">
+                  <td className="px-1.5 py-1.5 border-b border-border align-middle text-right group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]">
                     <button
                       onClick={e => { e.stopPropagation(); setPendingDeleteExcluded(tx); }}
                       title="Delete transaction"

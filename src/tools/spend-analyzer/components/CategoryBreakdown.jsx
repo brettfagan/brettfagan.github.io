@@ -58,7 +58,7 @@ export default function CategoryBreakdown({
         return (
           <div key={cat}>
             <div
-              className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-2.5 border-b border-border cursor-pointer rounded transition-colors hover:bg-black/[0.025] hover:px-2 hover:-mx-2"
+              className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-2.5 border-b border-border cursor-pointer rounded transition-colors hover:bg-black/[0.025] dark:hover:bg-white/[0.04] hover:px-2 hover:-mx-2"
               onClick={() => handleCatClick(cat)}
             >
               <div className="font-mono text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis" style={{ color }}>
@@ -93,7 +93,7 @@ export default function CategoryBreakdown({
               {subs.map(([detail, sd]) => (
                 <div
                   key={detail}
-                  className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-1.5 pl-4 border-b border-border cursor-pointer hover:bg-black/[0.025]"
+                  className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-1.5 pl-4 border-b border-border cursor-pointer hover:bg-black/[0.025] dark:hover:bg-white/[0.04]"
                   onClick={(e) => {
                     e.stopPropagation();
                     onFilter(cat, detail);
