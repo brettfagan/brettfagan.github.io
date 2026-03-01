@@ -94,35 +94,41 @@ export default function MySpendingPage() {
   }
 
   const handleDeleteTransaction = useCallback(async (id) => {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('imported_transactions')
       .delete()
+      .select('id')
       .eq('id', id)
       .eq('user_id', user.id);
-    if (!error) setTransactions(prev => prev.filter(tx => tx._id !== id));
+    if (!error && data?.length > 0) setTransactions(prev => prev.filter(tx => tx._id !== id));
   }, [user]);
 
   const handleBulkDelete = useCallback(async (ids) => {
     const CHUNK = 100;
+    const deletedIds = [];
+
     for (let i = 0; i < ids.length; i += CHUNK) {
       const chunk = ids.slice(i, i + CHUNK);
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('imported_transactions')
         .delete()
+        .select('id')
         .in('id', chunk)
         .eq('user_id', user.id);
       if (error) {
-        const deleted = ids.slice(0, i);
-        if (deleted.length > 0) {
-          setTransactions(prev => prev.filter(tx => !deleted.includes(tx._id)));
+        if (deletedIds.length > 0) {
+          setTransactions(prev => prev.filter(tx => !deletedIds.includes(tx._id)));
         }
-        setDeleteResult({ success: false, count: ids.length });
+        setDeleteResult({ success: false, count: ids.length, deleted: deletedIds.length });
         return false;
       }
+      (data || []).forEach(r => deletedIds.push(r.id));
     }
-    setTransactions(prev => prev.filter(tx => !ids.includes(tx._id)));
-    setDeleteResult({ success: true, count: ids.length });
-    return true;
+
+    setTransactions(prev => prev.filter(tx => !deletedIds.includes(tx._id)));
+    const allDeleted = deletedIds.length === ids.length;
+    setDeleteResult({ success: allDeleted, count: ids.length, deleted: deletedIds.length });
+    return allDeleted;
   }, [user]);
 
   const handleReCategorize = useCallback(async (id, cat, catDetail, applyToSimilar, applyToFuture) => {
@@ -317,9 +323,12 @@ export default function MySpendingPage() {
               </DialogFooter>
             </>) : (<>
               <DialogHeader>
-                <DialogTitle>Delete failed</DialogTitle>
+                <DialogTitle>Delete incomplete</DialogTitle>
                 <DialogDescription>
-                  Could not delete all transactions. Check your connection and try again.
+                  {deleteResult.deleted > 0
+                    ? `${deleteResult.deleted} of ${deleteResult.count} transaction${deleteResult.count !== 1 ? 's' : ''} were deleted. The rest could not be removed — this may be a permissions issue.`
+                    : `None of the ${deleteResult.count} transaction${deleteResult.count !== 1 ? 's' : ''} were deleted. Check your database permissions or try again.`
+                  }
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
