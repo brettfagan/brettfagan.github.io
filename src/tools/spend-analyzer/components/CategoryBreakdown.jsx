@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useCategories } from "../context/CategoriesContext";
 import { useDetailLabels } from "../context/DetailLabelsContext";
 import { fmt, fmtCat } from "../lib/format";
@@ -11,10 +11,18 @@ export default function CategoryBreakdown({
   credits,
   pendingCount,
   onFilter,
+  showMonthlyAvg = false,
 }) {
   const { getCatColor } = useCategories();
   const { getDetailLabel } = useDetailLabels();
   const [openCat, setOpenCat] = useState(null);
+
+  const numMonths = useMemo(() => {
+    const months = new Set(
+      [...spending, ...credits].map(tx => tx.date?.slice(0, 7)).filter(Boolean)
+    );
+    return Math.max(months.size, 1);
+  }, [spending, credits]);
 
   function handleCatClick(cat) {
     setOpenCat((prev) => (prev === cat ? null : cat));
@@ -58,7 +66,7 @@ export default function CategoryBreakdown({
         return (
           <div key={cat}>
             <div
-              className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-2.5 border-b border-border cursor-pointer rounded transition-colors hover:bg-black/2.5 dark:hover:bg-white/4 hover:px-2 hover:-mx-2"
+              className={`grid ${showMonthlyAvg ? 'grid-cols-[200px_1fr_80px_90px_80px]' : 'grid-cols-[200px_1fr_90px_80px]'} items-center gap-4 py-2.5 border-b border-border cursor-pointer rounded transition-colors hover:bg-black/2.5 dark:hover:bg-white/4 hover:px-2 hover:-mx-2`}
               onClick={() => handleCatClick(cat)}
             >
               <div className="font-mono text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis" style={{ color }}>
@@ -76,6 +84,11 @@ export default function CategoryBreakdown({
                   }}
                 />
               </div>
+              {showMonthlyAvg && (
+                <div className="text-right text-muted-foreground text-[11px]">
+                  {fmt(d.total / numMonths)}<span className="text-[9px]">/mo</span>
+                </div>
+              )}
               <div className="text-right font-medium">
                 {fmt(d.total)}
                 {catCreditAbs > 0 && (
@@ -93,7 +106,7 @@ export default function CategoryBreakdown({
               {subs.map(([detail, sd]) => (
                 <div
                   key={detail}
-                  className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-1.5 pl-4 border-b border-border cursor-pointer hover:bg-black/2.5 dark:hover:bg-white/4"
+                  className={`grid ${showMonthlyAvg ? 'grid-cols-[200px_1fr_80px_90px_80px]' : 'grid-cols-[200px_1fr_90px_80px]'} items-center gap-4 py-1.5 pl-4 border-b border-border cursor-pointer hover:bg-black/2.5 dark:hover:bg-white/4`}
                   onClick={(e) => {
                     e.stopPropagation();
                     onFilter(cat, detail);
@@ -112,6 +125,11 @@ export default function CategoryBreakdown({
                       }}
                     />
                   </div>
+                  {showMonthlyAvg && (
+                    <div className="text-right text-muted-foreground text-[11px]">
+                      {fmt(sd.total / numMonths)}<span className="text-[9px]">/mo</span>
+                    </div>
+                  )}
                   <div className="font-mono text-[11px] font-semibold text-right" style={{ color }}>
                     {fmt(sd.total)}
                   </div>
@@ -125,9 +143,14 @@ export default function CategoryBreakdown({
         );
       })}
 
-      <div className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-3 border-t-2 border-border">
+      <div className={`grid ${showMonthlyAvg ? 'grid-cols-[200px_1fr_80px_90px_80px]' : 'grid-cols-[200px_1fr_90px_80px]'} items-center gap-4 py-3 border-t-2 border-border`}>
         <div className="font-mono text-xs font-bold">Total</div>
         <div />
+        {showMonthlyAvg && (
+          <div className="text-right text-muted-foreground text-[11px]">
+            {fmt(grandTotal / numMonths)}<span className="text-[9px]">/mo</span>
+          </div>
+        )}
         <div className="text-right font-mono text-[13px] font-extrabold">{fmt(grandTotal)}</div>
         <div className="text-right text-muted-foreground text-[11px]">
           {spending.filter((t) => !t.pending).length} posted · {credits.length} refund{credits.length !== 1 ? "s" : ""}
