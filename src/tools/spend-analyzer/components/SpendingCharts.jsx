@@ -14,7 +14,7 @@ const TOOLTIP_STYLE = {
   border: '1px solid var(--border)',
   borderRadius: '6px',
   padding: '8px 12px',
-  fontFamily: "'DM Mono', monospace",
+  fontFamily: 'Inter, sans-serif',
   fontSize: '11px',
   lineHeight: 1.8,
   boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
@@ -88,7 +88,7 @@ export default function SpendingCharts({ spending, credits, cats }) {
 
   if (!showMonthly && !showDonut) return null;
 
-  const tickStyle = { fontFamily: "'DM Mono', monospace", fontSize: 10, fill: isDark ? '#9ca3af' : '#6b7280' };
+  const tickStyle = { fontFamily: 'Inter, sans-serif', fontSize: 10, fill: isDark ? '#9ca3af' : '#6b7280' };
   const fmtY = v => v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v.toFixed(0)}`;
   const barSize = monthlyData.length <= 6 ? 28 : monthlyData.length <= 12 ? 18 : undefined;
 
