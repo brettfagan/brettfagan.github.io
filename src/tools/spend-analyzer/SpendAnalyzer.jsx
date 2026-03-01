@@ -12,6 +12,7 @@ import AuthButton from './components/AuthButton';
 import CategoryManager from './components/CategoryManager';
 import MySpendingPage from './components/MySpendingPage';
 import MyBudgetPage from './components/MyBudgetPage';
+import BulkUpdateDialog from './components/BulkUpdateDialog';
 
 export default function SpendAnalyzer() {
   const { user, loading } = useAuth();
@@ -21,6 +22,7 @@ export default function SpendAnalyzer() {
   const [results, setResults] = useState(null);
   const [sidebarKey, setSidebarKey] = useState(0);
   const [catMgrOpen, setCatMgrOpen] = useState(false);
+  const [bulkDialog, setBulkDialog] = useState(null);
   const [page, setPage] = useURLParam('tab', 'analyzer');
 
   // Redirect to analyzer if user signs out while on my-spending
@@ -64,17 +66,13 @@ export default function SpendAnalyzer() {
 
   const handleReCategorize = useCallback((id, cat, catDetail, applyToSimilar, applyToFuture) => {
     const originalTx = (results || []).find(tx => tx._id === id);
-    setResults(prev => {
-      if (applyToSimilar && originalTx?.merchant) {
-        const { merchant, cat: originalCat } = originalTx;
-        return prev.map(tx =>
-          tx.merchant === merchant && tx.cat === originalCat
-            ? { ...tx, cat, cat_detail: catDetail }
-            : tx
-        );
-      }
-      return prev.map(tx => tx._id === id ? { ...tx, cat, cat_detail: catDetail } : tx);
-    });
+    if (applyToSimilar && originalTx?.merchant) {
+      const { merchant, cat: originalCat } = originalTx;
+      const count = (results || []).filter(tx => tx.merchant === merchant && tx.cat === originalCat).length;
+      setBulkDialog({ step: 'confirm', id, merchant, originalCat, cat, catDetail, applyToFuture, count });
+      return;
+    }
+    setResults(prev => prev.map(tx => tx._id === id ? { ...tx, cat, cat_detail: catDetail } : tx));
     if (applyToFuture && originalTx?.merchant) {
       const escaped = originalTx.merchant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const pattern = `^${escaped}$`;
@@ -82,6 +80,24 @@ export default function SpendAnalyzer() {
       saveRule({ ...existing, pattern, match_field: 'merchant', cat, cat_detail: catDetail || null });
     }
   }, [results, rules, saveRule]);
+
+  const handleBulkConfirm = useCallback(() => {
+    if (!bulkDialog) return;
+    const { merchant, originalCat, cat, catDetail, applyToFuture } = bulkDialog;
+    const count = (results || []).filter(tx => tx.merchant === merchant && tx.cat === originalCat).length;
+    setResults(prev => prev.map(tx =>
+      tx.merchant === merchant && tx.cat === originalCat
+        ? { ...tx, cat, cat_detail: catDetail }
+        : tx
+    ));
+    if (applyToFuture) {
+      const escaped = merchant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = `^${escaped}$`;
+      const existing = rules.find(r => r.match_field === 'merchant' && r.pattern === pattern);
+      saveRule({ ...existing, pattern, match_field: 'merchant', cat, cat_detail: catDetail || null });
+    }
+    setBulkDialog(d => ({ ...d, step: 'done', count }));
+  }, [bulkDialog, results, rules, saveRule]);
 
   const handleDeleteTransaction = useCallback((id) => {
     setResults(prev => prev.filter(tx => tx._id !== id));
@@ -182,6 +198,18 @@ export default function SpendAnalyzer() {
       </div>
 
       <CategoryManager open={catMgrOpen} onClose={() => setCatMgrOpen(false)} />
+
+      {bulkDialog && (
+        <BulkUpdateDialog
+          step={bulkDialog.step}
+          merchant={bulkDialog.merchant}
+          fromCat={bulkDialog.originalCat}
+          toCat={bulkDialog.cat}
+          count={bulkDialog.count}
+          onConfirm={handleBulkConfirm}
+          onClose={() => setBulkDialog(null)}
+        />
+      )}
     </>
   );
 }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useCsvRules } from '../context/CsvRulesContext';
-import { fmt } from '../lib/format';
+import { fmt, fmtCat } from '../lib/format';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
@@ -119,8 +119,10 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
       return;
     }
 
+    const ruleCatCounts = {};
     const rows = newTxns.map(tx => {
       const { cat, cat_detail } = applyRules(tx, rules);
+      if (cat !== tx.cat) ruleCatCounts[cat] = (ruleCatCounts[cat] || 0) + 1;
       return {
       user_id:              user.id,
       date:                 tx.date || null,
@@ -166,6 +168,7 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
       total:           newTxns.length,
       duplicateCount:  duplicates.length,
       duplicateList:   duplicates.map(t => ({ merchant: t.merchant, date: t.date, amount: t.amount })),
+      rulesApplied:    Object.entries(ruleCatCounts).map(([cat, count]) => ({ cat, count })),
     });
     setStep('done');
   }
@@ -258,6 +261,22 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
                 <BreakdownRow label="Pending" count={summary.pending} sum={summary.pendingSum} colorClass="text-amber-600" />
               )}
             </div>
+
+            {summary.rulesApplied?.length > 0 && (
+              <div className="mb-4">
+                <div className="font-mono text-[11px] font-bold tracking-[1px] uppercase text-muted-foreground mb-1.5">
+                  Rules applied — {summary.rulesApplied.reduce((s, r) => s + r.count, 0)} transaction{summary.rulesApplied.reduce((s, r) => s + r.count, 0) !== 1 ? 's' : ''} recategorized
+                </div>
+                <div className="bg-muted rounded-lg px-3 py-1">
+                  {summary.rulesApplied.map((r, i) => (
+                    <div key={r.cat} className={`flex justify-between items-baseline py-1.5 ${i < summary.rulesApplied.length - 1 ? 'border-b border-border' : ''}`}>
+                      <span className="font-mono text-[11px] text-muted-foreground">{fmtCat(r.cat)}</span>
+                      <span className="font-mono text-[11px] font-bold text-foreground">{r.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {summary.duplicateCount > 0 && (
               <div className="mb-5">
