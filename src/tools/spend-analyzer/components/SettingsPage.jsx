@@ -38,6 +38,7 @@ export default function SettingsPage() {
 
       {/* ── Content area ──────────────────────────────────────────────────── */}
       <div className="flex-1 px-9 py-7 overflow-y-auto">
+        <div className="max-w-2xl">
         {activeSection === 'categories' && (
           <>
             <div className="mb-6">
@@ -57,6 +58,7 @@ export default function SettingsPage() {
             <CsvRulesManager />
           </>
         )}
+        </div>
       </div>
 
     </div>
