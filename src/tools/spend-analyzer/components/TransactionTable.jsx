@@ -67,7 +67,7 @@ export default function TransactionTable({ spending, credits, categories, initia
   // ── Shared class strings ───────────────────────────────────────────────────
   const ctrlCls = "bg-muted border border-border rounded text-xs font-mono py-1.5 px-3 outline-none cursor-pointer text-foreground";
   const thCls   = "font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border cursor-pointer select-none whitespace-nowrap overflow-hidden hover:text-foreground";
-  const tdCls   = "px-3 py-1.5 border-b border-border align-middle overflow-hidden group-hover:bg-black/[0.02]";
+  const tdCls   = "px-3 py-1.5 border-b border-border align-middle overflow-hidden group-hover:bg-black/[0.02] dark:group-hover:bg-white/[0.03]";
 
   const colgroup = (
     <colgroup>
@@ -100,7 +100,7 @@ export default function TransactionTable({ spending, credits, categories, initia
   function TxRow({ tx, creditStyle }) {
     const color = getCatColor(tx.cat);
     return (
-      <tr onClick={() => onOpenModal(tx)} className="cursor-pointer even:bg-[#f7f8fa] group">
+      <tr onClick={() => onOpenModal(tx)} className="cursor-pointer even:bg-[#f7f8fa] dark:even:bg-white/[0.03] group">
         <td className={`${tdCls} text-muted-foreground whitespace-nowrap text-xs`}>{tx.date}</td>
         <td className={`${tdCls} font-medium`} title={tx.merchant}>
           <div className="flex items-center gap-2 min-w-0 w-full">
