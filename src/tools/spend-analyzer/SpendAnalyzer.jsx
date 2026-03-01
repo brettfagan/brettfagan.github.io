@@ -5,11 +5,10 @@ import { CARDS } from './lib/constants';
 import { useAuth } from './context/AuthContext';
 import { useCsvRules } from './context/CsvRulesContext';
 import { useURLParam } from './lib/useURLParam';
-import { Button } from '@/components/ui/button';
 import ImportSidebar from './components/ImportSidebar';
 import ResultsView from './components/ResultsView';
 import AuthButton from './components/AuthButton';
-import CategoryManager from './components/CategoryManager';
+import SettingsPage from './components/SettingsPage';
 import MySpendingPage from './components/MySpendingPage';
 import MyBudgetPage from './components/MyBudgetPage';
 import BulkUpdateDialog from './components/BulkUpdateDialog';
@@ -21,11 +20,10 @@ export default function SpendAnalyzer() {
   const [loadedData, setLoadedData] = useState({});
   const [results, setResults] = useState(null);
   const [sidebarKey, setSidebarKey] = useState(0);
-  const [catMgrOpen, setCatMgrOpen] = useState(false);
   const [bulkDialog, setBulkDialog] = useState(null);
   const [page, setPage] = useURLParam('tab', 'analyzer');
 
-  // Redirect to analyzer if user signs out while on my-spending
+  // Redirect to analyzer if user signs out while on an auth-only page
   useEffect(() => {
     if (!loading && !user) setPage('analyzer');
   }, [user, loading]);
@@ -109,7 +107,7 @@ export default function SpendAnalyzer() {
     setSidebarKey(k => k + 1);
   }
 
-  const isFull = page === 'my-spending' || page === 'my-budget';
+  const isFull = ['my-spending', 'my-budget', 'settings'].includes(page);
 
   return (
     <>
@@ -122,9 +120,10 @@ export default function SpendAnalyzer() {
           {user && (
             <nav className="flex gap-0.5 mr-3">
               {[
-                { id: 'analyzer', label: 'Analyzer' },
+                { id: 'analyzer',    label: 'Analyzer'    },
                 { id: 'my-spending', label: 'My Spending' },
-                { id: 'my-budget', label: 'My Budget' },
+                { id: 'my-budget',   label: 'My Budget'   },
+                { id: 'settings',    label: 'Settings'    },
               ].map(({ id, label }) => (
                 <button
                   key={id}
@@ -139,16 +138,6 @@ export default function SpendAnalyzer() {
                 </button>
               ))}
             </nav>
-          )}
-          {user && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCatMgrOpen(true)}
-              className="font-mono text-[11px] font-bold tracking-[0.5px] mr-3 shadow-none hover:text-primary hover:border-primary"
-            >
-              ⚙ Settings
-            </Button>
           )}
           <AuthButton />
           <button
@@ -174,30 +163,36 @@ export default function SpendAnalyzer() {
           />
         )}
 
-        <div className="px-9 py-7 overflow-y-auto">
-          {page === 'my-spending' ? (
+        {page === 'my-spending' ? (
+          <div className="px-9 py-7 overflow-y-auto">
             <MySpendingPage />
-          ) : page === 'my-budget' ? (
+          </div>
+        ) : page === 'my-budget' ? (
+          <div className="px-9 py-7 overflow-y-auto">
             <MyBudgetPage />
-          ) : results ? (
-            <ResultsView allTransactions={results} onReCategorize={handleReCategorize} onDeleteTransaction={handleDeleteTransaction} />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground text-center">
-              <div className="text-[40px]">◈</div>
-              <p style={{ maxWidth: '300px', lineHeight: 1.8 }}>
-                Import data from one or more cards via Plaid JSON or CSV, then click Analyze.
-              </p>
-              {!loading && !user && (
-                <p style={{ maxWidth: '300px', lineHeight: 1.8, marginTop: '12px', fontSize: '11px' }}>
-                  Sign in to save imports and manage categories.
+          </div>
+        ) : page === 'settings' ? (
+          <SettingsPage />
+        ) : (
+          <div className="px-9 py-7 overflow-y-auto">
+            {results ? (
+              <ResultsView allTransactions={results} onReCategorize={handleReCategorize} onDeleteTransaction={handleDeleteTransaction} />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground text-center">
+                <div className="text-[40px]">◈</div>
+                <p style={{ maxWidth: '300px', lineHeight: 1.8 }}>
+                  Import data from one or more cards via Plaid JSON or CSV, then click Analyze.
                 </p>
-              )}
-            </div>
-          )}
-        </div>
+                {!loading && !user && (
+                  <p style={{ maxWidth: '300px', lineHeight: 1.8, marginTop: '12px', fontSize: '11px' }}>
+                    Sign in to save imports and manage categories.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
-
-      <CategoryManager open={catMgrOpen} onClose={() => setCatMgrOpen(false)} />
 
       {bulkDialog && (
         <BulkUpdateDialog
