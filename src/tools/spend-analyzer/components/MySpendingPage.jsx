@@ -99,12 +99,17 @@ export default function MySpendingPage() {
   }, [user]);
 
   const handleBulkDelete = useCallback(async (ids) => {
-    const { error } = await supabase
-      .from('imported_transactions')
-      .delete()
-      .in('id', ids)
-      .eq('user_id', user.id);
-    if (!error) setTransactions(prev => prev.filter(tx => !ids.includes(tx._id)));
+    const CHUNK = 100;
+    for (let i = 0; i < ids.length; i += CHUNK) {
+      const chunk = ids.slice(i, i + CHUNK);
+      const { error } = await supabase
+        .from('imported_transactions')
+        .delete()
+        .in('id', chunk)
+        .eq('user_id', user.id);
+      if (error) return;
+    }
+    setTransactions(prev => prev.filter(tx => !ids.includes(tx._id)));
   }, [user]);
 
   const handleReCategorize = useCallback(async (id, cat, catDetail, applyToSimilar, applyToFuture) => {
