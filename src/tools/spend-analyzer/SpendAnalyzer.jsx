@@ -194,6 +194,11 @@ export default function SpendAnalyzer() {
         )}
       </div>
 
+      <footer className="border-t border-border px-12 py-3 flex gap-4 text-[11px] text-muted-foreground">
+        <a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a>
+        <a href="/terms" className="hover:text-foreground transition-colors">Terms of Service</a>
+      </footer>
+
       {bulkDialog && (
         <BulkUpdateDialog
           step={bulkDialog.step}
