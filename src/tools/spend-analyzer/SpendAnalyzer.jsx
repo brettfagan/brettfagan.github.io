@@ -1,4 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useTheme } from 'next-themes';
+import { Sun, Moon } from 'lucide-react';
 import { CARDS } from './lib/constants';
 import { useAuth } from './context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -11,6 +13,7 @@ import MyBudgetPage from './components/MyBudgetPage';
 
 export default function SpendAnalyzer() {
   const { user, loading } = useAuth();
+  const { resolvedTheme, setTheme } = useTheme();
   const [loadedData, setLoadedData] = useState({});
   const [results, setResults] = useState(null);
   const [sidebarKey, setSidebarKey] = useState(0);
@@ -123,6 +126,13 @@ export default function SpendAnalyzer() {
             </Button>
           )}
           <AuthButton />
+          <button
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            className="ml-2 flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground hover:bg-muted transition-colors"
+            aria-label="Toggle theme"
+          >
+            {resolvedTheme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
         </div>
       </header>
 
