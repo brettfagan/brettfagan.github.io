@@ -27,7 +27,9 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
   const [excludedOpen, setExcludedOpen] = useState(true);
   const [tableSelection, setTableSelection] = useState(() => new Set());
   const [selectionClearToken, setSelectionClearToken] = useState(0);
-  const [bulkDeletePending, setBulkDeletePending] = useState(false);
+  // bulkDeletePhase: null | 'confirm' | 'deleting'
+  const [bulkDeletePhase, setBulkDeletePhase] = useState(null);
+  const [bulkDeleteCount, setBulkDeleteCount] = useState(0);
 
   const { spending, credits, excluded, cats, maxCat, grandTotal, postedTotal, postedSpend, pendingSpend, pendingTotal, totalCredits, dateRange } = useMemo(() => {
     const spending = allTransactions.filter(tx => tx.amount > 0 && !excludedKeys.includes(tx.cat));
@@ -163,7 +165,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         {onBulkDelete && tableSelection.size > 0 && (
           <div className="flex items-center gap-3">
             <span className="text-muted-foreground text-xs">{tableSelection.size} selected</span>
-            <Button size="sm" variant="destructive" onClick={() => setBulkDeletePending(true)}>
+            <Button size="sm" variant="destructive" onClick={() => { setBulkDeleteCount(tableSelection.size); setBulkDeletePhase('confirm'); }}>
               Delete Selected
             </Button>
             <Button
@@ -197,22 +199,37 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         } : undefined}
       />
 
-      {/* ── Bulk delete confirmation dialog ──────────────────────────────── */}
+      {/* ── Bulk delete dialog ───────────────────────────────────────────── */}
       {onBulkDelete && (
-        <Dialog open={bulkDeletePending} onOpenChange={setBulkDeletePending}>
+        <Dialog
+          open={bulkDeletePhase !== null}
+          onOpenChange={open => { if (!open && bulkDeletePhase !== 'deleting') setBulkDeletePhase(null); }}
+        >
           <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete {tableSelection.size} transaction{tableSelection.size !== 1 ? 's' : ''}?</DialogTitle>
-              <DialogDescription>This cannot be undone.</DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setBulkDeletePending(false)}>Cancel</Button>
-              <Button variant="destructive" onClick={async () => {
-                await onBulkDelete([...tableSelection]);
-                setSelectionClearToken(t => t + 1);
-                setBulkDeletePending(false);
-              }}>Delete</Button>
-            </DialogFooter>
+            {bulkDeletePhase === 'confirm' && (<>
+              <DialogHeader>
+                <DialogTitle>Delete {bulkDeleteCount} transaction{bulkDeleteCount !== 1 ? 's' : ''}?</DialogTitle>
+                <DialogDescription>This cannot be undone.</DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setBulkDeletePhase(null)}>Cancel</Button>
+                <Button variant="destructive" onClick={async () => {
+                  const ids = [...tableSelection];
+                  setBulkDeletePhase('deleting');
+                  await onBulkDelete(ids);
+                  setSelectionClearToken(t => t + 1);
+                  setBulkDeletePhase(null);
+                }}>Delete</Button>
+              </DialogFooter>
+            </>)}
+
+            {bulkDeletePhase === 'deleting' && (
+              <DialogHeader>
+                <DialogTitle>Deleting {bulkDeleteCount} transaction{bulkDeleteCount !== 1 ? 's' : ''}…</DialogTitle>
+                <DialogDescription>Please wait.</DialogDescription>
+              </DialogHeader>
+            )}
+
           </DialogContent>
         </Dialog>
       )}

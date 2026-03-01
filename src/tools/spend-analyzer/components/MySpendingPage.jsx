@@ -6,6 +6,8 @@ import { fmtShortDate } from '../lib/format';
 import { useURLParam } from '../lib/useURLParam';
 import ResultsView from './ResultsView';
 import BulkUpdateDialog from './BulkUpdateDialog';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -42,6 +44,8 @@ export default function MySpendingPage() {
   const { rules, saveRule } = useCsvRules();
   const [transactions, setTransactions] = useState([]);
   const [bulkDialog, setBulkDialog] = useState(null);
+  const [deleteResult, setDeleteResult] = useState(null);
+  // deleteResult shape: { success: boolean, count: number }
   // bulkDialog shape: { step, id, merchant, originalCat, cat, catDetail, applyToFuture, count }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -90,21 +94,41 @@ export default function MySpendingPage() {
   }
 
   const handleDeleteTransaction = useCallback(async (id) => {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('imported_transactions')
       .delete()
+      .select('id')
       .eq('id', id)
       .eq('user_id', user.id);
-    if (!error) setTransactions(prev => prev.filter(tx => tx._id !== id));
+    if (!error && data?.length > 0) setTransactions(prev => prev.filter(tx => tx._id !== id));
   }, [user]);
 
   const handleBulkDelete = useCallback(async (ids) => {
-    const { error } = await supabase
-      .from('imported_transactions')
-      .delete()
-      .in('id', ids)
-      .eq('user_id', user.id);
-    if (!error) setTransactions(prev => prev.filter(tx => !ids.includes(tx._id)));
+    const CHUNK = 100;
+    const deletedIds = [];
+
+    for (let i = 0; i < ids.length; i += CHUNK) {
+      const chunk = ids.slice(i, i + CHUNK);
+      const { data, error } = await supabase
+        .from('imported_transactions')
+        .delete()
+        .select('id')
+        .in('id', chunk)
+        .eq('user_id', user.id);
+      if (error) {
+        if (deletedIds.length > 0) {
+          setTransactions(prev => prev.filter(tx => !deletedIds.includes(tx._id)));
+        }
+        setDeleteResult({ success: false, count: ids.length, deleted: deletedIds.length });
+        return false;
+      }
+      (data || []).forEach(r => deletedIds.push(r.id));
+    }
+
+    setTransactions(prev => prev.filter(tx => !deletedIds.includes(tx._id)));
+    const allDeleted = deletedIds.length === ids.length;
+    setDeleteResult({ success: allDeleted, count: ids.length, deleted: deletedIds.length });
+    return allDeleted;
   }, [user]);
 
   const handleReCategorize = useCallback(async (id, cat, catDetail, applyToSimilar, applyToFuture) => {
@@ -282,6 +306,37 @@ export default function MySpendingPage() {
           hideExcluded
           syncFiltersToURL
         />
+      )}
+
+      {deleteResult && (
+        <Dialog open onOpenChange={() => setDeleteResult(null)}>
+          <DialogContent>
+            {deleteResult.success ? (<>
+              <DialogHeader>
+                <DialogTitle>Deleted</DialogTitle>
+                <DialogDescription>
+                  {deleteResult.count} transaction{deleteResult.count !== 1 ? 's' : ''} removed successfully.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button onClick={() => setDeleteResult(null)}>Done</Button>
+              </DialogFooter>
+            </>) : (<>
+              <DialogHeader>
+                <DialogTitle>Delete incomplete</DialogTitle>
+                <DialogDescription>
+                  {deleteResult.deleted > 0
+                    ? `${deleteResult.deleted} of ${deleteResult.count} transaction${deleteResult.count !== 1 ? 's' : ''} were deleted. The rest could not be removed — this may be a permissions issue.`
+                    : `None of the ${deleteResult.count} transaction${deleteResult.count !== 1 ? 's' : ''} were deleted. Check your database permissions or try again.`
+                  }
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDeleteResult(null)}>Close</Button>
+              </DialogFooter>
+            </>)}
+          </DialogContent>
+        </Dialog>
       )}
 
       {bulkDialog && (
