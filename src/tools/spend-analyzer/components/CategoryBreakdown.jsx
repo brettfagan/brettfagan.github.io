@@ -31,7 +31,7 @@ export default function CategoryBreakdown({
 
   return (
     <div className="mb-9">
-      <div className="font-mono text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground mb-3.5 pb-2.5 border-b border-border">
+      <div className="text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground mb-3.5 pb-2.5 border-b border-border">
         Spending by Category
         {pendingCount > 0 && (
           <span className="font-normal text-[10px] tracking-normal text-amber-600">
@@ -69,7 +69,7 @@ export default function CategoryBreakdown({
               className={`grid ${showMonthlyAvg ? 'grid-cols-[200px_1fr_80px_90px_80px]' : 'grid-cols-[200px_1fr_90px_80px]'} items-center gap-4 py-2.5 border-b border-border cursor-pointer rounded transition-colors hover:bg-black/2.5 dark:hover:bg-white/4 hover:px-2 hover:-mx-2`}
               onClick={() => handleCatClick(cat)}
             >
-              <div className="font-mono text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis" style={{ color }}>
+              <div className="text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis" style={{ color }}>
                 {fmtCat(cat)}
                 {subs.length > 0 && (
                   <span className="text-[9px] opacity-60"> {isOpen ? "▼" : "▶"}</span>
@@ -112,7 +112,7 @@ export default function CategoryBreakdown({
                     onFilter(cat, detail);
                   }}
                 >
-                  <div className="font-mono text-[11px] font-medium text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+                  <div className="text-[11px] font-medium text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
                     {getDetailLabel(detail)}
                   </div>
                   <div className="bg-muted rounded-sm h-1.5 overflow-hidden">
@@ -126,11 +126,11 @@ export default function CategoryBreakdown({
                     />
                   </div>
                   {showMonthlyAvg && (
-                    <div className="font-mono text-[11px] font-semibold text-right" style={{ color }}>
+                    <div className="text-[11px] font-semibold text-right" style={{ color }}>
                       {fmt(sd.total / numMonths)}<span className="text-[9px] font-normal text-muted-foreground">/mo</span>
                     </div>
                   )}
-                  <div className={`text-right ${showMonthlyAvg ? 'text-muted-foreground text-[11px]' : 'font-mono text-[11px] font-semibold'}`} style={showMonthlyAvg ? undefined : { color }}>
+                  <div className={`text-right ${showMonthlyAvg ? 'text-muted-foreground text-[11px]' : 'text-[11px] font-semibold'}`} style={showMonthlyAvg ? undefined : { color }}>
                     {fmt(sd.total)}
                   </div>
                   <div className="text-[10px] text-muted-foreground text-right">
@@ -144,14 +144,14 @@ export default function CategoryBreakdown({
       })}
 
       <div className={`grid ${showMonthlyAvg ? 'grid-cols-[200px_1fr_80px_90px_80px]' : 'grid-cols-[200px_1fr_90px_80px]'} items-center gap-4 py-3 border-t-2 border-border`}>
-        <div className="font-mono text-xs font-bold">Total</div>
+        <div className="text-xs font-bold">Total</div>
         <div />
         {showMonthlyAvg && (
-          <div className="text-right font-mono text-[13px] font-extrabold">
+          <div className="text-right text-[13px] font-extrabold">
             {fmt(grandTotal / numMonths)}<span className="text-[10px] font-normal text-muted-foreground">/mo</span>
           </div>
         )}
-        <div className={`text-right ${showMonthlyAvg ? 'text-muted-foreground text-[11px]' : 'font-mono text-[13px] font-extrabold'}`}>{fmt(grandTotal)}</div>
+        <div className={`text-right ${showMonthlyAvg ? 'text-muted-foreground text-[11px]' : 'text-[13px] font-extrabold'}`}>{fmt(grandTotal)}</div>
         <div className="text-right text-muted-foreground text-[11px]">
           {spending.filter((t) => !t.pending).length} posted · {credits.length} refund{credits.length !== 1 ? "s" : ""}
         </div>

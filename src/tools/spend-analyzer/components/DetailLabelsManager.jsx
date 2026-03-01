@@ -8,10 +8,10 @@ const editingCls  = "bg-muted border border-border rounded-md py-3.5 px-4";
 const blockCls    = "flex flex-col gap-2.5";
 const editRowCls  = "flex items-center gap-2.5";
 const labelCls    = "text-[10px] font-bold tracking-[1px] uppercase text-muted-foreground w-30 shrink-0";
-const inputCls    = "flex-1 bg-background border border-border rounded font-mono text-xs text-foreground py-1.5 px-2.5 outline-none focus:border-primary transition-colors";
+const inputCls    = "flex-1 bg-background border border-border rounded text-xs text-foreground py-1.5 px-2.5 outline-none focus:border-primary transition-colors";
 const iconBtnCls  = "bg-transparent border-0 cursor-pointer text-[13px] text-muted-foreground p-0.5 px-1.5 rounded leading-none hover:text-primary hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors";
 const dangerBtnCls = "bg-transparent border-0 cursor-pointer text-[13px] text-muted-foreground p-0.5 px-1.5 rounded leading-none hover:text-destructive hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors";
-const addNewBtnCls = "w-full border border-dashed border-border rounded font-mono text-[11px] font-bold text-muted-foreground py-2 px-3 bg-transparent cursor-pointer tracking-[0.5px] mb-6 hover:text-primary hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors";
+const addNewBtnCls = "w-full border border-dashed border-border rounded text-[11px] font-bold text-muted-foreground py-2 px-3 bg-transparent cursor-pointer tracking-[0.5px] mb-6 hover:text-primary hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors";
 const addFormCls  = "bg-muted border border-border rounded-lg p-4 flex flex-col gap-2.5 mb-6";
 
 // ── DetailLabelRow ────────────────────────────────────────────────────────────
@@ -66,10 +66,10 @@ function DetailLabelRow({ entry, onSave, onDelete }) {
           />
         </div>
         <div className="flex gap-2 mt-1">
-          <Button size="sm" onClick={handleSave} disabled={saving || !label.trim()} className="font-mono text-[11px] font-bold">
+          <Button size="sm" onClick={handleSave} disabled={saving || !label.trim()} className="text-[11px] font-bold">
             {saving ? 'Saving…' : 'Save'}
           </Button>
-          <Button size="sm" variant="outline" onClick={handleCancel} className="font-mono text-[11px] font-bold">Cancel</Button>
+          <Button size="sm" variant="outline" onClick={handleCancel} className="text-[11px] font-bold">Cancel</Button>
         </div>
       </div>
     </div>
@@ -145,7 +145,7 @@ function AddDetailLabelForm({ onAdd }) {
       </div>
       {error && <p className="text-[11px] text-destructive">{error}</p>}
       <div className="flex gap-2 mt-1">
-        <Button size="sm" type="submit" disabled={saving} className="font-mono text-[11px] font-bold">
+        <Button size="sm" type="submit" disabled={saving} className="text-[11px] font-bold">
           {saving ? 'Adding…' : 'Add Label'}
         </Button>
         <Button
@@ -153,7 +153,7 @@ function AddDetailLabelForm({ onAdd }) {
           variant="outline"
           type="button"
           onClick={() => { setOpen(false); setError(''); setCatDetail(''); setLabel(''); setLabelTouched(false); }}
-          className="font-mono text-[11px] font-bold"
+          className="text-[11px] font-bold"
         >
           Cancel
         </Button>

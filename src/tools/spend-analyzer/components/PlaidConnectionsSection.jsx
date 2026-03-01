@@ -178,20 +178,20 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
 
   if (!user) return null;
 
-  const inputCls = "w-full bg-background border border-border rounded text-xs font-mono py-1.5 px-2 outline-none text-foreground placeholder:text-muted-foreground focus:border-primary transition-colors";
+  const inputCls = "w-full bg-background border border-border rounded text-xs py-1.5 px-2 outline-none text-foreground placeholder:text-muted-foreground focus:border-primary transition-colors";
   const iconBtnCls = "bg-transparent border-0 cursor-pointer text-muted-foreground text-[13px] p-0.5 leading-none hover:text-foreground transition-colors";
 
   return (
     <div className="mb-4">
       {/* ── Section header ─────────────────────────────────────────────────── */}
       <div className="flex justify-between items-center mb-2">
-        <span className="font-mono text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em]">
+        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em]">
           Plaid API
         </span>
         <Button
           variant={showAdd ? 'outline' : 'default'}
           size="sm"
-          className="font-mono text-[11px] font-bold h-auto py-0.5 px-2"
+          className="text-[11px] font-bold h-auto py-0.5 px-2"
           onClick={() => setShowAdd(s => !s)}
         >
           {showAdd ? 'Cancel' : '+ Add'}
@@ -233,7 +233,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
           )}
           <Button
             size="sm"
-            className="w-full font-mono text-[11px] font-bold"
+            className="w-full text-[11px] font-bold"
             onClick={addConnection}
             disabled={fetching.new || !newForm.access_token || !newForm.card_name}
           >
@@ -268,7 +268,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="font-mono text-[11px] font-bold h-auto py-0.5 px-2"
+                      className="text-[11px] font-bold h-auto py-0.5 px-2"
                       onClick={() => syncConnection(conn)}
                       disabled={fetching[`sync_${conn.id}`]}
                     >
@@ -309,7 +309,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
                 />
                 <Button
                   size="sm"
-                  className="font-mono text-[11px] font-bold whitespace-nowrap h-auto py-0.5 px-2.5"
+                  className="text-[11px] font-bold whitespace-nowrap h-auto py-0.5 px-2.5"
                   onClick={() => updateToken(conn)}
                   disabled={updatingToken[conn.id] || !editingToken[conn.id]}
                 >
@@ -327,7 +327,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
                   {getCursor(conn.id) && (
                     <Button
                       size="sm"
-                      className="w-full font-mono text-[11px] font-bold"
+                      className="w-full text-[11px] font-bold"
                       onClick={() => syncConnection(conn)}
                       disabled={fetching[conn.id] || fetching[`sync_${conn.id}`]}
                     >
@@ -337,7 +337,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
                   <Button
                     variant={getCursor(conn.id) ? 'outline' : 'default'}
                     size="sm"
-                    className="w-full font-mono text-[11px] font-bold"
+                    className="w-full text-[11px] font-bold"
                     onClick={() => fetchSaved(conn)}
                     disabled={fetching[conn.id] || fetching[`sync_${conn.id}`]}
                   >

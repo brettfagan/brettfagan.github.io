@@ -98,33 +98,33 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
       <div className={`grid gap-4 mb-8 ${hideExcluded ? 'grid-cols-5' : 'grid-cols-6'}`}>
         <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Cards</div>
-          <div className="font-mono text-[24px] font-extrabold text-primary">{cardSet.size}</div>
+          <div className="text-[24px] font-extrabold text-primary">{cardSet.size}</div>
           <div className="text-[11px] text-muted-foreground mt-1">{[...cardSet].join(' · ')}</div>
         </div>
         <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Total Posted Spend</div>
-          <div className="font-mono text-[24px] font-extrabold text-primary">{fmt(postedTotal)}</div>
+          <div className="text-[24px] font-extrabold text-primary">{fmt(postedTotal)}</div>
           <div className="text-[11px] text-muted-foreground mt-1">{postedSpend.length} transactions</div>
         </div>
         <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Credits / Refunds</div>
-          <div className="font-mono text-[24px] font-extrabold text-cyan-600">{fmt(totalCredits)}</div>
+          <div className="text-[24px] font-extrabold text-cyan-600">{fmt(totalCredits)}</div>
           <div className="text-[11px] text-muted-foreground mt-1">{credits.length} transaction{credits.length !== 1 ? 's' : ''}</div>
         </div>
         <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Total Net Spend</div>
-          <div className="font-mono text-[24px] font-extrabold text-foreground">{fmt(postedTotal - totalCredits)}</div>
+          <div className="text-[24px] font-extrabold text-foreground">{fmt(postedTotal - totalCredits)}</div>
           <div className="text-[11px] text-muted-foreground mt-1">posted minus refunds</div>
         </div>
         <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Total Pending Spend</div>
-          <div className="font-mono text-[24px] font-extrabold text-amber-600">{fmt(pendingTotal)}</div>
+          <div className="text-[24px] font-extrabold text-amber-600">{fmt(pendingTotal)}</div>
           <div className="text-[11px] text-muted-foreground mt-1">{pendingSpend.length} transactions</div>
         </div>
         {!hideExcluded && (
           <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
             <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Excluded Transactions</div>
-            <div className="font-mono text-[24px] font-extrabold text-muted-foreground">{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))}</div>
+            <div className="text-[24px] font-extrabold text-muted-foreground">{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))}</div>
             <div className="text-[11px] text-muted-foreground mt-1">{excluded.length} transaction{excluded.length !== 1 ? 's' : ''}</div>
           </div>
         )}
@@ -133,7 +133,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
       {/* ── Save to Database button ──────────────────────────────────────── */}
       {user && !hideImport && (
         <div className="flex justify-end -mt-1 mb-5">
-          <Button variant="outline" size="sm" onClick={() => setImportModalOpen(true)} className="font-mono text-[11px] font-bold">
+          <Button variant="outline" size="sm" onClick={() => setImportModalOpen(true)} className="text-[11px] font-bold">
             ↑ Save to Database
           </Button>
         </div>
@@ -153,7 +153,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
       />
 
       {/* ── Transactions heading ─────────────────────────────────────────── */}
-      <div className="font-mono text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground mb-3.5 pb-2.5 border-b border-border">
+      <div className="text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground mb-3.5 pb-2.5 border-b border-border">
         Transactions
       </div>
       <TransactionTable
@@ -180,7 +180,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         <>
           <div
             onClick={() => setExcludedOpen(o => !o)}
-            className={`font-mono text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground mt-8 pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${excludedOpen ? 'mb-2.5' : 'mb-0'}`}
+            className={`text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground mt-8 pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${excludedOpen ? 'mb-2.5' : 'mb-0'}`}
           >
             <span>
               Excluded{' '}
@@ -202,12 +202,12 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
             </colgroup>
             <thead>
               <tr>
-                <th className="font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Date</th>
-                <th className="font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Merchant</th>
-                <th className="font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Category</th>
-                <th className="font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Subcategory</th>
-                <th className="font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Card</th>
-                <th className="font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-right px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Amount</th>
+                <th className="text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Date</th>
+                <th className="text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Merchant</th>
+                <th className="text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Category</th>
+                <th className="text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Subcategory</th>
+                <th className="text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Card</th>
+                <th className="text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-right px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Amount</th>
                 <th className="border-b border-border px-3 py-2" />
               </tr>
             </thead>
@@ -226,7 +226,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
                     </div>
                   </td>
                   <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden group-hover:bg-black/2 dark:group-hover:bg-white/3">
-                    <span className="inline-block text-[10px] font-mono px-1.75 py-0.5 rounded-[3px] border whitespace-nowrap text-muted-foreground border-muted-foreground/40">{fmtCat(tx.cat)}</span>
+                    <span className="inline-block text-[10px] px-1.75 py-0.5 rounded-[3px] border whitespace-nowrap text-muted-foreground border-muted-foreground/40">{fmtCat(tx.cat)}</span>
                   </td>
                   <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-[11px] text-muted-foreground text-ellipsis whitespace-nowrap group-hover:bg-black/2 dark:group-hover:bg-white/3">
                     {tx.cat_detail ? fmtDetail(tx.cat_detail) : ''}
@@ -259,7 +259,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
             <>
               <div className="fixed inset-0 bg-black/45 z-300" onClick={() => setPendingDeleteExcluded(null)} />
               <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background border border-border rounded-[10px] p-7 z-301 min-w-[320px] max-w-[90vw] shadow-2xl">
-                <div className="font-mono text-xs font-bold tracking-[1px] uppercase text-muted-foreground mb-3">Delete Transaction</div>
+                <div className="text-xs font-bold tracking-[1px] uppercase text-muted-foreground mb-3">Delete Transaction</div>
                 <div className="font-semibold text-sm mb-1">{pendingDeleteExcluded.merchant}</div>
                 <div className="text-xs text-muted-foreground mb-5">{pendingDeleteExcluded.date} · {fmt(Math.abs(pendingDeleteExcluded.amount))}</div>
                 <div className="flex gap-2 justify-end">

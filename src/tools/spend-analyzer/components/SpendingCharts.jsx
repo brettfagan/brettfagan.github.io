@@ -98,7 +98,7 @@ export default function SpendingCharts({ spending, credits, cats }) {
       {/* ── Category donut ─────────────────────────────────────────────── */}
       {showDonut && (
         <div>
-          <div className="font-mono text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground mb-3">
+          <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground mb-3">
             Category Mix
           </div>
           <ResponsiveContainer width="100%" height={240}>
@@ -126,10 +126,10 @@ export default function SpendingCharts({ spending, credits, cats }) {
       {showMonthly && (
         <div>
           <div className="flex items-baseline gap-3 mb-3">
-            <div className="font-mono text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground">
+            <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground">
               Monthly Spend
             </div>
-            <div className="font-mono text-[11px] text-muted-foreground">
+            <div className="text-[11px] text-muted-foreground">
               avg {fmt(monthlyData.reduce((s, d) => s + d.spend, 0) / monthlyData.length)}/mo
             </div>
           </div>

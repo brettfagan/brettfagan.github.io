@@ -113,7 +113,7 @@ export default function SpendAnalyzer() {
     <>
       <header className="px-12 py-5 border-b border-border flex items-center justify-between gap-5">
         <div className="flex items-baseline gap-5">
-          <h1 className="font-mono text-[28px] font-extrabold tracking-[-0.5px]">Spend Analyzer</h1>
+          <h1 className="text-[28px] font-extrabold tracking-[-0.5px]">Spend Analyzer</h1>
           <span className="text-muted-foreground text-xs">BrettLabs</span>
         </div>
         <div className="flex items-center">
@@ -128,7 +128,7 @@ export default function SpendAnalyzer() {
                 <button
                   key={id}
                   onClick={() => setPage(id)}
-                  className={`border-b-2 px-3 py-1.5 font-mono text-xs font-bold tracking-[0.3px] transition-colors bg-transparent border-x-0 border-t-0 cursor-pointer ${
+                  className={`border-b-2 px-3 py-1.5 text-xs font-bold tracking-[0.3px] transition-colors bg-transparent border-x-0 border-t-0 cursor-pointer ${
                     page === id
                       ? 'text-primary border-b-primary'
                       : 'text-muted-foreground border-b-transparent hover:text-foreground'

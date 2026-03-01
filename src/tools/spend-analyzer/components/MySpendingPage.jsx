@@ -176,13 +176,13 @@ export default function MySpendingPage() {
     });
   }, [transactions, filterMode, filterMonth, filterStart, filterEnd]);
 
-  const controlCls = "bg-muted border border-border rounded text-xs font-mono py-1.5 px-3 outline-none cursor-pointer text-foreground";
+  const controlCls = "bg-muted border border-border rounded text-xs py-1.5 px-3 outline-none cursor-pointer text-foreground";
 
   return (
     <>
       {/* ── Page heading ────────────────────────────────────────────────── */}
       <div className="mb-5">
-        <h2 className="font-mono text-[22px] font-extrabold tracking-[-0.3px]">My Spending</h2>
+        <h2 className="text-[22px] font-extrabold tracking-[-0.3px]">My Spending</h2>
         <p className="text-xs text-muted-foreground mt-1">All transactions saved to your account.</p>
       </div>
 
@@ -194,7 +194,7 @@ export default function MySpendingPage() {
             {cardSummary.map(([card, { count, minDate, maxDate }]) => (
               <div key={card} className="bg-muted border border-border rounded-lg px-5 py-4.5">
                 <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">{card}</div>
-                <div className="font-mono text-[22px] font-extrabold text-primary">{count}</div>
+                <div className="text-[22px] font-extrabold text-primary">{count}</div>
                 <div className="text-[11px] text-muted-foreground mt-1">transactions</div>
                 <div className="text-[11px] text-muted-foreground mt-1">{fmtShortDate(minDate)} – {fmtShortDate(maxDate)}</div>
               </div>
@@ -210,7 +210,7 @@ export default function MySpendingPage() {
             <button
               key={mode}
               onClick={() => setFilterMode(mode)}
-              className={`font-mono text-[11px] font-bold px-3.5 py-1.5 cursor-pointer transition-colors border-0 whitespace-nowrap ${i < arr.length - 1 ? 'border-r border-border' : ''} ${filterMode === mode ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:text-foreground'}`}
+              className={`text-[11px] font-bold px-3.5 py-1.5 cursor-pointer transition-colors border-0 whitespace-nowrap ${i < arr.length - 1 ? 'border-r border-border' : ''} ${filterMode === mode ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:text-foreground'}`}
             >
               {label}
             </button>
@@ -239,7 +239,7 @@ export default function MySpendingPage() {
 
       {/* ── States ──────────────────────────────────────────────────────── */}
       {loading && (
-        <div className="py-12 text-center text-muted-foreground font-mono text-[13px]">
+        <div className="py-12 text-center text-muted-foreground text-[13px]">
           Loading transactions…
         </div>
       )}
@@ -251,14 +251,14 @@ export default function MySpendingPage() {
       )}
 
       {!loading && !error && transactions.length === 0 && (
-        <div className="py-12 text-center text-muted-foreground font-mono text-[13px] leading-loose">
+        <div className="py-12 text-center text-muted-foreground text-[13px] leading-loose">
           No saved transactions yet.<br />
           Use the Analyzer to import transactions to your account.
         </div>
       )}
 
       {!loading && !error && transactions.length > 0 && filteredTransactions.length === 0 && (
-        <div className="py-12 text-center text-muted-foreground font-mono text-[13px]">
+        <div className="py-12 text-center text-muted-foreground text-[13px]">
           No transactions for this period.
         </div>
       )}
