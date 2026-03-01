@@ -287,7 +287,7 @@ export default function CsvRulesManager() {
   const [resetting, setResetting] = useState(false);
 
   async function handleReset() {
-    if (!confirm('Reset all CSV rules to defaults? This will delete any custom rules.')) return;
+    if (!confirm('Reset all rules to defaults? This will delete any custom rules.')) return;
     setResetting(true);
     await resetToDefaults();
     setResetting(false);
@@ -298,8 +298,8 @@ export default function CsvRulesManager() {
   return (
     <>
       <p className="text-[11px] text-muted-foreground leading-[1.7] mb-4 px-3 py-2.5 bg-muted rounded-md border border-border">
-        Rules are tested in order — first match wins. Each rule tests the CSV
-        category column, merchant description, or both using a regex pattern.
+        Rules are tested in order — first match wins. Each rule tests the
+        transaction category, merchant description, or both using a regex pattern.
       </p>
 
       <div className="flex flex-col gap-0.5 mb-5">

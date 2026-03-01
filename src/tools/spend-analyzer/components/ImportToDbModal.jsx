@@ -1,9 +1,28 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useCsvRules } from '../context/CsvRulesContext';
 import { fmt } from '../lib/format';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+
+// Apply user-defined rules to a transaction, falling back to existing category.
+// Unlike guessCat(), this does NOT apply hardcoded fallback patterns — it only
+// honours rules the user has explicitly configured.
+function applyRules(tx, rules) {
+  const catStr  = (tx.cat      || '').toUpperCase();
+  const descStr = (tx.merchant || '').toUpperCase();
+  for (const rule of rules) {
+    let re;
+    try { re = new RegExp(rule.pattern, 'i'); } catch { continue; }
+    const matchesCat  = rule.match_field !== 'merchant'  && re.test(catStr);
+    const matchesDesc = rule.match_field !== 'category' && re.test(descStr);
+    if (matchesCat || matchesDesc) {
+      return { cat: rule.cat, cat_detail: rule.cat_detail || null };
+    }
+  }
+  return { cat: tx.cat || null, cat_detail: tx.cat_detail || null };
+}
 
 // ── Breakdown row helper ──────────────────────────────────────────────────────
 function BreakdownRow({ label, count, sum, colorClass = 'text-foreground', sign = '' }) {
@@ -32,6 +51,7 @@ const SectionLabel = ({ children }) => (
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ImportToDbModal({ spending, credits, onClose }) {
   const { user } = useAuth();
+  const { rules } = useCsvRules();
   const [includePending, setIncludePending] = useState(false);
   const [step, setStep] = useState('preview'); // 'preview' | 'importing' | 'done' | 'error'
   const [errorMsg, setErrorMsg] = useState('');
@@ -99,14 +119,16 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
       return;
     }
 
-    const rows = newTxns.map(tx => ({
+    const rows = newTxns.map(tx => {
+      const { cat, cat_detail } = applyRules(tx, rules);
+      return {
       user_id:              user.id,
       date:                 tx.date || null,
       merchant:             tx.merchant || null,
       name:                 tx.name || null,
       amount:               tx.amount,
-      cat:                  tx.cat || null,
-      cat_detail:           tx.cat_detail || null,
+      cat:                  cat,
+      cat_detail:           cat_detail,
       cat_confidence:       tx.cat_confidence || null,
       pending:              tx.pending || false,
       source:               tx.source || null,
@@ -122,7 +144,8 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
       tx_datetime:          tx.datetime || null,
       location:             tx.location && Object.values(tx.location).some(Boolean) ? tx.location : null,
       counterparty:         tx.counterparty?.length ? tx.counterparty : null,
-    }));
+      };
+    });
 
     const { error } = await supabase.from('imported_transactions').insert(rows);
 

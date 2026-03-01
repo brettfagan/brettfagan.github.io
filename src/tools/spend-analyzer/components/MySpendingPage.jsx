@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useCsvRules } from '../context/CsvRulesContext';
 import { fmtShortDate } from '../lib/format';
 import { useURLParam } from '../lib/useURLParam';
 import ResultsView from './ResultsView';
@@ -37,6 +38,7 @@ function mapRow(row) {
 
 export default function MySpendingPage() {
   const { user } = useAuth();
+  const { rules, saveRule } = useCsvRules();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -93,7 +95,7 @@ export default function MySpendingPage() {
     if (!error) setTransactions(prev => prev.filter(tx => tx._id !== id));
   }, [user]);
 
-  const handleReCategorize = useCallback(async (id, cat, catDetail, applyToSimilar) => {
+  const handleReCategorize = useCallback(async (id, cat, catDetail, applyToSimilar, applyToFuture) => {
     if (applyToSimilar) {
       const originalTx = transactions.find(tx => tx._id === id);
       if (!originalTx?.merchant) return;
@@ -119,7 +121,18 @@ export default function MySpendingPage() {
         tx._id === id ? { ...tx, cat, cat_detail: catDetail } : tx
       ));
     }
-  }, [user, transactions]);
+
+    if (applyToFuture) {
+      const originalTx = transactions.find(tx => tx._id === id);
+      if (!originalTx?.merchant) return;
+      const merchant = originalTx.merchant;
+      const escaped = merchant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = `^${escaped}$`;
+      // Update existing exact-match rule for this merchant if one exists, else create.
+      const existing = rules.find(r => r.match_field === 'merchant' && r.pattern === pattern);
+      await saveRule({ ...existing, pattern, match_field: 'merchant', cat, cat_detail: catDetail || null });
+    }
+  }, [user, transactions, rules, saveRule]);
 
   const availableYears = useMemo(() => {
     const yrs = new Set(transactions.map(tx => tx.date?.substring(0, 4)).filter(Boolean));
