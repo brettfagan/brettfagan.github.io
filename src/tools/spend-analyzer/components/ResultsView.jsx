@@ -132,6 +132,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         credits={credits}
         pendingCount={pendingSpend.length}
         onFilter={handleCategoryFilter}
+        showMonthlyAvg={!!user}
       />
 
       {/* ── Transactions heading ─────────────────────────────────────────── */}
