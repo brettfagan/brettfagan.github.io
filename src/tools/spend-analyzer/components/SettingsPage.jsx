@@ -23,7 +23,7 @@ export default function SettingsPage() {
             <li key={id}>
               <button
                 onClick={() => setActiveSection(id)}
-                className={`w-full text-left px-3 py-1.5 rounded-md font-mono text-[12px] font-bold tracking-[0.3px] cursor-pointer border-0 transition-colors ${
+                className={`w-full text-left px-3 py-1.5 rounded-md text-[12px] font-bold tracking-[0.3px] cursor-pointer border-0 transition-colors ${
                   activeSection === id
                     ? 'bg-primary/8 text-primary'
                     : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted'
@@ -41,7 +41,7 @@ export default function SettingsPage() {
         {activeSection === 'categories' && (
           <>
             <div className="mb-6">
-              <h2 className="font-mono text-[22px] font-extrabold tracking-[-0.3px]">Categories</h2>
+              <h2 className="text-[22px] font-extrabold tracking-[-0.3px]">Categories</h2>
               <p className="text-xs text-muted-foreground mt-1">Manage the categories used to classify your transactions.</p>
             </div>
             <CategoryContent />
@@ -51,7 +51,7 @@ export default function SettingsPage() {
         {activeSection === 'rules' && (
           <>
             <div className="mb-6">
-              <h2 className="font-mono text-[22px] font-extrabold tracking-[-0.3px]">Rules</h2>
+              <h2 className="text-[22px] font-extrabold tracking-[-0.3px]">Rules</h2>
               <p className="text-xs text-muted-foreground mt-1">Automatically categorize transactions on import using regex patterns.</p>
             </div>
             <CsvRulesManager />

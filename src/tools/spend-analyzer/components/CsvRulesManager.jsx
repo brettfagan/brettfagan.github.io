@@ -9,10 +9,10 @@ const editingCls  = "bg-muted border border-border rounded-md py-3.5 px-4";
 const blockCls    = "flex flex-col gap-2.5";
 const editRowCls  = "flex items-center gap-2.5";
 const labelCls    = "text-[10px] font-bold tracking-[1px] uppercase text-muted-foreground w-30 shrink-0";
-const inputCls    = "flex-1 bg-background border border-border rounded font-mono text-xs text-foreground py-1.5 px-2.5 outline-none focus:border-primary transition-colors";
+const inputCls    = "flex-1 bg-background border border-border rounded text-xs text-foreground py-1.5 px-2.5 outline-none focus:border-primary transition-colors";
 const iconBtnCls  = "bg-transparent border-0 cursor-pointer text-[13px] text-muted-foreground p-0.5 px-1.5 rounded leading-none hover:text-primary hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors";
 const dangerBtnCls = "bg-transparent border-0 cursor-pointer text-[13px] text-muted-foreground p-0.5 px-1.5 rounded leading-none hover:text-destructive hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors";
-const addNewBtnCls = "w-full border border-dashed border-border rounded font-mono text-[11px] font-bold text-muted-foreground py-2 px-3 bg-transparent cursor-pointer tracking-[0.5px] mb-6 hover:text-primary hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors";
+const addNewBtnCls = "w-full border border-dashed border-border rounded text-[11px] font-bold text-muted-foreground py-2 px-3 bg-transparent cursor-pointer tracking-[0.5px] mb-6 hover:text-primary hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors";
 const addFormCls  = "bg-muted border border-border rounded-lg p-4 flex flex-col gap-2.5 mb-6";
 
 const matchFieldColors = {
@@ -35,7 +35,7 @@ function MatchFieldToggle({ value, onChange }) {
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
-          className={`border rounded-lg cursor-pointer font-mono text-[10px] font-semibold px-2 py-1 transition-colors whitespace-nowrap ${
+          className={`border rounded-lg cursor-pointer text-[10px] font-semibold px-2 py-1 transition-colors whitespace-nowrap ${
             value === o.value
               ? 'bg-primary border-primary text-white'
               : 'bg-transparent border-border text-muted-foreground hover:border-primary hover:text-primary'
@@ -120,11 +120,11 @@ function RuleRow({ rule, index, total, onSave, onDelete, onMove }) {
         </div>
         {/* Pattern */}
         <div className="flex flex-col gap-0.5 min-w-0 overflow-hidden">
-          <span className="font-mono text-[10px] text-foreground overflow-hidden text-ellipsis whitespace-nowrap tracking-[0.2px]" title={rule.pattern}>
+          <span className="text-[10px] text-foreground overflow-hidden text-ellipsis whitespace-nowrap tracking-[0.2px]" title={rule.pattern}>
             {rule.pattern}
           </span>
           {rule.cat_detail && (
-            <span className="font-mono text-[9px] text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis tracking-[0.2px]" title={rule.cat_detail}>
+            <span className="text-[9px] text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis tracking-[0.2px]" title={rule.cat_detail}>
               ↳ {getDetailLabel(rule.cat_detail)}
             </span>
           )}
@@ -176,14 +176,14 @@ function RuleRow({ rule, index, total, onSave, onDelete, onMove }) {
           />
         </div>
         <p className="text-[11px] text-muted-foreground leading-[1.6] mt-1 mb-2 ml-32.5">
-          Optional. Use Plaid detail keys like <code className="font-mono text-[10px] bg-background border border-border rounded-[3px] px-1 py-px text-foreground">{cat}_GROCERIES</code> for drill-down in charts.
+          Optional. Use Plaid detail keys like <code className="text-[10px] bg-background border border-border rounded-[3px] px-1 py-px text-foreground">{cat}_GROCERIES</code> for drill-down in charts.
           Leave blank to use the raw CSV category value.
         </p>
         <div className="flex gap-2 mt-1">
-          <Button size="sm" onClick={handleSave} disabled={saving} className="font-mono text-[11px] font-bold">
+          <Button size="sm" onClick={handleSave} disabled={saving} className="text-[11px] font-bold">
             {saving ? 'Saving…' : 'Save'}
           </Button>
-          <Button size="sm" variant="outline" onClick={handleCancel} className="font-mono text-[11px] font-bold">Cancel</Button>
+          <Button size="sm" variant="outline" onClick={handleCancel} className="text-[11px] font-bold">Cancel</Button>
         </div>
       </div>
     </div>
@@ -265,15 +265,15 @@ function AddRuleForm({ onAdd }) {
         />
       </div>
       <p className="text-[11px] text-muted-foreground leading-[1.6] mt-1 mb-2 ml-32.5">
-        Optional. Use Plaid detail keys like <code className="font-mono text-[10px] bg-background border border-border rounded-[3px] px-1 py-px text-foreground">{cat}_GROCERIES</code> for drill-down in charts.
+        Optional. Use Plaid detail keys like <code className="text-[10px] bg-background border border-border rounded-[3px] px-1 py-px text-foreground">{cat}_GROCERIES</code> for drill-down in charts.
         Leave blank to use the raw CSV category value.
       </p>
       {error && <p className="text-[11px] text-destructive">{error}</p>}
       <div className="flex gap-2 mt-1">
-        <Button size="sm" type="submit" disabled={saving} className="font-mono text-[11px] font-bold">
+        <Button size="sm" type="submit" disabled={saving} className="text-[11px] font-bold">
           {saving ? 'Adding…' : 'Add Rule'}
         </Button>
-        <Button size="sm" variant="outline" type="button" onClick={() => { setOpen(false); setError(''); }} className="font-mono text-[11px] font-bold">
+        <Button size="sm" variant="outline" type="button" onClick={() => { setOpen(false); setError(''); }} className="text-[11px] font-bold">
           Cancel
         </Button>
       </div>
@@ -327,7 +327,7 @@ export default function CsvRulesManager() {
           size="sm"
           onClick={handleReset}
           disabled={resetting}
-          className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive font-mono text-[11px] font-bold"
+          className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive text-[11px] font-bold"
         >
           {resetting ? 'Resetting…' : 'Reset to Defaults'}
         </Button>

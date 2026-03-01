@@ -85,7 +85,7 @@ export default function ImportBlock({ card, onLoad, onClear, rules = [] }) {
         className={`flex items-center justify-between px-3.5 py-1.75 cursor-pointer select-none transition-colors hover:bg-black/3 dark:hover:bg-white/3 bg-muted/40 ${open ? 'border-b border-border' : ''}`}
         onClick={() => setOpen(o => !o)}
       >
-        <span className="font-mono text-xs font-bold">
+        <span className="text-xs font-bold">
           {card.label}{card.sub ? ` — ${card.sub}` : ''}
         </span>
         <span className={`text-[11px] ${loaded ? 'text-primary' : 'text-muted-foreground'}`}>
@@ -97,13 +97,13 @@ export default function ImportBlock({ card, onLoad, onClear, rules = [] }) {
         <div className="p-3.5">
           <Tabs defaultValue="json">
             <TabsList className="w-full mb-3">
-              <TabsTrigger value="json" className="flex-1 font-mono text-[11px] font-bold">Plaid JSON</TabsTrigger>
-              <TabsTrigger value="csv" className="flex-1 font-mono text-[11px] font-bold">CSV</TabsTrigger>
+              <TabsTrigger value="json" className="flex-1 text-[11px] font-bold">Plaid JSON</TabsTrigger>
+              <TabsTrigger value="csv" className="flex-1 text-[11px] font-bold">CSV</TabsTrigger>
             </TabsList>
 
             <TabsContent value="json" className="mt-0">
               <textarea
-                className="w-full bg-background border border-border rounded text-[11px] font-mono p-2.5 resize-y min-h-22.5 outline-none focus:border-primary transition-colors mb-2"
+                className="w-full bg-background border border-border rounded text-[11px] p-2.5 resize-y min-h-22.5 outline-none focus:border-primary transition-colors mb-2"
                 value={jsonText}
                 onChange={e => setJsonText(e.target.value)}
                 placeholder='Paste Plaid /transactions/get JSON response…'
@@ -127,9 +127,9 @@ export default function ImportBlock({ card, onLoad, onClear, rules = [] }) {
                 />
               </div>
               {jsonErr && <div className="text-destructive text-[11px] py-1">{jsonErr}</div>}
-              <Button size="sm" className="w-full mt-2.5 font-mono font-bold shadow-none" onClick={loadJSON}>Load JSON</Button>
+              <Button size="sm" className="w-full mt-2.5 font-bold shadow-none" onClick={loadJSON}>Load JSON</Button>
               {loaded && (
-                <Button size="sm" variant="outline" className="w-full mt-1.5 font-mono font-bold shadow-none text-muted-foreground hover:text-destructive hover:border-destructive hover:bg-transparent" onClick={handleClear}>Clear</Button>
+                <Button size="sm" variant="outline" className="w-full mt-1.5 font-bold shadow-none text-muted-foreground hover:text-destructive hover:border-destructive hover:bg-transparent" onClick={handleClear}>Clear</Button>
               )}
             </TabsContent>
 
@@ -158,7 +158,7 @@ export default function ImportBlock({ card, onLoad, onClear, rules = [] }) {
               </div>
               {csvErr && <div className="text-destructive text-[11px] py-1">{csvErr}</div>}
               {loaded && (
-                <Button size="sm" variant="outline" className="w-full mt-2.5 font-mono font-bold shadow-none text-muted-foreground hover:text-destructive hover:border-destructive hover:bg-transparent" onClick={handleClear}>Clear</Button>
+                <Button size="sm" variant="outline" className="w-full mt-2.5 font-bold shadow-none text-muted-foreground hover:text-destructive hover:border-destructive hover:bg-transparent" onClick={handleClear}>Clear</Button>
               )}
             </TabsContent>
           </Tabs>

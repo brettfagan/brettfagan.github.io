@@ -10,10 +10,10 @@ const editingCls  = "bg-muted border border-border rounded-md py-3.5 px-4";
 const blockCls    = "flex flex-col gap-2.5";
 const editRowCls  = "flex items-center gap-2.5";
 const labelCls    = "text-[10px] font-bold tracking-[1px] uppercase text-muted-foreground w-30 shrink-0";
-const inputCls    = "flex-1 bg-background border border-border rounded font-mono text-xs text-foreground py-1.5 px-2.5 outline-none focus:border-primary transition-colors";
+const inputCls    = "flex-1 bg-background border border-border rounded text-xs text-foreground py-1.5 px-2.5 outline-none focus:border-primary transition-colors";
 const iconBtnCls  = "bg-transparent border-0 cursor-pointer text-[13px] text-muted-foreground p-0.5 px-1.5 rounded leading-none hover:text-primary hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors";
 const dangerBtnCls = "bg-transparent border-0 cursor-pointer text-[13px] text-muted-foreground p-0.5 px-1.5 rounded leading-none hover:text-destructive hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors";
-const addNewBtnCls = "w-full border border-dashed border-border rounded font-mono text-[11px] font-bold text-muted-foreground py-2 px-3 bg-transparent cursor-pointer tracking-[0.5px] mb-6 hover:text-primary hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors";
+const addNewBtnCls = "w-full border border-dashed border-border rounded text-[11px] font-bold text-muted-foreground py-2 px-3 bg-transparent cursor-pointer tracking-[0.5px] mb-6 hover:text-primary hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors";
 const addFormCls  = "bg-muted border border-border rounded-lg p-4 flex flex-col gap-2.5 mb-6";
 
 // ── ColorPicker ───────────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ function CategoryRow({ cat, onSave, onDelete }) {
         {subs.length > 0 && (
           <div className="px-2.5 pb-1.5 pl-9.5">
             <button
-              className="bg-transparent border-0 cursor-pointer font-mono text-[10px] text-muted-foreground p-0 tracking-[0.3px] hover:text-foreground transition-colors"
+              className="bg-transparent border-0 cursor-pointer text-[10px] text-muted-foreground p-0 tracking-[0.3px] hover:text-foreground transition-colors"
               onClick={() => setSubOpen(o => !o)}
             >
               {subOpen ? '▼' : '▶'} {subs.length} subcategories
@@ -89,7 +89,7 @@ function CategoryRow({ cat, onSave, onDelete }) {
                 {subs.map(s => (
                   <span
                     key={s}
-                    className="text-[10px] font-mono text-muted-foreground bg-muted border border-border rounded-[3px] px-1.5 py-0.5 whitespace-nowrap"
+                    className="text-[10px] text-muted-foreground bg-muted border border-border rounded-[3px] px-1.5 py-0.5 whitespace-nowrap"
                   >
                     {fmtDetail(s)}
                   </span>
@@ -122,10 +122,10 @@ function CategoryRow({ cat, onSave, onDelete }) {
           <input type="checkbox" checked={excluded} onChange={e => setExcluded(e.target.checked)} />
         </div>
         <div className="flex gap-2 mt-1">
-          <Button size="sm" onClick={handleSave} disabled={saving} className="font-mono text-[11px] font-bold">
+          <Button size="sm" onClick={handleSave} disabled={saving} className="text-[11px] font-bold">
             {saving ? 'Saving…' : 'Save'}
           </Button>
-          <Button size="sm" variant="outline" onClick={handleCancel} className="font-mono text-[11px] font-bold">Cancel</Button>
+          <Button size="sm" variant="outline" onClick={handleCancel} className="text-[11px] font-bold">Cancel</Button>
         </div>
       </div>
     </div>
@@ -198,10 +198,10 @@ function AddCategoryForm({ onAdd }) {
       </div>
       {error && <p className="text-[11px] text-destructive">{error}</p>}
       <div className="flex gap-2 mt-1">
-        <Button size="sm" type="submit" disabled={saving} className="font-mono text-[11px] font-bold">
+        <Button size="sm" type="submit" disabled={saving} className="text-[11px] font-bold">
           {saving ? 'Adding…' : 'Add'}
         </Button>
-        <Button size="sm" variant="outline" type="button" onClick={() => { setOpen(false); setError(''); }} className="font-mono text-[11px] font-bold">
+        <Button size="sm" variant="outline" type="button" onClick={() => { setOpen(false); setError(''); }} className="text-[11px] font-bold">
           Cancel
         </Button>
       </div>
@@ -239,7 +239,7 @@ export default function CategoryContent() {
           size="sm"
           onClick={handleReset}
           disabled={resetting}
-          className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive font-mono text-[11px] font-bold"
+          className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive text-[11px] font-bold"
         >
           {resetting ? 'Resetting…' : 'Reset to Defaults'}
         </Button>

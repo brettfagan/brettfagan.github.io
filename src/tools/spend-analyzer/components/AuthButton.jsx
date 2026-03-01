@@ -8,7 +8,7 @@ export default function AuthButton() {
   if (!user) {
     return (
       <button
-        className="inline-flex items-center gap-2 border border-border rounded-md font-mono text-xs font-bold px-3.5 py-1.75 cursor-pointer transition-all bg-background text-foreground hover:bg-muted hover:border-primary whitespace-nowrap"
+        className="inline-flex items-center gap-2 border border-border rounded-md text-xs font-bold px-3.5 py-1.75 cursor-pointer transition-all bg-background text-foreground hover:bg-muted hover:border-primary whitespace-nowrap"
         onClick={signInWithGoogle}
       >
         <GoogleIcon />
@@ -31,7 +31,7 @@ export default function AuthButton() {
         {user.user_metadata?.full_name ?? user.email}
       </span>
       <button
-        className="inline-flex items-center gap-2 border border-border rounded-md font-mono text-[11px] font-bold px-2.5 py-1.25 cursor-pointer transition-all bg-transparent text-muted-foreground hover:border-destructive hover:text-destructive whitespace-nowrap"
+        className="inline-flex items-center gap-2 border border-border rounded-md text-[11px] font-bold px-2.5 py-1.25 cursor-pointer transition-all bg-transparent text-muted-foreground hover:border-destructive hover:text-destructive whitespace-nowrap"
         onClick={signOut}
       >
         Sign out

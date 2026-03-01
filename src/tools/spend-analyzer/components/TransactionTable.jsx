@@ -65,8 +65,8 @@ export default function TransactionTable({ spending, credits, categories, initia
   const hasFilters = q || catFilter || detailFilter || cardFilter;
 
   // ── Shared class strings ───────────────────────────────────────────────────
-  const ctrlCls = "bg-muted border border-border rounded text-xs font-mono py-1.5 px-3 outline-none cursor-pointer text-foreground";
-  const thCls   = "font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border cursor-pointer select-none whitespace-nowrap overflow-hidden hover:text-foreground";
+  const ctrlCls = "bg-muted border border-border rounded text-xs py-1.5 px-3 outline-none cursor-pointer text-foreground";
+  const thCls   = "text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border cursor-pointer select-none whitespace-nowrap overflow-hidden hover:text-foreground";
   const tdCls   = "px-3 py-1.5 border-b border-border align-middle overflow-hidden group-hover:bg-black/2 dark:group-hover:bg-white/3";
 
   const colgroup = (
@@ -124,7 +124,7 @@ export default function TransactionTable({ spending, credits, categories, initia
         </td>
         <td className={tdCls}>
           <span
-            className="inline-block text-[10px] font-mono px-1.75 py-0.5 rounded-[3px] border whitespace-nowrap"
+            className="inline-block text-[10px] px-1.75 py-0.5 rounded-[3px] border whitespace-nowrap"
             style={{ borderColor: color, color }}
           >
             {fmtCat(tx.cat)}
@@ -186,7 +186,7 @@ export default function TransactionTable({ spending, credits, categories, initia
             variant="outline"
             size="sm"
             onClick={() => { setSearch(''); setCatFilter(''); setDetailFilter(''); setCardFilter(''); onClearFilters?.(); }}
-            className="font-mono text-[11px] font-bold whitespace-nowrap"
+            className="text-[11px] font-bold whitespace-nowrap"
           >
             ✕ Clear filters
           </Button>
@@ -201,7 +201,7 @@ export default function TransactionTable({ spending, credits, categories, initia
             <>
               <div
                 onClick={() => setPendingOpen(o => !o)}
-                className={`font-mono text-[11px] font-bold tracking-[2px] uppercase text-amber-600 pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${pendingOpen ? 'mb-2.5' : 'mb-6'}`}
+                className={`text-[11px] font-bold tracking-[2px] uppercase text-amber-600 pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${pendingOpen ? 'mb-2.5' : 'mb-6'}`}
               >
                 <span>
                   Pending{' '}
@@ -225,7 +225,7 @@ export default function TransactionTable({ spending, credits, categories, initia
           {/* ── Posted section ──────────────────────────────────────────── */}
           <div
             onClick={() => setPostedOpen(o => !o)}
-            className={`font-mono text-[11px] font-bold tracking-[2px] uppercase text-primary pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${postedOpen ? 'mb-2.5' : 'mb-0'}`}
+            className={`text-[11px] font-bold tracking-[2px] uppercase text-primary pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${postedOpen ? 'mb-2.5' : 'mb-0'}`}
           >
             <span>
               Posted{' '}
@@ -255,7 +255,7 @@ export default function TransactionTable({ spending, credits, categories, initia
         <>
           <div
             onClick={() => setCreditsOpen(o => !o)}
-            className={`font-mono text-[11px] font-bold tracking-[2px] uppercase text-cyan-600 mt-8 pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${creditsOpen ? 'mb-2.5' : 'mb-0'}`}
+            className={`text-[11px] font-bold tracking-[2px] uppercase text-cyan-600 mt-8 pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${creditsOpen ? 'mb-2.5' : 'mb-0'}`}
           >
             <span>
               Credits / Refunds{' '}
@@ -287,7 +287,7 @@ export default function TransactionTable({ spending, credits, categories, initia
         <>
           <div className="fixed inset-0 bg-black/45 z-300" onClick={() => setPendingDelete(null)} />
           <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background border border-border rounded-[10px] p-7 z-301 min-w-[320px] max-w-[90vw] shadow-2xl">
-            <div className="font-mono text-xs font-bold tracking-[1px] uppercase text-muted-foreground mb-3">Delete Transaction</div>
+            <div className="text-xs font-bold tracking-[1px] uppercase text-muted-foreground mb-3">Delete Transaction</div>
             <div className="font-semibold text-sm mb-1">{pendingDelete.merchant}</div>
             <div className="text-xs text-muted-foreground mb-5">{pendingDelete.date} · {fmt(Math.abs(pendingDelete.amount))}</div>
             <div className="flex gap-2 justify-end">

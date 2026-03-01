@@ -39,9 +39,9 @@ function fmtSubcat(key) {
 // ── Shared class strings ──────────────────────────────────────────────────────
 const rowColsCls  = "grid grid-cols-[20px_1fr_172px_164px] gap-x-3 items-center px-4";
 const amountWrapCls = "flex items-center bg-muted border border-border rounded px-2 w-[140px] transition-colors focus-within:border-primary";
-const amountInputCls = "bg-transparent border-0 outline-none font-mono text-xs text-foreground w-full text-right py-[7px] pl-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-muted-foreground";
+const amountInputCls = "bg-transparent border-0 outline-none text-xs text-foreground w-full text-right py-[7px] pl-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-muted-foreground";
 const rowActionsCls = "flex items-center justify-end gap-0.5";
-const iconBtnCls  = "flex items-center gap-1 bg-transparent border-0 cursor-pointer font-mono text-[11px] font-semibold text-muted-foreground px-[7px] py-[5px] rounded-[3px] transition-colors hover:bg-muted hover:text-foreground whitespace-nowrap";
+const iconBtnCls  = "flex items-center gap-1 bg-transparent border-0 cursor-pointer text-[11px] font-semibold text-muted-foreground px-[7px] py-[5px] rounded-[3px] transition-colors hover:bg-muted hover:text-foreground whitespace-nowrap";
 const deleteBtnCls = `${iconBtnCls} text-lg font-light leading-none px-[7px] py-1 hover:text-destructive`;
 
 export default function MyBudgetPage() {
@@ -185,7 +185,7 @@ export default function MyBudgetPage() {
       {/* ── Page heading ──────────────────────────────────────────────── */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="font-mono text-[22px] font-extrabold tracking-[-0.3px] text-foreground">My Budget</h2>
+          <h2 className="text-[22px] font-extrabold tracking-[-0.3px] text-foreground">My Budget</h2>
           <p className="text-xs text-muted-foreground mt-1">Set monthly spending targets for each category.</p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
@@ -194,7 +194,7 @@ export default function MyBudgetPage() {
           <Button
             onClick={handleSave}
             disabled={saving || !dirty}
-            className="font-mono text-[11px] font-bold"
+            className="text-[11px] font-bold"
           >
             {saving ? 'Saving…' : 'Save Budget'}
           </Button>
@@ -333,7 +333,7 @@ export default function MyBudgetPage() {
           {hiddenItems.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border">
               <button
-                className="flex items-center gap-1.5 bg-transparent border-0 cursor-pointer font-mono text-[11px] font-bold uppercase tracking-[0.5px] text-muted-foreground p-0 hover:text-foreground transition-colors"
+                className="flex items-center gap-1.5 bg-transparent border-0 cursor-pointer text-[11px] font-bold uppercase tracking-[0.5px] text-muted-foreground p-0 hover:text-foreground transition-colors"
                 onClick={() => setShowHidden(p => !p)}
               >
                 <span className={`inline-block text-[14px] transition-transform duration-200${showHidden ? ' rotate-90' : ''}`}>›</span>
@@ -353,7 +353,7 @@ export default function MyBudgetPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => restoreItem(key)}
-                          className="font-mono text-[10px] font-bold py-1 px-2.5 h-auto"
+                          className="text-[10px] font-bold py-1 px-2.5 h-auto"
                         >
                           Restore
                         </Button>
@@ -379,10 +379,10 @@ export default function MyBudgetPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2.5 justify-end">
-            <Button variant="outline" onClick={() => setConfirmModal(null)} className="font-mono text-[11px] font-bold">
+            <Button variant="outline" onClick={() => setConfirmModal(null)} className="text-[11px] font-bold">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={confirmHide} className="font-mono text-[11px] font-bold">
+            <Button variant="destructive" onClick={confirmHide} className="text-[11px] font-bold">
               Remove
             </Button>
           </DialogFooter>

@@ -29,12 +29,12 @@ function BreakdownRow({ label, count, sum, colorClass = 'text-foreground', sign 
   if (count === 0) return null;
   return (
     <div className="flex justify-between items-baseline py-1.5 border-b border-border">
-      <span className="font-mono text-[11px] text-muted-foreground">{label}</span>
+      <span className="text-[11px] text-muted-foreground">{label}</span>
       <span className="flex gap-5 items-baseline">
-        <span className="font-mono text-[11px] text-muted-foreground">
+        <span className="text-[11px] text-muted-foreground">
           {count} transaction{count !== 1 ? 's' : ''}
         </span>
-        <span className={`font-mono text-[13px] font-bold min-w-20 text-right ${colorClass}`}>
+        <span className={`text-[13px] font-bold min-w-20 text-right ${colorClass}`}>
           {sign}{fmt(sum)}
         </span>
       </span>
@@ -43,7 +43,7 @@ function BreakdownRow({ label, count, sum, colorClass = 'text-foreground', sign 
 }
 
 const SectionLabel = ({ children }) => (
-  <div className="font-mono text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground mb-1">
+  <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground mb-1">
     {children}
   </div>
 );
@@ -201,15 +201,15 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
               {includePending && (
                 <BreakdownRow label="Pending" count={pending.length} sum={pending.reduce((s, t) => s + t.amount, 0)} colorClass="text-amber-600" />
               )}
-              <div className="flex justify-between py-2 font-mono text-xs font-bold">
+              <div className="flex justify-between py-2 text-xs font-bold">
                 <span>Total</span>
                 <span>{toImport.length} transaction{toImport.length !== 1 ? 's' : ''}</span>
               </div>
             </div>
 
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" size="sm" onClick={onClose} className="font-mono text-[11px] font-bold">Cancel</Button>
-              <Button size="sm" onClick={handleImport} disabled={toImport.length === 0} className="font-mono text-[11px] font-bold">
+              <Button variant="outline" size="sm" onClick={onClose} className="text-[11px] font-bold">Cancel</Button>
+              <Button size="sm" onClick={handleImport} disabled={toImport.length === 0} className="text-[11px] font-bold">
                 Import {toImport.length} Transaction{toImport.length !== 1 ? 's' : ''}
               </Button>
             </div>
@@ -219,7 +219,7 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
         {/* ── Importing ─────────────────────────────────────────────────────── */}
         {step === 'importing' && (
           <div className="text-center py-4">
-            <div className="font-mono text-[13px] text-muted-foreground mb-2">Importing…</div>
+            <div className="text-[13px] text-muted-foreground mb-2">Importing…</div>
             <div className="text-[11px] text-muted-foreground">Saving {toImport.length} transactions to your account</div>
           </div>
         )}
@@ -230,8 +230,8 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
             <SectionLabel>Import Failed</SectionLabel>
             <p className="text-[13px] text-destructive mt-2 mb-5 leading-relaxed">{errorMsg}</p>
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" size="sm" onClick={onClose} className="font-mono text-[11px] font-bold">Close</Button>
-              <Button size="sm" onClick={() => setStep('preview')} className="font-mono text-[11px] font-bold">Try Again</Button>
+              <Button variant="outline" size="sm" onClick={onClose} className="text-[11px] font-bold">Close</Button>
+              <Button size="sm" onClick={() => setStep('preview')} className="text-[11px] font-bold">Try Again</Button>
             </div>
           </>
         )}
@@ -264,14 +264,14 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
 
             {summary.rulesApplied?.length > 0 && (
               <div className="mb-4">
-                <div className="font-mono text-[11px] font-bold tracking-[1px] uppercase text-muted-foreground mb-1.5">
+                <div className="text-[11px] font-bold tracking-[1px] uppercase text-muted-foreground mb-1.5">
                   Rules applied — {summary.rulesApplied.reduce((s, r) => s + r.count, 0)} transaction{summary.rulesApplied.reduce((s, r) => s + r.count, 0) !== 1 ? 's' : ''} recategorized
                 </div>
                 <div className="bg-muted rounded-lg px-3 py-1">
                   {summary.rulesApplied.map((r, i) => (
                     <div key={r.cat} className={`flex justify-between items-baseline py-1.5 ${i < summary.rulesApplied.length - 1 ? 'border-b border-border' : ''}`}>
-                      <span className="font-mono text-[11px] text-muted-foreground">{fmtCat(r.cat)}</span>
-                      <span className="font-mono text-[11px] font-bold text-foreground">{r.count}</span>
+                      <span className="text-[11px] text-muted-foreground">{fmtCat(r.cat)}</span>
+                      <span className="text-[11px] font-bold text-foreground">{r.count}</span>
                     </div>
                   ))}
                 </div>
@@ -280,7 +280,7 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
 
             {summary.duplicateCount > 0 && (
               <div className="mb-5">
-                <div className="font-mono text-[11px] font-bold tracking-[1px] uppercase text-muted-foreground mb-1.5">
+                <div className="text-[11px] font-bold tracking-[1px] uppercase text-muted-foreground mb-1.5">
                   Skipped — already in database ({summary.duplicateCount})
                 </div>
                 <div className="bg-muted rounded-lg px-3 py-1 max-h-35 overflow-y-auto">
@@ -288,8 +288,8 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
                     <div key={i} className={`flex justify-between items-baseline py-1.5 ${i < summary.duplicateList.length - 1 ? 'border-b border-border' : ''}`}>
                       <span className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap max-w-60">{t.merchant}</span>
                       <span className="flex gap-3 items-baseline shrink-0">
-                        <span className="font-mono text-[11px] text-muted-foreground">{t.date}</span>
-                        <span className="font-mono text-xs font-bold text-muted-foreground">{fmt(Math.abs(t.amount))}</span>
+                        <span className="text-[11px] text-muted-foreground">{t.date}</span>
+                        <span className="text-xs font-bold text-muted-foreground">{fmt(Math.abs(t.amount))}</span>
                       </span>
                     </div>
                   ))}
@@ -298,7 +298,7 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
             )}
 
             <div className="flex justify-end">
-              <Button size="sm" onClick={onClose} className="font-mono text-[11px] font-bold">Done</Button>
+              <Button size="sm" onClick={onClose} className="text-[11px] font-bold">Done</Button>
             </div>
           </>
         )}

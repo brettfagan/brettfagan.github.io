@@ -66,7 +66,7 @@ export default function TransactionModal({ tx, onClose, onReCategorize }) {
         : '';
   }
 
-  const selectCls = "flex-1 bg-muted border border-border rounded text-xs font-mono py-1.5 px-2.5 outline-none text-foreground cursor-pointer";
+  const selectCls = "flex-1 bg-muted border border-border rounded text-xs py-1.5 px-2.5 outline-none text-foreground cursor-pointer";
 
   return (
     <Dialog open={!!tx} onOpenChange={open => !open && onClose()}>
@@ -158,8 +158,8 @@ export default function TransactionModal({ tx, onClose, onReCategorize }) {
                   )}
                 </div>
                 <div className="flex gap-2 pl-22.5">
-                  <Button size="sm" onClick={handleSaveCategory} className="font-mono text-[11px] font-bold">Save</Button>
-                  <Button size="sm" variant="outline" onClick={handleCancelEdit} className="font-mono text-[11px] font-bold">Cancel</Button>
+                  <Button size="sm" onClick={handleSaveCategory} className="text-[11px] font-bold">Save</Button>
+                  <Button size="sm" variant="outline" onClick={handleCancelEdit} className="text-[11px] font-bold">Cancel</Button>
                 </div>
               </div>
             ) : (
@@ -168,7 +168,7 @@ export default function TransactionModal({ tx, onClose, onReCategorize }) {
                   <span className="text-muted-foreground whitespace-nowrap shrink-0">Primary</span>
                   <span className="text-right wrap-break-word font-medium flex items-center gap-2">
                     <span
-                      className="inline-block text-[10px] font-mono px-2 py-0.5 rounded-[3px] border"
+                      className="inline-block text-[10px] px-2 py-0.5 rounded-[3px] border"
                       style={{ borderColor: color, color }}
                     >
                       {fmtCat(tx.cat)}
