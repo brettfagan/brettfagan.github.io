@@ -85,11 +85,11 @@ export default function CategoryBreakdown({
                 />
               </div>
               {showMonthlyAvg && (
-                <div className="text-right text-muted-foreground text-[11px]">
-                  {fmt(d.total / numMonths)}<span className="text-[9px]">/mo</span>
+                <div className="text-right font-medium">
+                  {fmt(d.total / numMonths)}<span className="text-[9px] font-normal text-muted-foreground">/mo</span>
                 </div>
               )}
-              <div className="text-right font-medium">
+              <div className={`text-right ${showMonthlyAvg ? 'text-muted-foreground text-[11px]' : 'font-medium'}`}>
                 {fmt(d.total)}
                 {catCreditAbs > 0 && (
                   <div className="text-[9px] text-cyan-600 font-normal">
@@ -126,11 +126,11 @@ export default function CategoryBreakdown({
                     />
                   </div>
                   {showMonthlyAvg && (
-                    <div className="text-right text-muted-foreground text-[11px]">
-                      {fmt(sd.total / numMonths)}<span className="text-[9px]">/mo</span>
+                    <div className="font-mono text-[11px] font-semibold text-right" style={{ color }}>
+                      {fmt(sd.total / numMonths)}<span className="text-[9px] font-normal text-muted-foreground">/mo</span>
                     </div>
                   )}
-                  <div className="font-mono text-[11px] font-semibold text-right" style={{ color }}>
+                  <div className={`text-right ${showMonthlyAvg ? 'text-muted-foreground text-[11px]' : 'font-mono text-[11px] font-semibold'}`} style={showMonthlyAvg ? undefined : { color }}>
                     {fmt(sd.total)}
                   </div>
                   <div className="text-[10px] text-muted-foreground text-right">
@@ -147,11 +147,11 @@ export default function CategoryBreakdown({
         <div className="font-mono text-xs font-bold">Total</div>
         <div />
         {showMonthlyAvg && (
-          <div className="text-right text-muted-foreground text-[11px]">
-            {fmt(grandTotal / numMonths)}<span className="text-[9px]">/mo</span>
+          <div className="text-right font-mono text-[13px] font-extrabold">
+            {fmt(grandTotal / numMonths)}<span className="text-[10px] font-normal text-muted-foreground">/mo</span>
           </div>
         )}
-        <div className="text-right font-mono text-[13px] font-extrabold">{fmt(grandTotal)}</div>
+        <div className={`text-right ${showMonthlyAvg ? 'text-muted-foreground text-[11px]' : 'font-mono text-[13px] font-extrabold'}`}>{fmt(grandTotal)}</div>
         <div className="text-right text-muted-foreground text-[11px]">
           {spending.filter((t) => !t.pending).length} posted · {credits.length} refund{credits.length !== 1 ? "s" : ""}
         </div>
