@@ -35,7 +35,7 @@ function MatchFieldToggle({ value, onChange }) {
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
-          className={`border rounded-[4px] cursor-pointer font-mono text-[10px] font-semibold px-2 py-1 transition-colors whitespace-nowrap ${
+          className={`border rounded-lg cursor-pointer font-mono text-[10px] font-semibold px-2 py-1 transition-colors whitespace-nowrap ${
             value === o.value
               ? 'bg-primary border-primary text-white'
               : 'bg-transparent border-border text-muted-foreground hover:border-primary hover:text-primary'
@@ -156,7 +156,7 @@ function RuleRow({ rule, index, total, onSave, onDelete, onMove }) {
             spellCheck={false}
           />
         </div>
-        {patternErr && <p className="text-[11px] text-destructive ml-[130px]">{patternErr}</p>}
+        {patternErr && <p className="text-[11px] text-destructive ml-32.5">{patternErr}</p>}
         <div className={editRowCls}>
           <label className={labelCls}>Match against</label>
           <MatchFieldToggle value={matchField} onChange={setMatchField} />
@@ -175,7 +175,7 @@ function RuleRow({ rule, index, total, onSave, onDelete, onMove }) {
             spellCheck={false}
           />
         </div>
-        <p className="text-[11px] text-muted-foreground leading-[1.6] mt-1 mb-2 ml-[130px]">
+        <p className="text-[11px] text-muted-foreground leading-[1.6] mt-1 mb-2 ml-32.5">
           Optional. Use Plaid detail keys like <code className="font-mono text-[10px] bg-background border border-border rounded-[3px] px-1 py-px text-foreground">{cat}_GROCERIES</code> for drill-down in charts.
           Leave blank to use the raw CSV category value.
         </p>
@@ -264,7 +264,7 @@ function AddRuleForm({ onAdd }) {
           spellCheck={false}
         />
       </div>
-      <p className="text-[11px] text-muted-foreground leading-[1.6] mt-1 mb-2 ml-[130px]">
+      <p className="text-[11px] text-muted-foreground leading-[1.6] mt-1 mb-2 ml-32.5">
         Optional. Use Plaid detail keys like <code className="font-mono text-[10px] bg-background border border-border rounded-[3px] px-1 py-px text-foreground">{cat}_GROCERIES</code> for drill-down in charts.
         Leave blank to use the raw CSV category value.
       </p>

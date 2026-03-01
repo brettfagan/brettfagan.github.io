@@ -190,7 +190,7 @@ export default function MyBudgetPage() {
         </div>
         <div className="flex items-center gap-3 shrink-0">
           {saveSuccess && <span className="text-xs font-bold text-emerald-600">Saved!</span>}
-          {error && <span className="text-[11px] text-destructive max-w-[220px]">{error}</span>}
+          {error && <span className="text-[11px] text-destructive max-w-55">{error}</span>}
           <Button
             onClick={handleSave}
             disabled={saving || !dirty}
@@ -229,7 +229,7 @@ export default function MyBudgetPage() {
               return (
                 <div key={catKey} className="border border-border rounded-md overflow-hidden">
                   {/* Category row */}
-                  <div className={`${rowColsCls} bg-background min-h-[44px]`}>
+                  <div className={`${rowColsCls} bg-background min-h-11`}>
                     <div
                       className="w-2.5 h-2.5 rounded-full shrink-0"
                       style={{ background: getCatColor(catKey) }}
@@ -279,7 +279,7 @@ export default function MyBudgetPage() {
                         const subKey = itemKey(catKey, sub);
                         const subItem = getItem(subKey);
                         return (
-                          <div key={subKey} className={`${rowColsCls} bg-muted border-t border-border min-h-[44px]`}>
+                          <div key={subKey} className={`${rowColsCls} bg-muted border-t border-border min-h-11`}>
                             <div />
                             <div className="text-xs text-muted-foreground pl-2.5">{fmtSubcat(sub)}</div>
                             <div className="flex justify-end">
@@ -315,7 +315,7 @@ export default function MyBudgetPage() {
                       })}
 
                       {visibleSubcats.length === 0 && (
-                        <div className={`${rowColsCls} bg-muted border-t border-border min-h-[44px]`}>
+                        <div className={`${rowColsCls} bg-muted border-t border-border min-h-11`}>
                           <div />
                           <div className="col-span-3 text-[11px] text-muted-foreground italic">
                             All subcategories hidden.
@@ -369,7 +369,7 @@ export default function MyBudgetPage() {
 
       {/* ── Confirmation modal ────────────────────────────────────────── */}
       <Dialog open={!!confirmModal} onOpenChange={open => { if (!open) setConfirmModal(null); }}>
-        <DialogContent className="w-[360px] max-w-[calc(100vw-32px)]">
+        <DialogContent className="w-90 max-w-[calc(100vw-32px)]">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold">
               Remove <strong>{confirmModal?.label}</strong> from your budget?

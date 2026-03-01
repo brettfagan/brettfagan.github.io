@@ -15,7 +15,7 @@ function BreakdownRow({ label, count, sum, colorClass = 'text-foreground', sign 
         <span className="font-mono text-[11px] text-muted-foreground">
           {count} transaction{count !== 1 ? 's' : ''}
         </span>
-        <span className={`font-mono text-[13px] font-bold min-w-[80px] text-right ${colorClass}`}>
+        <span className={`font-mono text-[13px] font-bold min-w-20 text-right ${colorClass}`}>
           {sign}{fmt(sum)}
         </span>
       </span>
@@ -149,7 +149,7 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
 
   return (
     <Dialog open onOpenChange={open => { if (!open && step !== 'importing') onClose(); }}>
-      <DialogContent className="sm:max-w-[460px]" showCloseButton={step !== 'importing'}>
+      <DialogContent className="sm:max-w-115" showCloseButton={step !== 'importing'}>
 
         {/* ── Preview ───────────────────────────────────────────────────────── */}
         {step === 'preview' && (
@@ -164,7 +164,7 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
                 type="checkbox"
                 checked={includePending}
                 onChange={e => setIncludePending(e.target.checked)}
-                className="w-[15px] h-[15px] cursor-pointer"
+                className="w-3.75 h-3.75 cursor-pointer"
               />
               Include pending transactions
             </label>
@@ -241,10 +241,10 @@ export default function ImportToDbModal({ spending, credits, onClose }) {
                 <div className="font-mono text-[11px] font-bold tracking-[1px] uppercase text-muted-foreground mb-1.5">
                   Skipped — already in database ({summary.duplicateCount})
                 </div>
-                <div className="bg-muted rounded-lg px-3 py-1 max-h-[140px] overflow-y-auto">
+                <div className="bg-muted rounded-lg px-3 py-1 max-h-35 overflow-y-auto">
                   {summary.duplicateList.map((t, i) => (
                     <div key={i} className={`flex justify-between items-baseline py-1.5 ${i < summary.duplicateList.length - 1 ? 'border-b border-border' : ''}`}>
-                      <span className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap max-w-[240px]">{t.merchant}</span>
+                      <span className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap max-w-60">{t.merchant}</span>
                       <span className="flex gap-3 items-baseline shrink-0">
                         <span className="font-mono text-[11px] text-muted-foreground">{t.date}</span>
                         <span className="font-mono text-xs font-bold text-muted-foreground">{fmt(Math.abs(t.amount))}</span>

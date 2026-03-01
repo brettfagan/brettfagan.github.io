@@ -249,7 +249,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
           <div
             key={conn.id}
             className={`rounded-lg px-3 py-2.5 mb-1.5 border transition-colors ${
-              isLoaded ? 'bg-emerald-600/[0.06] border-primary' : 'bg-background border-border'
+              isLoaded ? 'bg-emerald-600/6 border-primary' : 'bg-background border-border'
             }`}
           >
             <div className={`flex justify-between items-center${isLoaded ? '' : ' mb-2'}`}>

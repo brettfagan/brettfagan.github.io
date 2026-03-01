@@ -129,7 +129,7 @@ function AddDetailLabelForm({ onAdd }) {
           autoFocus
         />
       </div>
-      <p className="text-[11px] text-muted-foreground leading-[1.6] mt-1 mb-2 ml-[130px]">
+      <p className="text-[11px] text-muted-foreground leading-[1.6] mt-1 mb-2 ml-32.5">
         Type the raw key exactly as it appears in your Plaid or CSV data —
         visible in the Subcategory column of your transactions.
       </p>

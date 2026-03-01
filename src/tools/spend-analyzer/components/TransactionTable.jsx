@@ -67,7 +67,7 @@ export default function TransactionTable({ spending, credits, categories, initia
   // ── Shared class strings ───────────────────────────────────────────────────
   const ctrlCls = "bg-muted border border-border rounded text-xs font-mono py-1.5 px-3 outline-none cursor-pointer text-foreground";
   const thCls   = "font-mono text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border cursor-pointer select-none whitespace-nowrap overflow-hidden hover:text-foreground";
-  const tdCls   = "px-3 py-1.5 border-b border-border align-middle overflow-hidden group-hover:bg-black/[0.02] dark:group-hover:bg-white/[0.03]";
+  const tdCls   = "px-3 py-1.5 border-b border-border align-middle overflow-hidden group-hover:bg-black/2 dark:group-hover:bg-white/3";
 
   const colgroup = (
     <colgroup>
@@ -100,18 +100,18 @@ export default function TransactionTable({ spending, credits, categories, initia
   function TxRow({ tx, creditStyle }) {
     const color = getCatColor(tx.cat);
     return (
-      <tr onClick={() => onOpenModal(tx)} className="cursor-pointer even:bg-[#f7f8fa] dark:even:bg-white/[0.03] group">
+      <tr onClick={() => onOpenModal(tx)} className="cursor-pointer even:bg-[#f7f8fa] dark:even:bg-white/3 group">
         <td className={`${tdCls} text-muted-foreground whitespace-nowrap text-xs`}>{tx.date}</td>
         <td className={`${tdCls} font-medium`} title={tx.merchant}>
           <div className="flex items-center gap-2 min-w-0 w-full">
             {(tx.logo_url || tx.cat_icon_url)
               ? <img
-                  className="w-[30px] h-[30px] rounded object-contain shrink-0 bg-muted border border-border"
+                  className="w-7.5 h-7.5 rounded object-contain shrink-0 bg-muted border border-border"
                   src={tx.logo_url || tx.cat_icon_url}
                   alt=""
                   onError={e => e.target.removeAttribute('src')}
                 />
-              : <span className="w-[30px] h-[30px] rounded shrink-0 inline-block bg-muted border border-border" />
+              : <span className="w-7.5 h-7.5 rounded shrink-0 inline-block bg-muted border border-border" />
             }
             <span
               className={`overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0 text-xs${tx.cat_confidence === 'LOW' ? ' border border-destructive rounded-[3px] px-0.5' : ''}`}
@@ -124,7 +124,7 @@ export default function TransactionTable({ spending, credits, categories, initia
         </td>
         <td className={tdCls}>
           <span
-            className="inline-block text-[10px] font-mono px-[7px] py-0.5 rounded-[3px] border whitespace-nowrap"
+            className="inline-block text-[10px] font-mono px-1.75 py-0.5 rounded-[3px] border whitespace-nowrap"
             style={{ borderColor: color, color }}
           >
             {fmtCat(tx.cat)}
@@ -162,7 +162,7 @@ export default function TransactionTable({ spending, credits, categories, initia
       {/* ── Filters ───────────────────────────────────────────────────────── */}
       <div className="flex gap-2.5 mb-3.5 items-center flex-wrap">
         <input
-          className={`${ctrlCls} flex-1 min-w-[180px] transition-colors focus:border-primary`}
+          className={`${ctrlCls} flex-1 min-w-45 transition-colors focus:border-primary`}
           placeholder="Search merchant..."
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -285,8 +285,8 @@ export default function TransactionTable({ spending, credits, categories, initia
       {/* ── Delete confirm modal ──────────────────────────────────────────── */}
       {pendingDelete && (
         <>
-          <div className="fixed inset-0 bg-black/45 z-[300]" onClick={() => setPendingDelete(null)} />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background border border-border rounded-[10px] p-7 z-[301] min-w-[320px] max-w-[90vw] shadow-2xl">
+          <div className="fixed inset-0 bg-black/45 z-300" onClick={() => setPendingDelete(null)} />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background border border-border rounded-[10px] p-7 z-301 min-w-[320px] max-w-[90vw] shadow-2xl">
             <div className="font-mono text-xs font-bold tracking-[1px] uppercase text-muted-foreground mb-3">Delete Transaction</div>
             <div className="font-semibold text-sm mb-1">{pendingDelete.merchant}</div>
             <div className="text-xs text-muted-foreground mb-5">{pendingDelete.date} · {fmt(Math.abs(pendingDelete.amount))}</div>
