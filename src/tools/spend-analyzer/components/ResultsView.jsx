@@ -103,7 +103,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
       <div className={`grid gap-4 mb-8 ${hideExcluded ? 'grid-cols-5' : 'grid-cols-6'}`}>
         <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Cards</div>
-          <div className="text-[24px] font-extrabold text-primary">{cardSet.size}</div>
+          <div className="text-[20px] font-extrabold text-primary leading-tight">{cardSet.size} Cards / {allTransactions.length} Transactions</div>
           <div className="text-[11px] text-muted-foreground mt-1">{[...cardSet].join(' · ')}</div>
         </div>
         <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
