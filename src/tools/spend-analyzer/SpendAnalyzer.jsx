@@ -90,7 +90,7 @@ export default function SpendAnalyzer() {
     <>
       <header className="px-12 py-5 border-b border-border flex items-center justify-between gap-5">
         <div className="flex items-center gap-3">
-          <img src="/BrettLabs.png" alt="BrettLabs" className="h-7" />
+          <img src="/BrettLabs.png" alt="BrettLabs" className="h-14" />
           <h1 className="font-mono text-[28px] font-extrabold tracking-[-0.5px]">Spend Analyzer</h1>
         </div>
         <div className="flex items-center">
