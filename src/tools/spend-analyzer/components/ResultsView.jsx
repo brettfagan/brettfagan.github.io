@@ -221,7 +221,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
                     setBulkDeletePhase('error');
                   } else {
                     setSelectionClearToken(t => t + 1);
-                    setBulkDeletePhase('done');
+                    setBulkDeletePhase(null);
                   }
                 }}>Delete</Button>
               </DialogFooter>
@@ -233,16 +233,6 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
                 <DialogDescription>Please wait.</DialogDescription>
               </DialogHeader>
             )}
-
-            {bulkDeletePhase === 'done' && (<>
-              <DialogHeader>
-                <DialogTitle>Deleted</DialogTitle>
-                <DialogDescription>{bulkDeleteCount} transaction{bulkDeleteCount !== 1 ? 's' : ''} removed.</DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button onClick={() => setBulkDeletePhase(null)}>Done</Button>
-              </DialogFooter>
-            </>)}
 
             {bulkDeletePhase === 'error' && (<>
               <DialogHeader>
