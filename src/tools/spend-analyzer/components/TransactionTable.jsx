@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useCategories } from '../context/CategoriesContext';
 import { fmt, fmtCat } from '../lib/format';
 import { useDetailLabels } from '../context/DetailLabelsContext';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
-export default function TransactionTable({ spending, credits, categories, initialCatFilter = '', initialDetailFilter = '', onOpenModal, onDeleteTransaction, onClearFilters }) {
+export default function TransactionTable({ spending, credits, categories, initialCatFilter = '', initialDetailFilter = '', onOpenModal, onDeleteTransaction, onBulkDelete, onClearFilters }) {
   const { getCatColor } = useCategories();
   const { getDetailLabel } = useDetailLabels();
   const [search, setSearch] = useState('');
@@ -16,7 +17,10 @@ export default function TransactionTable({ spending, credits, categories, initia
   const [pendingOpen, setPendingOpen] = useState(true);
   const [postedOpen, setPostedOpen] = useState(true);
   const [creditsOpen, setCreditsOpen] = useState(true);
-  const [pendingDelete, setPendingDelete] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [bulkDeletePending, setBulkDeletePending] = useState(false);
+
+  const showCheckboxes = !!onBulkDelete;
 
   const cardSet = useMemo(() => [...new Set(spending.map(t => t._card))], [spending]);
 
@@ -64,6 +68,29 @@ export default function TransactionTable({ spending, credits, categories, initia
 
   const hasFilters = q || catFilter || detailFilter || cardFilter;
 
+  // Selection helpers
+  const allVisibleIds = useMemo(
+    () => [...pending, ...posted, ...filteredCredits].map(tx => tx._id),
+    [pending, posted, filteredCredits]
+  );
+  const allSelected = allVisibleIds.length > 0 && allVisibleIds.every(id => selectedIds.has(id));
+  const someSelected = selectedIds.size > 0 && !allSelected;
+
+  function toggleSelect(id) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds(allSelected ? new Set() : new Set(allVisibleIds));
+  }
+
+  // Clear selection when filters change
+  useEffect(() => { setSelectedIds(new Set()); }, [initialCatFilter, initialDetailFilter]);
+
   // ── Shared class strings ───────────────────────────────────────────────────
   const ctrlCls = "bg-muted border border-border rounded text-xs py-1.5 px-3 outline-none cursor-pointer text-foreground";
   const thCls   = "text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border cursor-pointer select-none whitespace-nowrap overflow-hidden hover:text-foreground";
@@ -71,6 +98,7 @@ export default function TransactionTable({ spending, credits, categories, initia
 
   const colgroup = (
     <colgroup>
+      {showCheckboxes && <col style={{ width: '36px' }} />}
       <col style={{ width: '100px' }} />
       <col style={{ width: '180px' }} />
       <col style={{ width: '160px' }} />
@@ -78,13 +106,23 @@ export default function TransactionTable({ spending, credits, categories, initia
       <col style={{ width: '90px' }} />
       <col style={{ width: '110px' }} />
       <col style={{ width: '90px' }} />
-      <col style={{ width: '28px' }} />
     </colgroup>
   );
 
   const thead = (
     <thead>
       <tr>
+        {showCheckboxes && (
+          <th className="px-3 py-2 border-b border-border">
+            <input
+              type="checkbox"
+              checked={allSelected}
+              ref={el => { if (el) el.indeterminate = someSelected; }}
+              onChange={toggleSelectAll}
+              className="cursor-pointer"
+            />
+          </th>
+        )}
         <th className={thCls} onClick={() => handleSort('date')}>Date{sortArrow('date')}</th>
         <th className={thCls} onClick={() => handleSort('merchant')}>Merchant{sortArrow('merchant')}</th>
         <th className={thCls}>Category</th>
@@ -92,7 +130,6 @@ export default function TransactionTable({ spending, credits, categories, initia
         <th className={thCls}>Channel</th>
         <th className={thCls}>Card</th>
         <th className={`${thCls} text-right`} onClick={() => handleSort('amount')}>Amount{sortArrow('amount')}</th>
-        <th className={thCls} />
       </tr>
     </thead>
   );
@@ -101,6 +138,17 @@ export default function TransactionTable({ spending, credits, categories, initia
     const color = getCatColor(tx.cat);
     return (
       <tr onClick={() => onOpenModal(tx)} className="cursor-pointer even:bg-[#f7f8fa] dark:even:bg-white/3 group">
+        {showCheckboxes && (
+          <td className={`${tdCls} text-center`}>
+            <input
+              type="checkbox"
+              checked={selectedIds.has(tx._id)}
+              onChange={() => toggleSelect(tx._id)}
+              onClick={e => e.stopPropagation()}
+              className="cursor-pointer"
+            />
+          </td>
+        )}
         <td className={`${tdCls} text-muted-foreground whitespace-nowrap text-xs`}>{tx.date}</td>
         <td className={`${tdCls} font-medium`} title={tx.merchant}>
           <div className="flex items-center gap-2 min-w-0 w-full">
@@ -145,13 +193,6 @@ export default function TransactionTable({ spending, credits, categories, initia
         </td>
         <td className={`${tdCls} text-right font-medium whitespace-nowrap`} style={creditStyle ? { color: 'var(--accent2)' } : undefined}>
           {creditStyle ? `-${fmt(Math.abs(tx.amount))}` : fmt(tx.amount)}
-        </td>
-        <td className={`${tdCls} pr-1.5 text-right`}>
-          <button
-            onClick={e => { e.stopPropagation(); setPendingDelete(tx); }}
-            title="Delete transaction"
-            className="bg-transparent border-0 cursor-pointer text-muted-foreground text-[11px] p-1 leading-none opacity-50 hover:opacity-100"
-          >✕</button>
         </td>
       </tr>
     );
@@ -274,6 +315,24 @@ export default function TransactionTable({ spending, credits, categories, initia
         </>
       )}
 
+      {/* ── Bulk action bar ───────────────────────────────────────────────── */}
+      {showCheckboxes && selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 px-3 py-2.5 border border-border rounded-md bg-muted/40 mb-4">
+          <span className="text-muted-foreground text-xs">{selectedIds.size} selected</span>
+          <Button size="sm" variant="destructive" onClick={() => setBulkDeletePending(true)}>
+            Delete Selected
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-xs text-muted-foreground"
+            onClick={() => setSelectedIds(new Set())}
+          >
+            Clear
+          </Button>
+        </div>
+      )}
+
       {/* ── Legend ────────────────────────────────────────────────────────── */}
       <div className="text-muted-foreground text-[10px] py-2 flex gap-4">
         <span>
@@ -282,21 +341,23 @@ export default function TransactionTable({ spending, credits, categories, initia
         </span>
       </div>
 
-      {/* ── Delete confirm modal ──────────────────────────────────────────── */}
-      {pendingDelete && (
-        <>
-          <div className="fixed inset-0 bg-black/45 z-300" onClick={() => setPendingDelete(null)} />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background border border-border rounded-[10px] p-7 z-301 min-w-[320px] max-w-[90vw] shadow-2xl">
-            <div className="text-xs font-bold tracking-[1px] uppercase text-muted-foreground mb-3">Delete Transaction</div>
-            <div className="font-semibold text-sm mb-1">{pendingDelete.merchant}</div>
-            <div className="text-xs text-muted-foreground mb-5">{pendingDelete.date} · {fmt(Math.abs(pendingDelete.amount))}</div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" size="sm" onClick={() => setPendingDelete(null)}>Cancel</Button>
-              <Button variant="destructive" size="sm" onClick={() => { onDeleteTransaction(pendingDelete._id); setPendingDelete(null); }}>Delete</Button>
-            </div>
-          </div>
-        </>
-      )}
+      {/* ── Bulk delete confirmation dialog ───────────────────────────────── */}
+      <Dialog open={bulkDeletePending} onOpenChange={setBulkDeletePending}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete {selectedIds.size} transaction{selectedIds.size !== 1 ? 's' : ''}?</DialogTitle>
+            <DialogDescription>This cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkDeletePending(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={async () => {
+              await onBulkDelete([...selectedIds]);
+              setSelectedIds(new Set());
+              setBulkDeletePending(false);
+            }}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

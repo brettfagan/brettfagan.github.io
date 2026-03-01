@@ -24,7 +24,7 @@ export default function BulkUpdateDialog({ step, merchant, fromCat, toCat, count
 
   return (
     <Dialog open onOpenChange={open => { if (!open && step !== 'updating') onClose(); }}>
-      <DialogContent className="sm:max-w-[400px]" showCloseButton={step !== 'updating'}>
+      <DialogContent className="sm:max-w-100" showCloseButton={step !== 'updating'}>
 
         {/* ── Confirm ─────────────────────────────────────────────────────── */}
         {step === 'confirm' && (

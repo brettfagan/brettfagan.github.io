@@ -9,7 +9,7 @@ import TransactionModal from './TransactionModal';
 import ImportToDbModal from './ImportToDbModal';
 import { Button } from '@/components/ui/button';
 
-export default function ResultsView({ allTransactions, onReCategorize, onDeleteTransaction, hideImport = false, hideExcluded = false, syncFiltersToURL = false }) {
+export default function ResultsView({ allTransactions, onReCategorize, onDeleteTransaction, onBulkDelete, hideImport = false, hideExcluded = false, syncFiltersToURL = false }) {
   const { user } = useAuth();
   const { excludedKeys } = useCategories();
   const [modalTx, setModalTx] = useState(null);
@@ -24,7 +24,6 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
     return cat ? { cat, detail: detail || null, ts: 0 } : null;
   });
   const [excludedOpen, setExcludedOpen] = useState(true);
-  const [pendingDeleteExcluded, setPendingDeleteExcluded] = useState(null);
 
   const { spending, credits, excluded, cats, maxCat, grandTotal, postedTotal, postedSpend, pendingSpend, pendingTotal, totalCredits, dateRange } = useMemo(() => {
     const spending = allTransactions.filter(tx => tx.amount > 0 && !excludedKeys.includes(tx.cat));
@@ -165,6 +164,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         initialDetailFilter={tableFilterSignal?.detail || ''}
         onOpenModal={setModalTx}
         onDeleteTransaction={onDeleteTransaction}
+        onBulkDelete={onBulkDelete}
         onClearFilters={syncFiltersToURL ? () => {
           const url = new URL(window.location.href);
           url.searchParams.delete('cat');
@@ -173,7 +173,14 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         } : undefined}
       />
 
-      {modalTx && <TransactionModal tx={modalTx} onClose={() => setModalTx(null)} onReCategorize={onReCategorize} />}
+      {modalTx && (
+        <TransactionModal
+          tx={modalTx}
+          onClose={() => setModalTx(null)}
+          onReCategorize={onReCategorize}
+          onDelete={onDeleteTransaction}
+        />
+      )}
 
       {/* ── Excluded transactions ────────────────────────────────────────── */}
       {excluded.length > 0 && (
@@ -198,7 +205,6 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
               <col style={{ width: '190px' }} />
               <col style={{ width: '110px' }} />
               <col style={{ width: '90px' }} />
-              <col style={{ width: '28px' }} />
             </colgroup>
             <thead>
               <tr>
@@ -208,7 +214,6 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
                 <th className="text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Subcategory</th>
                 <th className="text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Card</th>
                 <th className="text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-right px-3 py-2 border-b border-border whitespace-nowrap overflow-hidden">Amount</th>
-                <th className="border-b border-border px-3 py-2" />
               </tr>
             </thead>
             <tbody>
@@ -237,13 +242,6 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
                   <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-right font-medium whitespace-nowrap text-muted-foreground group-hover:bg-black/2 dark:group-hover:bg-white/3">
                     {tx.amount < 0 ? `-${fmt(Math.abs(tx.amount))}` : fmt(tx.amount)}
                   </td>
-                  <td className="px-1.5 py-1.5 border-b border-border align-middle text-right group-hover:bg-black/2 dark:group-hover:bg-white/3">
-                    <button
-                      onClick={e => { e.stopPropagation(); setPendingDeleteExcluded(tx); }}
-                      title="Delete transaction"
-                      className="bg-transparent border-0 cursor-pointer text-muted-foreground text-[11px] p-1 leading-none opacity-50 hover:opacity-100"
-                    >✕</button>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -254,23 +252,8 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
           </div>
           </>}
 
-          {/* ── Delete confirm modal ─────────────────────────────────────── */}
-          {pendingDeleteExcluded && (
-            <>
-              <div className="fixed inset-0 bg-black/45 z-300" onClick={() => setPendingDeleteExcluded(null)} />
-              <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background border border-border rounded-[10px] p-7 z-301 min-w-[320px] max-w-[90vw] shadow-2xl">
-                <div className="text-xs font-bold tracking-[1px] uppercase text-muted-foreground mb-3">Delete Transaction</div>
-                <div className="font-semibold text-sm mb-1">{pendingDeleteExcluded.merchant}</div>
-                <div className="text-xs text-muted-foreground mb-5">{pendingDeleteExcluded.date} · {fmt(Math.abs(pendingDeleteExcluded.amount))}</div>
-                <div className="flex gap-2 justify-end">
-                  <Button variant="outline" size="sm" onClick={() => setPendingDeleteExcluded(null)}>Cancel</Button>
-                  <Button variant="destructive" size="sm" onClick={() => { onDeleteTransaction(pendingDeleteExcluded._id); setPendingDeleteExcluded(null); }}>Delete</Button>
-                </div>
-              </div>
-            </>
-          )}
 
-        </>
+</>
       )}
 
       {importModalOpen && (

@@ -98,6 +98,15 @@ export default function MySpendingPage() {
     if (!error) setTransactions(prev => prev.filter(tx => tx._id !== id));
   }, [user]);
 
+  const handleBulkDelete = useCallback(async (ids) => {
+    const { error } = await supabase
+      .from('imported_transactions')
+      .delete()
+      .in('id', ids)
+      .eq('user_id', user.id);
+    if (!error) setTransactions(prev => prev.filter(tx => !ids.includes(tx._id)));
+  }, [user]);
+
   const handleReCategorize = useCallback(async (id, cat, catDetail, applyToSimilar, applyToFuture) => {
     if (applyToSimilar) {
       const originalTx = transactions.find(tx => tx._id === id);
@@ -268,6 +277,7 @@ export default function MySpendingPage() {
           allTransactions={filteredTransactions}
           onReCategorize={handleReCategorize}
           onDeleteTransaction={handleDeleteTransaction}
+          onBulkDelete={handleBulkDelete}
           hideImport
           hideExcluded
           syncFiltersToURL
