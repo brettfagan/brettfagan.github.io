@@ -107,9 +107,16 @@ export default function MySpendingPage() {
         .delete()
         .in('id', chunk)
         .eq('user_id', user.id);
-      if (error) return;
+      if (error) {
+        const deleted = ids.slice(0, i);
+        if (deleted.length > 0) {
+          setTransactions(prev => prev.filter(tx => !deleted.includes(tx._id)));
+        }
+        return false;
+      }
     }
     setTransactions(prev => prev.filter(tx => !ids.includes(tx._id)));
+    return true;
   }, [user]);
 
   const handleReCategorize = useCallback(async (id, cat, catDetail, applyToSimilar, applyToFuture) => {
