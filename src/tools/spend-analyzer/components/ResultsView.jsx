@@ -27,7 +27,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
   const [excludedOpen, setExcludedOpen] = useState(true);
   const [tableSelection, setTableSelection] = useState(() => new Set());
   const [selectionClearToken, setSelectionClearToken] = useState(0);
-  // bulkDeletePhase: null | 'confirm' | 'deleting' | 'done' | 'error'
+  // bulkDeletePhase: null | 'confirm' | 'deleting'
   const [bulkDeletePhase, setBulkDeletePhase] = useState(null);
   const [bulkDeleteCount, setBulkDeleteCount] = useState(0);
 
@@ -216,13 +216,9 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
                 <Button variant="destructive" onClick={async () => {
                   const ids = [...tableSelection];
                   setBulkDeletePhase('deleting');
-                  const success = await onBulkDelete(ids);
-                  if (success === false) {
-                    setBulkDeletePhase('error');
-                  } else {
-                    setSelectionClearToken(t => t + 1);
-                    setBulkDeletePhase(null);
-                  }
+                  await onBulkDelete(ids);
+                  setSelectionClearToken(t => t + 1);
+                  setBulkDeletePhase(null);
                 }}>Delete</Button>
               </DialogFooter>
             </>)}
@@ -234,15 +230,6 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
               </DialogHeader>
             )}
 
-            {bulkDeletePhase === 'error' && (<>
-              <DialogHeader>
-                <DialogTitle>Delete failed</DialogTitle>
-                <DialogDescription>Could not delete all transactions. Check your connection and try again.</DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setBulkDeletePhase(null)}>Close</Button>
-              </DialogFooter>
-            </>)}
           </DialogContent>
         </Dialog>
       )}

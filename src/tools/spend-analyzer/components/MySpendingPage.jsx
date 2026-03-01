@@ -6,6 +6,8 @@ import { fmtShortDate } from '../lib/format';
 import { useURLParam } from '../lib/useURLParam';
 import ResultsView from './ResultsView';
 import BulkUpdateDialog from './BulkUpdateDialog';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -42,6 +44,8 @@ export default function MySpendingPage() {
   const { rules, saveRule } = useCsvRules();
   const [transactions, setTransactions] = useState([]);
   const [bulkDialog, setBulkDialog] = useState(null);
+  const [deleteResult, setDeleteResult] = useState(null);
+  // deleteResult shape: { success: boolean, count: number }
   // bulkDialog shape: { step, id, merchant, originalCat, cat, catDetail, applyToFuture, count }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -112,10 +116,12 @@ export default function MySpendingPage() {
         if (deleted.length > 0) {
           setTransactions(prev => prev.filter(tx => !deleted.includes(tx._id)));
         }
+        setDeleteResult({ success: false, count: ids.length });
         return false;
       }
     }
     setTransactions(prev => prev.filter(tx => !ids.includes(tx._id)));
+    setDeleteResult({ success: true, count: ids.length });
     return true;
   }, [user]);
 
@@ -294,6 +300,34 @@ export default function MySpendingPage() {
           hideExcluded
           syncFiltersToURL
         />
+      )}
+
+      {deleteResult && (
+        <Dialog open onOpenChange={() => setDeleteResult(null)}>
+          <DialogContent>
+            {deleteResult.success ? (<>
+              <DialogHeader>
+                <DialogTitle>Deleted</DialogTitle>
+                <DialogDescription>
+                  {deleteResult.count} transaction{deleteResult.count !== 1 ? 's' : ''} removed successfully.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button onClick={() => setDeleteResult(null)}>Done</Button>
+              </DialogFooter>
+            </>) : (<>
+              <DialogHeader>
+                <DialogTitle>Delete failed</DialogTitle>
+                <DialogDescription>
+                  Could not delete all transactions. Check your connection and try again.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDeleteResult(null)}>Close</Button>
+              </DialogFooter>
+            </>)}
+          </DialogContent>
+        </Dialog>
       )}
 
       {bulkDialog && (
