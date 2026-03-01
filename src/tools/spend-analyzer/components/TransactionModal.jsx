@@ -6,8 +6,9 @@ import { useDetailLabels } from '../context/DetailLabelsContext';
 import { SUBCATEGORIES } from '../lib/constants';
 import { fmt, fmtCat, fmtDetail } from '../lib/format';
 
-export default function TransactionModal({ tx, onClose, onReCategorize }) {
+export default function TransactionModal({ tx, onClose, onReCategorize, onDelete }) {
   const [editingCat, setEditingCat] = useState(false);
+  const [deletePending, setDeletePending] = useState(false);
   const [selectedCat, setSelectedCat] = useState(tx?.cat || '');
   const [selectedDetail, setSelectedDetail] = useState(tx?.cat_detail || '');
   const [applyToSimilar, setApplyToSimilar] = useState(false);
@@ -243,6 +244,29 @@ export default function TransactionModal({ tx, onClose, onReCategorize }) {
             <Row label="Transaction ID" value={tx.transaction_id ? <span className="text-[10px] break-all">{tx.transaction_id}</span> : null} />
             <Row label="Account ID" value={tx.account_id ? <span className="text-[10px] break-all">{tx.account_id}</span> : null} />
           </Section>
+
+          {onDelete && (
+            <div className="pt-2 border-t border-border">
+              {deletePending ? (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs text-muted-foreground">Delete this transaction?</span>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setDeletePending(false)}>Cancel</Button>
+                    <Button size="sm" variant="destructive" onClick={() => { onDelete(tx._id); onClose(); }}>Delete</Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-muted-foreground text-xs hover:text-destructive hover:bg-transparent"
+                  onClick={() => setDeletePending(true)}
+                >
+                  Delete transaction
+                </Button>
+              )}
+            </div>
+          )}
 
         </div>
       </DialogContent>
