@@ -3,6 +3,7 @@ import { useTheme } from 'next-themes';
 import { Sun, Moon } from 'lucide-react';
 import { CARDS } from './lib/constants';
 import { useAuth } from './context/AuthContext';
+import { useURLParam } from './lib/useURLParam';
 import { Button } from '@/components/ui/button';
 import ImportSidebar from './components/ImportSidebar';
 import ResultsView from './components/ResultsView';
@@ -18,7 +19,7 @@ export default function SpendAnalyzer() {
   const [results, setResults] = useState(null);
   const [sidebarKey, setSidebarKey] = useState(0);
   const [catMgrOpen, setCatMgrOpen] = useState(false);
-  const [page, setPage] = useState('analyzer');
+  const [page, setPage] = useURLParam('tab', 'analyzer');
 
   // Redirect to analyzer if user signs out while on my-spending
   useEffect(() => {

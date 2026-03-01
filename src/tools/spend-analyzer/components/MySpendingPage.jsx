@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { fmtShortDate } from '../lib/format';
+import { useURLParam } from '../lib/useURLParam';
 import ResultsView from './ResultsView';
 
 const MONTHS = [
@@ -43,10 +44,27 @@ export default function MySpendingPage() {
   const todayYear  = new Date().getFullYear();
   const todayMonth = new Date().getMonth() + 1;
 
-  const [filterMode, setFilterMode]   = useState('all');
-  const [filterMonth, setFilterMonth] = useState({ month: todayMonth, year: todayYear });
-  const [filterStart, setFilterStart] = useState('');
-  const [filterEnd, setFilterEnd]     = useState('');
+  const [filterMode, setFilterMode]   = useURLParam('mode', 'all');
+  const [filterMonth, setFilterMonth] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const m = parseInt(params.get('m'));
+    const y = parseInt(params.get('y'));
+    return { month: !isNaN(m) ? m : todayMonth, year: !isNaN(y) ? y : todayYear };
+  });
+  const [filterStart, setFilterStart] = useURLParam('start', '');
+  const [filterEnd, setFilterEnd]     = useURLParam('end', '');
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (filterMode === 'month') {
+      url.searchParams.set('m', String(filterMonth.month));
+      url.searchParams.set('y', String(filterMonth.year));
+    } else {
+      url.searchParams.delete('m');
+      url.searchParams.delete('y');
+    }
+    window.history.replaceState(null, '', url.toString());
+  }, [filterMonth, filterMode]);
 
   useEffect(() => {
     if (!user) return;
@@ -230,6 +248,7 @@ export default function MySpendingPage() {
           onDeleteTransaction={handleDeleteTransaction}
           hideImport
           hideExcluded
+          syncFiltersToURL
         />
       )}
     </>

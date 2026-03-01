@@ -9,14 +9,20 @@ import TransactionModal from './TransactionModal';
 import ImportToDbModal from './ImportToDbModal';
 import { Button } from '@/components/ui/button';
 
-export default function ResultsView({ allTransactions, onReCategorize, onDeleteTransaction, hideImport = false, hideExcluded = false }) {
+export default function ResultsView({ allTransactions, onReCategorize, onDeleteTransaction, hideImport = false, hideExcluded = false, syncFiltersToURL = false }) {
   const { user } = useAuth();
   const { excludedKeys } = useCategories();
   const [modalTx, setModalTx] = useState(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
   // catFilter is used to communicate category click → table, but table manages its own filter state
   // We use a key to reset the table when the user clicks a category
-  const [tableFilterSignal, setTableFilterSignal] = useState(null);
+  const [tableFilterSignal, setTableFilterSignal] = useState(() => {
+    if (!syncFiltersToURL) return null;
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('cat') || '';
+    const detail = params.get('detail') || '';
+    return cat ? { cat, detail: detail || null, ts: 0 } : null;
+  });
   const [excludedOpen, setExcludedOpen] = useState(true);
   const [pendingDeleteExcluded, setPendingDeleteExcluded] = useState(null);
 
@@ -59,6 +65,17 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
 
   function handleCategoryFilter(cat, detail) {
     setTableFilterSignal({ cat, detail: detail || null, ts: Date.now() });
+    if (syncFiltersToURL) {
+      const url = new URL(window.location.href);
+      if (cat) {
+        url.searchParams.set('cat', cat);
+        detail ? url.searchParams.set('detail', detail) : url.searchParams.delete('detail');
+      } else {
+        url.searchParams.delete('cat');
+        url.searchParams.delete('detail');
+      }
+      window.history.replaceState(null, '', url.toString());
+    }
   }
 
   return (
@@ -148,6 +165,12 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         initialDetailFilter={tableFilterSignal?.detail || ''}
         onOpenModal={setModalTx}
         onDeleteTransaction={onDeleteTransaction}
+        onClearFilters={syncFiltersToURL ? () => {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('cat');
+          url.searchParams.delete('detail');
+          window.history.replaceState(null, '', url.toString());
+        } : undefined}
       />
 
       {modalTx && <TransactionModal tx={modalTx} onClose={() => setModalTx(null)} onReCategorize={onReCategorize} />}
