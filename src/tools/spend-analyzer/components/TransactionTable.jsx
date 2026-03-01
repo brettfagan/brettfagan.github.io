@@ -3,9 +3,8 @@ import { useCategories } from '../context/CategoriesContext';
 import { fmt, fmtCat } from '../lib/format';
 import { useDetailLabels } from '../context/DetailLabelsContext';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
-export default function TransactionTable({ spending, credits, categories, initialCatFilter = '', initialDetailFilter = '', onOpenModal, onDeleteTransaction, onBulkDelete, onClearFilters }) {
+export default function TransactionTable({ spending, credits, categories, initialCatFilter = '', initialDetailFilter = '', onOpenModal, onDeleteTransaction, onBulkDelete, onSelectionChange, selectionClearToken, onClearFilters }) {
   const { getCatColor } = useCategories();
   const { getDetailLabel } = useDetailLabels();
   const [search, setSearch] = useState('');
@@ -18,7 +17,6 @@ export default function TransactionTable({ spending, credits, categories, initia
   const [postedOpen, setPostedOpen] = useState(true);
   const [creditsOpen, setCreditsOpen] = useState(true);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
-  const [bulkDeletePending, setBulkDeletePending] = useState(false);
   const lastClickedId = useRef(null);
 
   const showCheckboxes = !!onBulkDelete;
@@ -105,11 +103,14 @@ export default function TransactionTable({ spending, credits, categories, initia
     setSelectedIds(allSelected ? new Set() : new Set(allVisibleIds));
   }
 
-  // Clear selection when filters change
+  // Notify parent whenever selection changes
+  useEffect(() => { onSelectionChange?.(selectedIds); }, [selectedIds]);
+
+  // Clear selection when filters change or parent requests a reset
   useEffect(() => {
     setSelectedIds(new Set());
     lastClickedId.current = null;
-  }, [initialCatFilter, initialDetailFilter]);
+  }, [initialCatFilter, initialDetailFilter, selectionClearToken]);
 
   // ── Shared class strings ───────────────────────────────────────────────────
   const ctrlCls = "bg-muted border border-border rounded text-xs py-1.5 px-3 outline-none cursor-pointer text-foreground";
@@ -335,24 +336,6 @@ export default function TransactionTable({ spending, credits, categories, initia
         </>
       )}
 
-      {/* ── Bulk action bar ───────────────────────────────────────────────── */}
-      {showCheckboxes && selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 px-3 py-2.5 border border-border rounded-md bg-muted/40 mb-4">
-          <span className="text-muted-foreground text-xs">{selectedIds.size} selected</span>
-          <Button size="sm" variant="destructive" onClick={() => setBulkDeletePending(true)}>
-            Delete Selected
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-xs text-muted-foreground"
-            onClick={() => setSelectedIds(new Set())}
-          >
-            Clear
-          </Button>
-        </div>
-      )}
-
       {/* ── Legend ────────────────────────────────────────────────────────── */}
       <div className="text-muted-foreground text-[10px] py-2 flex gap-4">
         <span>
@@ -360,24 +343,6 @@ export default function TransactionTable({ spending, credits, categories, initia
           {' '}Low categorization confidence
         </span>
       </div>
-
-      {/* ── Bulk delete confirmation dialog ───────────────────────────────── */}
-      <Dialog open={bulkDeletePending} onOpenChange={setBulkDeletePending}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete {selectedIds.size} transaction{selectedIds.size !== 1 ? 's' : ''}?</DialogTitle>
-            <DialogDescription>This cannot be undone.</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setBulkDeletePending(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={async () => {
-              await onBulkDelete([...selectedIds]);
-              setSelectedIds(new Set());
-              setBulkDeletePending(false);
-            }}>Delete</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

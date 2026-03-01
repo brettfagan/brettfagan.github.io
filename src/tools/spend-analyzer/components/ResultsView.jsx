@@ -8,6 +8,7 @@ import TransactionTable from './TransactionTable';
 import TransactionModal from './TransactionModal';
 import ImportToDbModal from './ImportToDbModal';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 export default function ResultsView({ allTransactions, onReCategorize, onDeleteTransaction, onBulkDelete, hideImport = false, hideExcluded = false, syncFiltersToURL = false }) {
   const { user } = useAuth();
@@ -24,6 +25,9 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
     return cat ? { cat, detail: detail || null, ts: 0 } : null;
   });
   const [excludedOpen, setExcludedOpen] = useState(true);
+  const [tableSelection, setTableSelection] = useState(() => new Set());
+  const [selectionClearToken, setSelectionClearToken] = useState(0);
+  const [bulkDeletePending, setBulkDeletePending] = useState(false);
 
   const { spending, credits, excluded, cats, maxCat, grandTotal, postedTotal, postedSpend, pendingSpend, pendingTotal, totalCredits, dateRange } = useMemo(() => {
     const spending = allTransactions.filter(tx => tx.amount > 0 && !excludedKeys.includes(tx.cat));
@@ -152,8 +156,26 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
       />
 
       {/* ── Transactions heading ─────────────────────────────────────────── */}
-      <div className="text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground mb-3.5 pb-2.5 border-b border-border">
-        Transactions
+      <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-border">
+        <div className="text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground">
+          Transactions
+        </div>
+        {onBulkDelete && tableSelection.size > 0 && (
+          <div className="flex items-center gap-3">
+            <span className="text-muted-foreground text-xs">{tableSelection.size} selected</span>
+            <Button size="sm" variant="destructive" onClick={() => setBulkDeletePending(true)}>
+              Delete Selected
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-xs text-muted-foreground"
+              onClick={() => setSelectionClearToken(t => t + 1)}
+            >
+              Clear
+            </Button>
+          </div>
+        )}
       </div>
       <TransactionTable
         key={tableFilterSignal ? `${tableFilterSignal.cat}-${tableFilterSignal.ts}` : 'initial'}
@@ -165,6 +187,8 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         onOpenModal={setModalTx}
         onDeleteTransaction={onDeleteTransaction}
         onBulkDelete={onBulkDelete}
+        onSelectionChange={setTableSelection}
+        selectionClearToken={selectionClearToken}
         onClearFilters={syncFiltersToURL ? () => {
           const url = new URL(window.location.href);
           url.searchParams.delete('cat');
@@ -172,6 +196,26 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
           window.history.replaceState(null, '', url.toString());
         } : undefined}
       />
+
+      {/* ── Bulk delete confirmation dialog ──────────────────────────────── */}
+      {onBulkDelete && (
+        <Dialog open={bulkDeletePending} onOpenChange={setBulkDeletePending}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete {tableSelection.size} transaction{tableSelection.size !== 1 ? 's' : ''}?</DialogTitle>
+              <DialogDescription>This cannot be undone.</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setBulkDeletePending(false)}>Cancel</Button>
+              <Button variant="destructive" onClick={async () => {
+                await onBulkDelete([...tableSelection]);
+                setSelectionClearToken(t => t + 1);
+                setBulkDeletePending(false);
+              }}>Delete</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {modalTx && (
         <TransactionModal
