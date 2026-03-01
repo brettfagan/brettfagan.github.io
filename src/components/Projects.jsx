@@ -1,10 +1,10 @@
 function Projects() {
   return (
-    <section id="personal-projects" className="py-18 bg-[#f0f4fb] max-[680px]:py-14">
+    <section id="personal-projects" className="py-18 bg-[#f0f4fb] dark:bg-muted max-[680px]:py-14">
       <div className="w-[min(1080px,92%)] mx-auto">
         <h2 className="text-[clamp(1.6rem,4vw,2.4rem)] leading-[1.2] tracking-[-0.02em] mb-4">Personal Projects</h2>
         <div className="grid grid-cols-1 gap-4">
-          <article className="bg-white border border-[#dde5f3] rounded-[0.9rem] p-[1.4rem] shadow-[0_8px_24px_-20px_#6679ac]">
+          <article className="bg-white dark:bg-card border border-[#dde5f3] dark:border-border rounded-[0.9rem] p-[1.4rem] shadow-[0_8px_24px_-20px_#6679ac]">
             <h3 className="text-[1.3rem] leading-[1.2] tracking-[-0.02em] mb-4">Credit Card Spending Analyzer (WIP)</h3>
             <p className="max-w-[70ch] mb-[1.2rem]">
               A work-in-progress tool to help visualize and understand spending
@@ -18,7 +18,7 @@ function Projects() {
                 Open App
               </a>
               <a
-                className="inline-block py-[0.7rem] px-[1.1rem] rounded-[0.55rem] border no-underline font-semibold transition-transform duration-200 hover:-translate-y-px bg-[#e9eefb] text-[#20305c] border-[#ccd7f2]"
+                className="inline-block py-[0.7rem] px-[1.1rem] rounded-[0.55rem] border no-underline font-semibold transition-transform duration-200 hover:-translate-y-px bg-[#e9eefb] text-[#20305c] border-[#ccd7f2] dark:bg-secondary dark:text-secondary-foreground dark:border-border"
                 href="https://github.com/brettfagan"
                 target="_blank"
                 rel="noreferrer"
