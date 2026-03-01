@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { useCsvRules } from '../context/CsvRulesContext';
+import { useCatRules } from '../context/CatRulesContext';
 import { fmtShortDate } from '../lib/format';
 import { useURLParam } from '../lib/useURLParam';
 import ResultsView from './ResultsView';
@@ -41,7 +41,7 @@ function mapRow(row) {
 
 export default function MySpendingPage() {
   const { user } = useAuth();
-  const { rules, saveRule } = useCsvRules();
+  const { rules, saveRule } = useCatRules();
   const [transactions, setTransactions] = useState([]);
   const [bulkDialog, setBulkDialog] = useState(null);
   const [deleteResult, setDeleteResult] = useState(null);

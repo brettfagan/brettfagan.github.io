@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useCsvRules } from '../context/CsvRulesContext';
+import { useCatRules } from '../context/CatRulesContext';
 import { useCategories } from '../context/CategoriesContext';
 import { useDetailLabels } from '../context/DetailLabelsContext';
 import { Button } from '@/components/ui/button';
@@ -281,9 +281,9 @@ function AddRuleForm({ onAdd }) {
   );
 }
 
-// ── CsvRulesManager ───────────────────────────────────────────────────────────
-export default function CsvRulesManager() {
-  const { rules, loading, saveRule, deleteRule, moveRule, resetToDefaults } = useCsvRules();
+// ── CatRulesManager ───────────────────────────────────────────────────────────
+export default function CatRulesManager() {
+  const { rules, loading, saveRule, deleteRule, moveRule, resetToDefaults } = useCatRules();
   const [resetting, setResetting] = useState(false);
 
   async function handleReset() {

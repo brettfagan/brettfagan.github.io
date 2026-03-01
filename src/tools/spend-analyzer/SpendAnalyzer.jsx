@@ -3,7 +3,7 @@ import { useTheme } from 'next-themes';
 import { Sun, Moon } from 'lucide-react';
 import { CARDS } from './lib/constants';
 import { useAuth } from './context/AuthContext';
-import { useCsvRules } from './context/CsvRulesContext';
+import { useCatRules } from './context/CatRulesContext';
 import { useURLParam } from './lib/useURLParam';
 import ImportSidebar from './components/ImportSidebar';
 import ResultsView from './components/ResultsView';
@@ -15,7 +15,7 @@ import BulkUpdateDialog from './components/BulkUpdateDialog';
 
 export default function SpendAnalyzer() {
   const { user, loading } = useAuth();
-  const { rules, saveRule } = useCsvRules();
+  const { rules, saveRule } = useCatRules();
   const { resolvedTheme, setTheme } = useTheme();
   const [loadedData, setLoadedData] = useState({});
   const [results, setResults] = useState(null);

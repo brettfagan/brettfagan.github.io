@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import CategoryContent from './CategoryManager';
-import CsvRulesManager from './CsvRulesManager';
+import CatRulesManager from './CatRulesManager';
 
 const SECTIONS = [
   { id: 'categories', label: 'Categories' },
@@ -55,7 +55,7 @@ export default function SettingsPage() {
               <h2 className="text-[22px] font-extrabold tracking-[-0.3px]">Rules</h2>
               <p className="text-xs text-muted-foreground mt-1">Automatically categorize transactions on import using regex patterns.</p>
             </div>
-            <CsvRulesManager />
+            <CatRulesManager />
           </>
         )}
         </div>

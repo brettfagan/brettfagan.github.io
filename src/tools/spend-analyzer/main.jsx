@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from 'next-themes';
 import { AuthProvider } from './context/AuthContext';
 import { CategoriesProvider } from './context/CategoriesContext';
-import { CsvRulesProvider } from './context/CsvRulesContext';
+import { CatRulesProvider } from './context/CatRulesContext';
 import { DetailLabelsProvider } from './context/DetailLabelsContext';
 import SpendAnalyzer from './SpendAnalyzer';
 
@@ -13,11 +13,11 @@ createRoot(document.getElementById('root')).render(
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
     <AuthProvider>
       <CategoriesProvider>
-        <CsvRulesProvider>
+        <CatRulesProvider>
           <DetailLabelsProvider>
             <SpendAnalyzer />
           </DetailLabelsProvider>
-        </CsvRulesProvider>
+        </CatRulesProvider>
       </CategoriesProvider>
     </AuthProvider>
     </ThemeProvider>

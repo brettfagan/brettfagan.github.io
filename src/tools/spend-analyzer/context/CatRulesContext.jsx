@@ -15,9 +15,9 @@ export const DEFAULT_RULES = [
 ];
 
 // ── Context ───────────────────────────────────────────────────────────────────
-const CsvRulesContext = createContext(null);
+const CatRulesContext = createContext(null);
 
-export function CsvRulesProvider({ children }) {
+export function CatRulesProvider({ children }) {
   const { user } = useAuth();
   const [rules, setRules] = useState(DEFAULT_RULES);
   const [loading, setLoading] = useState(false);
@@ -37,7 +37,7 @@ export function CsvRulesProvider({ children }) {
     async function load() {
       setLoading(true);
       const { data, error } = await supabase
-        .from('csv_rules')
+        .from('cat_rules')
         .select('*')
         .eq('user_id', user.id)
         .order('priority', { ascending: true });
@@ -45,7 +45,7 @@ export function CsvRulesProvider({ children }) {
       if (cancelled) return;
 
       if (error) {
-        console.error('CsvRulesContext fetch error:', error);
+        console.error('CatRulesContext fetch error:', error);
         setRules(DEFAULT_RULES);
         setLoading(false);
         return;
@@ -72,7 +72,7 @@ export function CsvRulesProvider({ children }) {
     const rows = DEFAULT_RULES.map(r => ({ ...r, user_id: userId }));
     // ON CONFLICT DO NOTHING is the DB-level safety net against any duplicate inserts
     const { data, error } = await supabase
-      .from('csv_rules')
+      .from('cat_rules')
       .upsert(rows, { onConflict: 'user_id,priority', ignoreDuplicates: true })
       .select()
       .order('priority', { ascending: true });
@@ -83,7 +83,7 @@ export function CsvRulesProvider({ children }) {
   async function refetch() {
     if (!user) return;
     const { data } = await supabase
-      .from('csv_rules')
+      .from('cat_rules')
       .select('*')
       .eq('user_id', user.id)
       .order('priority', { ascending: true });
@@ -98,7 +98,7 @@ export function CsvRulesProvider({ children }) {
       // New rule — append at end
       const maxPriority = rules.length > 0 ? Math.max(...rules.map(r => r.priority)) + 1 : 0;
       const { data, error } = await supabase
-        .from('csv_rules')
+        .from('cat_rules')
         .insert({ ...rule, user_id: user.id, priority: maxPriority })
         .select()
         .single();
@@ -109,7 +109,7 @@ export function CsvRulesProvider({ children }) {
 
     // Update existing
     const { data, error } = await supabase
-      .from('csv_rules')
+      .from('cat_rules')
       .update({ pattern: rule.pattern, match_field: rule.match_field, cat: rule.cat, cat_detail: rule.cat_detail || null })
       .eq('id', rule.id)
       .eq('user_id', user.id)
@@ -124,7 +124,7 @@ export function CsvRulesProvider({ children }) {
   async function deleteRule(id) {
     if (!user) return false;
     const { error } = await supabase
-      .from('csv_rules')
+      .from('cat_rules')
       .delete()
       .eq('id', id)
       .eq('user_id', user.id);
@@ -152,7 +152,7 @@ export function CsvRulesProvider({ children }) {
     }).sort((x, y) => x.priority - y.priority));
 
     // Persist to DB
-    const { error } = await supabase.from('csv_rules').upsert([
+    const { error } = await supabase.from('cat_rules').upsert([
       { ...a, priority: b.priority },
       { ...b, priority: a.priority },
     ]);
@@ -166,7 +166,7 @@ export function CsvRulesProvider({ children }) {
   async function resetToDefaults() {
     if (!user) return false;
     const { error: delErr } = await supabase
-      .from('csv_rules')
+      .from('cat_rules')
       .delete()
       .eq('user_id', user.id);
     if (delErr) { console.error('resetToDefaults delete error:', delErr); return false; }
@@ -176,14 +176,14 @@ export function CsvRulesProvider({ children }) {
   }
 
   return (
-    <CsvRulesContext.Provider value={{ rules, loading, saveRule, deleteRule, moveRule, resetToDefaults }}>
+    <CatRulesContext.Provider value={{ rules, loading, saveRule, deleteRule, moveRule, resetToDefaults }}>
       {children}
-    </CsvRulesContext.Provider>
+    </CatRulesContext.Provider>
   );
 }
 
-export function useCsvRules() {
-  const ctx = useContext(CsvRulesContext);
-  if (!ctx) throw new Error('useCsvRules must be used inside CsvRulesProvider');
+export function useCatRules() {
+  const ctx = useContext(CatRulesContext);
+  if (!ctx) throw new Error('useCatRules must be used inside CatRulesProvider');
   return ctx;
 }
