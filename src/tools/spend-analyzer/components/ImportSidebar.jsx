@@ -1,11 +1,11 @@
 import { CARDS } from '../lib/constants';
-import { useCsvRules } from '../context/CsvRulesContext';
+import { useCatRules } from '../context/CatRulesContext';
 import { Button } from '@/components/ui/button';
 import ImportBlock from './ImportBlock';
 import PlaidConnectionsSection from './PlaidConnectionsSection';
 
 export default function ImportSidebar({ loadedCount, onLoad, onClear, onSync, onAnalyze, onStartOver }) {
-  const { rules } = useCsvRules();
+  const { rules } = useCatRules();
 
   return (
     <aside className="border-r border-border p-5 flex flex-col gap-2.5 overflow-y-auto">

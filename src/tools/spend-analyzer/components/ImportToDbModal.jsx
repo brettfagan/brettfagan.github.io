@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { useCsvRules } from '../context/CsvRulesContext';
+import { useCatRules } from '../context/CatRulesContext';
 import { fmt, fmtCat } from '../lib/format';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -51,7 +51,7 @@ const SectionLabel = ({ children }) => (
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ImportToDbModal({ spending, credits, onClose }) {
   const { user } = useAuth();
-  const { rules } = useCsvRules();
+  const { rules } = useCatRules();
   const [includePending, setIncludePending] = useState(false);
   const [step, setStep] = useState('preview'); // 'preview' | 'importing' | 'done' | 'error'
   const [errorMsg, setErrorMsg] = useState('');
