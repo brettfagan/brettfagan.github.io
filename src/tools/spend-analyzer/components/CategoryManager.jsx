@@ -27,7 +27,7 @@ function ColorPicker({ value, onChange }) {
         <button
           key={c}
           type="button"
-          className={`w-[22px] h-[22px] rounded-[4px] border-2 cursor-pointer p-0 outline-none transition-transform duration-[120ms] hover:scale-[1.18] ${
+          className={`w-5.5 h-5.5 rounded-lg border-2 cursor-pointer p-0 outline-none transition-transform duration-120 hover:scale-[1.18] ${
             value === c ? 'border-foreground scale-[1.18]' : 'border-transparent'
           }`}
           style={{ background: c }}
@@ -80,7 +80,7 @@ function CategoryRow({ cat, onSave, onDelete }) {
           <button className={dangerBtnCls} onClick={() => onDelete(cat.key)} title="Delete">✕</button>
         </div>
         {subs.length > 0 && (
-          <div className="px-2.5 pb-1.5 pl-[38px]">
+          <div className="px-2.5 pb-1.5 pl-9.5">
             <button
               className="bg-transparent border-0 cursor-pointer font-mono text-[10px] text-muted-foreground p-0 tracking-[0.3px] hover:text-foreground transition-colors"
               onClick={() => setSubOpen(o => !o)}

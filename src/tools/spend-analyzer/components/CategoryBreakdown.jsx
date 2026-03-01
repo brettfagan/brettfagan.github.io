@@ -58,7 +58,7 @@ export default function CategoryBreakdown({
         return (
           <div key={cat}>
             <div
-              className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-2.5 border-b border-border cursor-pointer rounded transition-colors hover:bg-black/[0.025] dark:hover:bg-white/[0.04] hover:px-2 hover:-mx-2"
+              className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-2.5 border-b border-border cursor-pointer rounded transition-colors hover:bg-black/2.5 dark:hover:bg-white/4 hover:px-2 hover:-mx-2"
               onClick={() => handleCatClick(cat)}
             >
               <div className="font-mono text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis" style={{ color }}>
@@ -69,7 +69,7 @@ export default function CategoryBreakdown({
               </div>
               <div className="bg-muted rounded-sm h-1.5 overflow-hidden">
                 <div
-                  className="h-full rounded-sm transition-[width] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+                  className="h-full rounded-sm transition-[width] duration-600 ease-[cubic-bezier(0.16,1,0.3,1)]"
                   style={{
                     width: `${((Math.abs(d.total) / maxCat) * 100).toFixed(1)}%`,
                     background: color,
@@ -89,11 +89,11 @@ export default function CategoryBreakdown({
               </div>
             </div>
 
-            <div className={`overflow-hidden transition-[max-height] duration-[350ms] ease-in-out ${isOpen ? 'max-h-[600px]' : 'max-h-0'}`}>
+            <div className={`overflow-hidden transition-[max-height] duration-350 ease-in-out ${isOpen ? 'max-h-150' : 'max-h-0'}`}>
               {subs.map(([detail, sd]) => (
                 <div
                   key={detail}
-                  className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-1.5 pl-4 border-b border-border cursor-pointer hover:bg-black/[0.025] dark:hover:bg-white/[0.04]"
+                  className="grid grid-cols-[200px_1fr_90px_80px] items-center gap-4 py-1.5 pl-4 border-b border-border cursor-pointer hover:bg-black/2.5 dark:hover:bg-white/4"
                   onClick={(e) => {
                     e.stopPropagation();
                     onFilter(cat, detail);
@@ -104,7 +104,7 @@ export default function CategoryBreakdown({
                   </div>
                   <div className="bg-muted rounded-sm h-1.5 overflow-hidden">
                     <div
-                      className="h-full rounded-sm transition-[width] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+                      className="h-full rounded-sm transition-[width] duration-600 ease-[cubic-bezier(0.16,1,0.3,1)]"
                       style={{
                         width: `${((Math.abs(sd.total) / Math.abs(maxCat)) * 100).toFixed(1)}%`,
                         background: color,

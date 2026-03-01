@@ -152,7 +152,7 @@ export default function MySpendingPage() {
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2.5">Saved Data</div>
           <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))' }}>
             {cardSummary.map(([card, { count, minDate, maxDate }]) => (
-              <div key={card} className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+              <div key={card} className="bg-muted border border-border rounded-lg px-5 py-4.5">
                 <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">{card}</div>
                 <div className="font-mono text-[22px] font-extrabold text-primary">{count}</div>
                 <div className="text-[11px] text-muted-foreground mt-1">transactions</div>
@@ -211,7 +211,7 @@ export default function MySpendingPage() {
       )}
 
       {!loading && !error && transactions.length === 0 && (
-        <div className="py-12 text-center text-muted-foreground font-mono text-[13px] leading-[2]">
+        <div className="py-12 text-center text-muted-foreground font-mono text-[13px] leading-loose">
           No saved transactions yet.<br />
           Use the Analyzer to import transactions to your account.
         </div>

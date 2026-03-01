@@ -82,7 +82,7 @@ export default function ImportBlock({ card, onLoad, onClear, rules = [] }) {
   return (
     <div className={`rounded-lg border overflow-hidden transition-colors ${loaded ? 'border-primary' : 'border-border'}`}>
       <div
-        className={`flex items-center justify-between px-3.5 py-[7px] cursor-pointer select-none transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.03] bg-muted/40 ${open ? 'border-b border-border' : ''}`}
+        className={`flex items-center justify-between px-3.5 py-1.75 cursor-pointer select-none transition-colors hover:bg-black/3 dark:hover:bg-white/3 bg-muted/40 ${open ? 'border-b border-border' : ''}`}
         onClick={() => setOpen(o => !o)}
       >
         <span className="font-mono text-xs font-bold">
@@ -103,13 +103,13 @@ export default function ImportBlock({ card, onLoad, onClear, rules = [] }) {
 
             <TabsContent value="json" className="mt-0">
               <textarea
-                className="w-full bg-background border border-border rounded text-[11px] font-mono p-2.5 resize-y min-h-[90px] outline-none focus:border-primary transition-colors mb-2"
+                className="w-full bg-background border border-border rounded text-[11px] font-mono p-2.5 resize-y min-h-22.5 outline-none focus:border-primary transition-colors mb-2"
                 value={jsonText}
                 onChange={e => setJsonText(e.target.value)}
                 placeholder='Paste Plaid /transactions/get JSON response…'
               />
               <div
-                className="border-2 border-dashed border-border rounded-md p-5 text-center cursor-pointer text-muted-foreground text-xs leading-[1.8] transition-all hover:border-primary/50 hover:bg-primary/[0.02] hover:text-foreground"
+                className="border-2 border-dashed border-border rounded-md p-5 text-center cursor-pointer text-muted-foreground text-xs leading-[1.8] transition-all hover:border-primary/50 hover:bg-primary/2 hover:text-foreground"
                 onDragOver={e => { e.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={e => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) loadJSONFile(f); }}
@@ -135,7 +135,7 @@ export default function ImportBlock({ card, onLoad, onClear, rules = [] }) {
 
             <TabsContent value="csv" className="mt-0">
               <div
-                className="border-2 border-dashed border-border rounded-md p-5 text-center cursor-pointer text-muted-foreground text-xs leading-[1.8] transition-all hover:border-primary/50 hover:bg-primary/[0.02] hover:text-foreground"
+                className="border-2 border-dashed border-border rounded-md p-5 text-center cursor-pointer text-muted-foreground text-xs leading-[1.8] transition-all hover:border-primary/50 hover:bg-primary/2 hover:text-foreground"
                 onDragOver={e => { e.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={onDrop}

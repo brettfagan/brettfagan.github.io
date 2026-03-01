@@ -79,33 +79,33 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
 
       {/* ── Stat cards ───────────────────────────────────────────────────── */}
       <div className={`grid gap-4 mb-8 ${hideExcluded ? 'grid-cols-5' : 'grid-cols-6'}`}>
-        <div className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+        <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Cards</div>
           <div className="font-mono text-[24px] font-extrabold text-primary">{cardSet.size}</div>
           <div className="text-[11px] text-muted-foreground mt-1">{[...cardSet].join(' · ')}</div>
         </div>
-        <div className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+        <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Total Posted Spend</div>
           <div className="font-mono text-[24px] font-extrabold text-primary">{fmt(postedTotal)}</div>
           <div className="text-[11px] text-muted-foreground mt-1">{postedSpend.length} transactions</div>
         </div>
-        <div className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+        <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Credits / Refunds</div>
           <div className="font-mono text-[24px] font-extrabold text-cyan-600">{fmt(totalCredits)}</div>
           <div className="text-[11px] text-muted-foreground mt-1">{credits.length} transaction{credits.length !== 1 ? 's' : ''}</div>
         </div>
-        <div className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+        <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Total Net Spend</div>
           <div className="font-mono text-[24px] font-extrabold text-foreground">{fmt(postedTotal - totalCredits)}</div>
           <div className="text-[11px] text-muted-foreground mt-1">posted minus refunds</div>
         </div>
-        <div className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+        <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Total Pending Spend</div>
           <div className="font-mono text-[24px] font-extrabold text-amber-600">{fmt(pendingTotal)}</div>
           <div className="text-[11px] text-muted-foreground mt-1">{pendingSpend.length} transactions</div>
         </div>
         {!hideExcluded && (
-          <div className="bg-muted border border-border rounded-lg px-5 py-[18px]">
+          <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
             <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Excluded Transactions</div>
             <div className="font-mono text-[24px] font-extrabold text-muted-foreground">{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))}</div>
             <div className="text-[11px] text-muted-foreground mt-1">{excluded.length} transaction{excluded.length !== 1 ? 's' : ''}</div>
@@ -189,9 +189,9 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
             </thead>
             <tbody>
               {excluded.sort((a, b) => (a.date < b.date ? 1 : -1)).map((tx, i) => (
-                <tr key={i} className="opacity-60 cursor-pointer even:bg-[#f7f8fa] dark:even:bg-white/[0.03] group" onClick={() => setModalTx(tx)}>
-                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-muted-foreground whitespace-nowrap text-xs group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]">{tx.date}</td>
-                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden font-medium group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]" title={tx.merchant}>
+                <tr key={i} className="opacity-60 cursor-pointer even:bg-[#f7f8fa] dark:even:bg-white/3 group" onClick={() => setModalTx(tx)}>
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-muted-foreground whitespace-nowrap text-xs group-hover:bg-black/2 dark:group-hover:bg-white/3">{tx.date}</td>
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden font-medium group-hover:bg-black/2 dark:group-hover:bg-white/3" title={tx.merchant}>
                     <div className="flex items-center gap-2 min-w-0 w-full">
                       {(tx.logo_url || tx.cat_icon_url)
                         ? <img className="w-7.5 h-7.5 rounded object-contain shrink-0 bg-muted border border-border" src={tx.logo_url || tx.cat_icon_url} alt="" onError={e => e.target.removeAttribute('src')} />
@@ -201,19 +201,19 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
                       {tx.source === 'csv' && <span className="text-[9px] text-cyan-600 ml-1">CSV</span>}
                     </div>
                   </td>
-                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]">
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden group-hover:bg-black/2 dark:group-hover:bg-white/3">
                     <span className="inline-block text-[10px] font-mono px-1.75 py-0.5 rounded-[3px] border whitespace-nowrap text-muted-foreground border-muted-foreground/40">{fmtCat(tx.cat)}</span>
                   </td>
-                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-[11px] text-muted-foreground text-ellipsis whitespace-nowrap group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]">
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-[11px] text-muted-foreground text-ellipsis whitespace-nowrap group-hover:bg-black/2 dark:group-hover:bg-white/3">
                     {tx.cat_detail ? fmtDetail(tx.cat_detail) : ''}
                   </td>
-                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-muted-foreground text-[11px] text-ellipsis whitespace-nowrap group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]">
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-muted-foreground text-[11px] text-ellipsis whitespace-nowrap group-hover:bg-black/2 dark:group-hover:bg-white/3">
                     {tx._card}
                   </td>
-                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-right font-medium whitespace-nowrap text-muted-foreground group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]">
+                  <td className="px-3 py-1.5 border-b border-border align-middle overflow-hidden text-right font-medium whitespace-nowrap text-muted-foreground group-hover:bg-black/2 dark:group-hover:bg-white/3">
                     {tx.amount < 0 ? `-${fmt(Math.abs(tx.amount))}` : fmt(tx.amount)}
                   </td>
-                  <td className="px-1.5 py-1.5 border-b border-border align-middle text-right group-hover:bg-black/2 dark:group-hover:bg-white/[0.03]">
+                  <td className="px-1.5 py-1.5 border-b border-border align-middle text-right group-hover:bg-black/2 dark:group-hover:bg-white/3">
                     <button
                       onClick={e => { e.stopPropagation(); setPendingDeleteExcluded(tx); }}
                       title="Delete transaction"
@@ -233,8 +233,8 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
           {/* ── Delete confirm modal ─────────────────────────────────────── */}
           {pendingDeleteExcluded && (
             <>
-              <div className="fixed inset-0 bg-black/45 z-[300]" onClick={() => setPendingDeleteExcluded(null)} />
-              <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background border border-border rounded-[10px] p-7 z-[301] min-w-[320px] max-w-[90vw] shadow-2xl">
+              <div className="fixed inset-0 bg-black/45 z-300" onClick={() => setPendingDeleteExcluded(null)} />
+              <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background border border-border rounded-[10px] p-7 z-301 min-w-[320px] max-w-[90vw] shadow-2xl">
                 <div className="font-mono text-xs font-bold tracking-[1px] uppercase text-muted-foreground mb-3">Delete Transaction</div>
                 <div className="font-semibold text-sm mb-1">{pendingDeleteExcluded.merchant}</div>
                 <div className="text-xs text-muted-foreground mb-5">{pendingDeleteExcluded.date} · {fmt(Math.abs(pendingDeleteExcluded.amount))}</div>
