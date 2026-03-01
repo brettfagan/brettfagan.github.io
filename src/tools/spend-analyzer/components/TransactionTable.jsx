@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useCategories } from '../context/CategoriesContext';
 import { fmt, fmtCat } from '../lib/format';
 import { useDetailLabels } from '../context/DetailLabelsContext';
@@ -19,6 +19,7 @@ export default function TransactionTable({ spending, credits, categories, initia
   const [creditsOpen, setCreditsOpen] = useState(true);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [bulkDeletePending, setBulkDeletePending] = useState(false);
+  const lastClickedId = useRef(null);
 
   const showCheckboxes = !!onBulkDelete;
 
@@ -76,12 +77,28 @@ export default function TransactionTable({ spending, credits, categories, initia
   const allSelected = allVisibleIds.length > 0 && allVisibleIds.every(id => selectedIds.has(id));
   const someSelected = selectedIds.size > 0 && !allSelected;
 
-  function toggleSelect(id) {
+  function handleCheckboxClick(e, id) {
+    e.stopPropagation();
+    if (e.shiftKey && lastClickedId.current !== null) {
+      e.preventDefault(); // prevent text selection on shift+click
+      const from = allVisibleIds.indexOf(lastClickedId.current);
+      const to = allVisibleIds.indexOf(id);
+      if (from !== -1 && to !== -1) {
+        const [start, end] = from < to ? [from, to] : [to, from];
+        setSelectedIds(prev => {
+          const next = new Set(prev);
+          allVisibleIds.slice(start, end + 1).forEach(rid => next.add(rid));
+          return next;
+        });
+        return;
+      }
+    }
     setSelectedIds(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
+    lastClickedId.current = id;
   }
 
   function toggleSelectAll() {
@@ -89,7 +106,10 @@ export default function TransactionTable({ spending, credits, categories, initia
   }
 
   // Clear selection when filters change
-  useEffect(() => { setSelectedIds(new Set()); }, [initialCatFilter, initialDetailFilter]);
+  useEffect(() => {
+    setSelectedIds(new Set());
+    lastClickedId.current = null;
+  }, [initialCatFilter, initialDetailFilter]);
 
   // ── Shared class strings ───────────────────────────────────────────────────
   const ctrlCls = "bg-muted border border-border rounded text-xs py-1.5 px-3 outline-none cursor-pointer text-foreground";
@@ -143,8 +163,8 @@ export default function TransactionTable({ spending, credits, categories, initia
             <input
               type="checkbox"
               checked={selectedIds.has(tx._id)}
-              onChange={() => toggleSelect(tx._id)}
-              onClick={e => e.stopPropagation()}
+              onChange={() => {}}
+              onClick={e => handleCheckboxClick(e, tx._id)}
               className="cursor-pointer"
             />
           </td>
