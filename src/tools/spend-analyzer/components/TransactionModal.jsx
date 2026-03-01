@@ -11,6 +11,7 @@ export default function TransactionModal({ tx, onClose, onReCategorize }) {
   const [selectedCat, setSelectedCat] = useState(tx?.cat || '');
   const [selectedDetail, setSelectedDetail] = useState(tx?.cat_detail || '');
   const [applyToSimilar, setApplyToSimilar] = useState(false);
+  const [applyToFuture, setApplyToFuture] = useState(false);
 
   const { getCatColor, getCatLabel, categories } = useCategories();
   const { getDetailLabel } = useDetailLabels();
@@ -22,7 +23,7 @@ export default function TransactionModal({ tx, onClose, onReCategorize }) {
   const subOptions = SUBCATEGORIES[selectedCat] || [];
 
   function handleSaveCategory() {
-    onReCategorize(tx._id, selectedCat, selectedDetail || null, applyToSimilar);
+    onReCategorize(tx._id, selectedCat, selectedDetail || null, applyToSimilar, applyToFuture);
     setEditingCat(false);
     onClose();
   }
@@ -31,6 +32,7 @@ export default function TransactionModal({ tx, onClose, onReCategorize }) {
     setSelectedCat(tx.cat);
     setSelectedDetail(tx.cat_detail || '');
     setApplyToSimilar(false);
+    setApplyToFuture(false);
     setEditingCat(false);
   }
 
@@ -127,17 +129,33 @@ export default function TransactionModal({ tx, onClose, onReCategorize }) {
                     </select>
                   </div>
                 )}
-                <div className="flex items-center gap-1.5 pl-22.5 text-[11px] text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    id="apply-to-similar"
-                    checked={applyToSimilar}
-                    onChange={e => setApplyToSimilar(e.target.checked)}
-                    className="cursor-pointer"
-                  />
-                  <label htmlFor="apply-to-similar" className="cursor-pointer">
-                    Apply to all similar transactions (same merchant &amp; category)
-                  </label>
+                <div className="flex flex-col gap-1 pl-22.5">
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      id="apply-to-similar"
+                      checked={applyToSimilar}
+                      onChange={e => { setApplyToSimilar(e.target.checked); if (!e.target.checked) setApplyToFuture(false); }}
+                      className="cursor-pointer"
+                    />
+                    <label htmlFor="apply-to-similar" className="cursor-pointer">
+                      Apply to all similar transactions (same merchant &amp; category)
+                    </label>
+                  </div>
+                  {applyToSimilar && (
+                    <div className="flex items-center gap-1.5 pl-4 text-[11px] text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        id="apply-to-future"
+                        checked={applyToFuture}
+                        onChange={e => setApplyToFuture(e.target.checked)}
+                        className="cursor-pointer"
+                      />
+                      <label htmlFor="apply-to-future" className="cursor-pointer">
+                        Also apply to future imports of this merchant
+                      </label>
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2 pl-22.5">
                   <Button size="sm" onClick={handleSaveCategory} className="font-mono text-[11px] font-bold">Save</Button>

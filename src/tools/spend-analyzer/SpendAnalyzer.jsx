@@ -3,6 +3,7 @@ import { useTheme } from 'next-themes';
 import { Sun, Moon } from 'lucide-react';
 import { CARDS } from './lib/constants';
 import { useAuth } from './context/AuthContext';
+import { useCsvRules } from './context/CsvRulesContext';
 import { useURLParam } from './lib/useURLParam';
 import { Button } from '@/components/ui/button';
 import ImportSidebar from './components/ImportSidebar';
@@ -14,6 +15,7 @@ import MyBudgetPage from './components/MyBudgetPage';
 
 export default function SpendAnalyzer() {
   const { user, loading } = useAuth();
+  const { rules, saveRule } = useCsvRules();
   const { resolvedTheme, setTheme } = useTheme();
   const [loadedData, setLoadedData] = useState({});
   const [results, setResults] = useState(null);
@@ -60,9 +62,9 @@ export default function SpendAnalyzer() {
     setResults(all);
   }
 
-  const handleReCategorize = useCallback((id, cat, catDetail, applyToSimilar) => {
+  const handleReCategorize = useCallback((id, cat, catDetail, applyToSimilar, applyToFuture) => {
+    const originalTx = (results || []).find(tx => tx._id === id);
     setResults(prev => {
-      const originalTx = prev.find(tx => tx._id === id);
       if (applyToSimilar && originalTx?.merchant) {
         const { merchant, cat: originalCat } = originalTx;
         return prev.map(tx =>
@@ -73,7 +75,13 @@ export default function SpendAnalyzer() {
       }
       return prev.map(tx => tx._id === id ? { ...tx, cat, cat_detail: catDetail } : tx);
     });
-  }, []);
+    if (applyToFuture && originalTx?.merchant) {
+      const escaped = originalTx.merchant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = `^${escaped}$`;
+      const existing = rules.find(r => r.match_field === 'merchant' && r.pattern === pattern);
+      saveRule({ ...existing, pattern, match_field: 'merchant', cat, cat_detail: catDetail || null });
+    }
+  }, [results, rules, saveRule]);
 
   const handleDeleteTransaction = useCallback((id) => {
     setResults(prev => prev.filter(tx => tx._id !== id));

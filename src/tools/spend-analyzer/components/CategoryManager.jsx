@@ -237,7 +237,7 @@ export default function CategoryManager({ open, onClose }) {
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
           <SheetTitle className="text-base font-extrabold tracking-tight">
-            {activeTab === 'categories' ? 'Manage Categories' : 'CSV Rules'}
+            {activeTab === 'categories' ? 'Manage Categories' : 'Rules Manager'}
           </SheetTitle>
           <SheetClose asChild>
             <button
@@ -255,7 +255,7 @@ export default function CategoryManager({ open, onClose }) {
         >
           <TabsList className="px-6 h-auto rounded-none border-b border-border bg-transparent justify-start gap-0 p-0 shrink-0">
             <TabsTrigger value="categories" className={triggerCls}>Categories</TabsTrigger>
-            <TabsTrigger value="rules" className={triggerCls}>CSV Rules</TabsTrigger>
+            <TabsTrigger value="rules" className={triggerCls}>Rules</TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="flex-1 overflow-y-auto px-6 py-4 pb-8 mt-0 data-[state=inactive]:hidden">
