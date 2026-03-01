@@ -5,6 +5,7 @@ import { useCsvRules } from '../context/CsvRulesContext';
 import { fmtShortDate } from '../lib/format';
 import { useURLParam } from '../lib/useURLParam';
 import ResultsView from './ResultsView';
+import BulkUpdateDialog from './BulkUpdateDialog';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -40,6 +41,8 @@ export default function MySpendingPage() {
   const { user } = useAuth();
   const { rules, saveRule } = useCsvRules();
   const [transactions, setTransactions] = useState([]);
+  const [bulkDialog, setBulkDialog] = useState(null);
+  // bulkDialog shape: { step, id, merchant, originalCat, cat, catDetail, applyToFuture, count }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -100,39 +103,45 @@ export default function MySpendingPage() {
       const originalTx = transactions.find(tx => tx._id === id);
       if (!originalTx?.merchant) return;
       const { merchant, cat: originalCat } = originalTx;
-      const { error } = await supabase
-        .from('imported_transactions')
-        .update({ cat, cat_detail: catDetail || null })
-        .eq('user_id', user.id)
-        .eq('merchant', merchant)
-        .eq('cat', originalCat);
-      if (!error) setTransactions(prev => prev.map(tx =>
+      const count = transactions.filter(tx => tx.merchant === merchant && tx.cat === originalCat).length;
+      setBulkDialog({ step: 'confirm', id, merchant, originalCat, cat, catDetail, applyToFuture, count });
+      return;
+    }
+    const { error } = await supabase
+      .from('imported_transactions')
+      .update({ cat, cat_detail: catDetail || null })
+      .eq('id', id)
+      .eq('user_id', user.id);
+    if (!error) setTransactions(prev => prev.map(tx =>
+      tx._id === id ? { ...tx, cat, cat_detail: catDetail } : tx
+    ));
+  }, [user, transactions]);
+
+  const handleBulkConfirm = useCallback(async () => {
+    if (!bulkDialog) return;
+    const { id, merchant, originalCat, cat, catDetail, applyToFuture, count } = bulkDialog;
+    setBulkDialog(d => ({ ...d, step: 'updating' }));
+    const { error } = await supabase
+      .from('imported_transactions')
+      .update({ cat, cat_detail: catDetail || null })
+      .eq('user_id', user.id)
+      .eq('merchant', merchant)
+      .eq('cat', originalCat);
+    if (!error) {
+      setTransactions(prev => prev.map(tx =>
         tx.merchant === merchant && tx.cat === originalCat
           ? { ...tx, cat, cat_detail: catDetail }
           : tx
       ));
-    } else {
-      const { error } = await supabase
-        .from('imported_transactions')
-        .update({ cat, cat_detail: catDetail || null })
-        .eq('id', id)
-        .eq('user_id', user.id);
-      if (!error) setTransactions(prev => prev.map(tx =>
-        tx._id === id ? { ...tx, cat, cat_detail: catDetail } : tx
-      ));
     }
-
     if (applyToFuture) {
-      const originalTx = transactions.find(tx => tx._id === id);
-      if (!originalTx?.merchant) return;
-      const merchant = originalTx.merchant;
       const escaped = merchant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const pattern = `^${escaped}$`;
-      // Update existing exact-match rule for this merchant if one exists, else create.
       const existing = rules.find(r => r.match_field === 'merchant' && r.pattern === pattern);
       await saveRule({ ...existing, pattern, match_field: 'merchant', cat, cat_detail: catDetail || null });
     }
-  }, [user, transactions, rules, saveRule]);
+    setBulkDialog(d => ({ ...d, step: 'done' }));
+  }, [bulkDialog, user, rules, saveRule]);
 
   const availableYears = useMemo(() => {
     const yrs = new Set(transactions.map(tx => tx.date?.substring(0, 4)).filter(Boolean));
@@ -262,6 +271,18 @@ export default function MySpendingPage() {
           hideImport
           hideExcluded
           syncFiltersToURL
+        />
+      )}
+
+      {bulkDialog && (
+        <BulkUpdateDialog
+          step={bulkDialog.step}
+          merchant={bulkDialog.merchant}
+          fromCat={bulkDialog.originalCat}
+          toCat={bulkDialog.cat}
+          count={bulkDialog.count}
+          onConfirm={handleBulkConfirm}
+          onClose={() => setBulkDialog(null)}
         />
       )}
     </>
