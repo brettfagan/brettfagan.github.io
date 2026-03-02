@@ -279,14 +279,17 @@ Deno.serve(async (req: Request) => {
         // Store the token in Vault and save only the opaque secret ID to the DB.
         const { data: secretId, error: vaultErr } = await adminSupabase.rpc(
           "create_plaid_vault_secret",
-          { p_token: access_token, p_name: `plaid_${user.id}_${card_name}` },
+          { p_token: access_token },
         );
-        if (vaultErr || !secretId) return json({ error: "Failed to store token" }, 500);
-        const { data: inserted } = await supabase
+        if (vaultErr || !secretId) {
+          return json({ error: "Failed to store token" }, 500);
+        }
+        const { data: inserted, error: insertErr } = await supabase
           .from("plaid_connections")
           .insert({ user_id: user.id, card_name, vault_secret_id: secretId })
           .select("id")
           .single();
+        if (insertErr) return json({ error: "Failed to save connection" }, 500);
         if (inserted) resolvedConnectionId = inserted.id;
       }
     } else {
