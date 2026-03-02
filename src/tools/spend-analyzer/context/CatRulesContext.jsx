@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
+import { validatePattern } from '../lib/parse';
 
 // ── Default rules (mirrors guessCat() hardcoded patterns) ────────────────────
 export const DEFAULT_RULES = [
@@ -95,6 +96,7 @@ export function CatRulesProvider({ children }) {
   // ── Save (insert new or update existing) ────────────────────────────────────
   async function saveRule(rule) {
     if (!user) return false;
+    if (validatePattern(rule.pattern)) return false; // defense-in-depth: UI validates first
 
     if (!rule.id) {
       // New rule — append at end

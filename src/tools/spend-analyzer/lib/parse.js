@@ -1,3 +1,20 @@
+const MAX_PATTERN_LENGTH = 200;
+
+// Returns an error string if the pattern is invalid or risky, or null if safe.
+// Catches: missing input, excessive length, nested quantifiers (ReDoS risk),
+// and invalid regex syntax.
+export function validatePattern(pattern) {
+  if (!pattern || !pattern.trim()) return 'Pattern is required.';
+  if (pattern.length > MAX_PATTERN_LENGTH)
+    return `Pattern must be ${MAX_PATTERN_LENGTH} characters or fewer.`;
+  // Reject nested quantifiers that cause catastrophic backtracking, e.g. (a+)+
+  if (/\([^)]+[+*][^)]*\)[+*{]/.test(pattern))
+    return 'Pattern contains nested quantifiers (e.g. (a+)+) that may freeze the page. Simplify the pattern.';
+  try { new RegExp(pattern, 'i'); }
+  catch (e) { return `Invalid regex: ${e.message}`; }
+  return null;
+}
+
 export function normPlaid(tx) {
   return {
     date: tx.date,

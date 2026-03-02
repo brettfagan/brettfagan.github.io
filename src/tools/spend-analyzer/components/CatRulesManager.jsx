@@ -3,6 +3,7 @@ import { useCatRules } from '../context/CatRulesContext';
 import { useCategories } from '../context/CategoriesContext';
 import { useDetailLabels } from '../context/DetailLabelsContext';
 import { Button } from '@/components/ui/button';
+import { validatePattern } from '../lib/parse';
 
 // ── Shared class strings ──────────────────────────────────────────────────────
 const editingCls  = "bg-muted border border-border rounded-md py-3.5 px-4";
@@ -72,13 +73,9 @@ function RuleRow({ rule, index, total, onSave, onDelete, onMove }) {
   const [saving, setSaving]         = useState(false);
   const [patternErr, setPatternErr] = useState('');
 
-  function validatePattern(p) {
-    try { new RegExp(p); return true; }
-    catch { return false; }
-  }
-
   async function handleSave() {
-    if (!validatePattern(pattern)) { setPatternErr('Invalid regex pattern.'); return; }
+    const err = validatePattern(pattern);
+    if (err) { setPatternErr(err); return; }
     setSaving(true);
     await onSave({ ...rule, pattern, match_field: matchField, cat, cat_detail: catDetail.trim() || null });
     setSaving(false);
@@ -201,15 +198,10 @@ function AddRuleForm({ onAdd }) {
   const [saving, setSaving]         = useState(false);
   const [error, setError]           = useState('');
 
-  function validatePattern(p) {
-    try { new RegExp(p); return true; }
-    catch { return false; }
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!pattern.trim()) { setError('Pattern is required.'); return; }
-    if (!validatePattern(pattern)) { setError('Invalid regex pattern.'); return; }
+    const err = validatePattern(pattern.trim());
+    if (err) { setError(err); return; }
     setSaving(true);
     setError('');
     const ok = await onAdd({
