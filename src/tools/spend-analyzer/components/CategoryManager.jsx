@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import { useCategories, COLOR_PALETTE } from '../context/CategoriesContext';
-import { fmtDetail } from '../lib/format';
+import { useDetailLabels } from '../context/DetailLabelsContext';
 import { SUBCATEGORIES } from '../lib/constants';
 import { Button } from '@/components/ui/button';
 
 // ── Shared class strings ──────────────────────────────────────────────────────
-const rowCls      = "grid grid-cols-[18px_1fr_auto_auto_auto_auto] items-center gap-2.5 px-2.5 py-2 rounded-md border border-transparent hover:bg-muted hover:border-border transition-colors";
-const editingCls  = "bg-muted border border-border rounded-md py-3.5 px-4";
-const blockCls    = "flex flex-col gap-2.5";
-const editRowCls  = "flex items-center gap-2.5";
-const labelCls    = "text-[10px] font-bold tracking-[1px] uppercase text-muted-foreground w-30 shrink-0";
-const inputCls    = "flex-1 bg-background border border-border rounded text-xs text-foreground py-1.5 px-2.5 outline-none focus:border-primary transition-colors";
-const iconBtnCls  = "bg-transparent border-0 cursor-pointer text-[13px] text-muted-foreground p-0.5 px-1.5 rounded leading-none hover:text-primary hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors";
+const rowCls       = "grid grid-cols-[18px_1fr_auto_auto_auto_auto] items-center gap-2.5 px-2.5 py-2 rounded-md border border-transparent hover:bg-muted hover:border-border transition-colors";
+const editingCls   = "bg-muted border border-border rounded-md py-3.5 px-4";
+const blockCls     = "flex flex-col gap-2.5";
+const editRowCls   = "flex items-center gap-2.5";
+const labelCls     = "text-[10px] font-bold tracking-[1px] uppercase text-muted-foreground w-30 shrink-0";
+const inputCls     = "flex-1 bg-background border border-border rounded text-xs text-foreground py-1.5 px-2.5 outline-none focus:border-primary transition-colors";
+const iconBtnCls   = "bg-transparent border-0 cursor-pointer text-[13px] text-muted-foreground p-0.5 px-1.5 rounded leading-none hover:text-primary hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors";
 const dangerBtnCls = "bg-transparent border-0 cursor-pointer text-[13px] text-muted-foreground p-0.5 px-1.5 rounded leading-none hover:text-destructive hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors";
 const addNewBtnCls = "w-full border border-dashed border-border rounded text-[11px] font-bold text-muted-foreground py-2 px-3 bg-transparent cursor-pointer tracking-[0.5px] mb-6 hover:text-primary hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors";
-const addFormCls  = "bg-muted border border-border rounded-lg p-4 flex flex-col gap-2.5 mb-6";
+const addFormCls   = "bg-muted border border-border rounded-lg p-4 flex flex-col gap-2.5 mb-6";
 
 // ── ColorPicker ───────────────────────────────────────────────────────────────
 function ColorPicker({ value, onChange }) {
@@ -36,16 +36,164 @@ function ColorPicker({ value, onChange }) {
   );
 }
 
+// ── SubcategoryRow ────────────────────────────────────────────────────────────
+function SubcategoryRow({ subKey, displayName, isCustom, onSave, onDelete }) {
+  const [editing, setEditing] = useState(false);
+  const [label, setLabel]     = useState(displayName);
+  const [saving, setSaving]   = useState(false);
+
+  async function handleSave() {
+    if (!label.trim()) return;
+    setSaving(true);
+    await onSave(subKey, label.trim());
+    setSaving(false);
+    setEditing(false);
+  }
+
+  function handleCancel() {
+    setLabel(displayName);
+    setEditing(false);
+  }
+
+  if (!editing) {
+    return (
+      <div className="grid grid-cols-[1fr_auto_auto] items-center gap-1.5 px-2 py-1 rounded hover:bg-background transition-colors">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xs font-medium overflow-hidden text-ellipsis whitespace-nowrap">{displayName}</span>
+          {isCustom && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 whitespace-nowrap shrink-0">
+              custom
+            </span>
+          )}
+        </div>
+        <button className={iconBtnCls} onClick={() => setEditing(true)} title="Rename">✎</button>
+        {isCustom
+          ? <button className={dangerBtnCls} onClick={() => onDelete(subKey)} title="Delete">✕</button>
+          : <span className="w-6" />
+        }
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-2 py-2 bg-background rounded border border-border">
+      <div className="flex items-center gap-2">
+        <input
+          className={inputCls}
+          value={label}
+          onChange={e => setLabel(e.target.value)}
+          maxLength={60}
+          autoFocus
+          onKeyDown={e => {
+            if (e.key === 'Enter') handleSave();
+            if (e.key === 'Escape') handleCancel();
+          }}
+        />
+        <Button size="sm" onClick={handleSave} disabled={saving || !label.trim()} className="text-[11px] font-bold shrink-0">
+          {saving ? '…' : 'Save'}
+        </Button>
+        <Button size="sm" variant="outline" onClick={handleCancel} className="text-[11px] font-bold shrink-0">Cancel</Button>
+      </div>
+    </div>
+  );
+}
+
+// ── AddSubcategoryForm ────────────────────────────────────────────────────────
+function AddSubcategoryForm({ catKey, onAdd }) {
+  const [open, setOpen]     = useState(false);
+  const [label, setLabel]   = useState('');
+  const [key, setKey]       = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError]   = useState('');
+
+  function deriveSubKey(lbl) {
+    const part = lbl.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '');
+    return part ? `${catKey}_${part}` : '';
+  }
+
+  function handleLabelChange(val) {
+    setLabel(val);
+    setKey(deriveSubKey(val));
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!label.trim()) { setError('Display name is required.'); return; }
+    if (!key) { setError('Could not derive a key from the name.'); return; }
+    setSaving(true);
+    setError('');
+    const ok = await onAdd(key, label.trim());
+    setSaving(false);
+    if (ok === false) {
+      setError('Failed to save. This subcategory may already exist.');
+    } else {
+      setLabel(''); setKey(''); setOpen(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        className="mt-2 w-full text-[10px] font-bold text-muted-foreground border border-dashed border-border rounded px-2 py-1.5 bg-transparent cursor-pointer hover:text-primary hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+        onClick={() => setOpen(true)}
+      >
+        + Add Subcategory
+      </button>
+    );
+  }
+
+  return (
+    <form className="mt-2 bg-background border border-border rounded-md p-3 flex flex-col gap-2" onSubmit={handleSubmit}>
+      <div className="flex items-center gap-2">
+        <label className="text-[10px] font-bold tracking-[1px] uppercase text-muted-foreground w-12 shrink-0">Name</label>
+        <input
+          className={inputCls}
+          value={label}
+          onChange={e => handleLabelChange(e.target.value)}
+          maxLength={50}
+          placeholder="e.g. Streaming"
+          autoFocus
+        />
+      </div>
+      {key && (
+        <p className="text-[10px] text-muted-foreground ml-14">
+          Key: <span className="font-mono">{key}</span>
+        </p>
+      )}
+      {error && <p className="text-[11px] text-destructive">{error}</p>}
+      <div className="flex gap-2">
+        <Button size="sm" type="submit" disabled={saving || !label.trim()} className="text-[11px] font-bold">
+          {saving ? 'Adding…' : 'Add'}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          type="button"
+          onClick={() => { setOpen(false); setError(''); setLabel(''); setKey(''); }}
+          className="text-[11px] font-bold"
+        >
+          Cancel
+        </Button>
+      </div>
+    </form>
+  );
+}
+
 // ── CategoryRow ───────────────────────────────────────────────────────────────
 function CategoryRow({ cat, onSave, onDelete }) {
-  const [editing, setEditing]     = useState(false);
-  const [label, setLabel]         = useState(cat.label);
-  const [color, setColor]         = useState(cat.color);
-  const [excluded, setExcluded]   = useState(cat.excluded);
-  const [saving, setSaving]       = useState(false);
-  const [subOpen, setSubOpen]     = useState(false);
+  const { detailLabels, getDetailLabel, saveDetailLabel, deleteDetailLabel } = useDetailLabels();
+  const [editing, setEditing]   = useState(false);
+  const [label, setLabel]       = useState(cat.label);
+  const [color, setColor]       = useState(cat.color);
+  const [excluded, setExcluded] = useState(cat.excluded);
+  const [saving, setSaving]     = useState(false);
+  const [subOpen, setSubOpen]   = useState(false);
 
-  const subs = SUBCATEGORIES[cat.key] || [];
+  const hardcodedSubs = SUBCATEGORIES[cat.key] || [];
+  const customSubs = detailLabels.filter(
+    dl => dl.cat_detail.startsWith(cat.key + '_') && !hardcodedSubs.includes(dl.cat_detail)
+  );
+  const totalSubCount = hardcodedSubs.length + customSubs.length;
 
   async function handleSave() {
     setSaving(true);
@@ -76,28 +224,45 @@ function CategoryRow({ cat, onSave, onDelete }) {
           <button className={iconBtnCls} onClick={() => setEditing(true)} title="Edit">✎</button>
           <button className={dangerBtnCls} onClick={() => onDelete(cat.key)} title="Delete">✕</button>
         </div>
-        {subs.length > 0 && (
-          <div className="px-2.5 pb-1.5 pl-9.5">
-            <button
-              className="bg-transparent border-0 cursor-pointer text-[10px] text-muted-foreground p-0 tracking-[0.3px] hover:text-foreground transition-colors"
-              onClick={() => setSubOpen(o => !o)}
-            >
-              {subOpen ? '▼' : '▶'} {subs.length} subcategories
-            </button>
-            {subOpen && (
-              <div className="flex flex-wrap gap-1 mt-1.5">
-                {subs.map(s => (
-                  <span
-                    key={s}
-                    className="text-[10px] text-muted-foreground bg-muted border border-border rounded-[3px] px-1.5 py-0.5 whitespace-nowrap"
-                  >
-                    {fmtDetail(s)}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+
+        {/* ── Subcategories panel ── */}
+        <div className="px-2.5 pb-1.5 pl-9.5">
+          <button
+            className="bg-transparent border-0 cursor-pointer text-[10px] text-muted-foreground p-0 tracking-[0.3px] hover:text-foreground transition-colors"
+            onClick={() => setSubOpen(o => !o)}
+          >
+            {subOpen ? '▼' : '▶'} {totalSubCount} subcategor{totalSubCount === 1 ? 'y' : 'ies'}
+          </button>
+
+          {subOpen && (
+            <div className="mt-2 border border-border rounded-md bg-muted/40 p-1.5 flex flex-col gap-0.5">
+              {hardcodedSubs.map(s => (
+                <SubcategoryRow
+                  key={s}
+                  subKey={s}
+                  displayName={getDetailLabel(s)}
+                  isCustom={false}
+                  onSave={saveDetailLabel}
+                  onDelete={deleteDetailLabel}
+                />
+              ))}
+              {customSubs.map(dl => (
+                <SubcategoryRow
+                  key={dl.cat_detail}
+                  subKey={dl.cat_detail}
+                  displayName={dl.label}
+                  isCustom={true}
+                  onSave={saveDetailLabel}
+                  onDelete={deleteDetailLabel}
+                />
+              ))}
+              {totalSubCount === 0 && (
+                <p className="text-[10px] text-muted-foreground px-2 py-1">No subcategories yet.</p>
+              )}
+              <AddSubcategoryForm catKey={cat.key} onAdd={saveDetailLabel} />
+            </div>
+          )}
+        </div>
       </div>
     );
   }
