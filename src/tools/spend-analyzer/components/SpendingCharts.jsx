@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import { useTheme } from "next-themes";
 import {
-  LineChart,
+  ComposedChart,
   Line,
+  Area,
   XAxis,
   YAxis,
   Tooltip,
@@ -170,34 +171,21 @@ export default function SpendingCharts({ spending, credits, cats }) {
       {/* ── Monthly line chart ──────────────────────────────────────────── */}
       {showMonthly && (
         <div>
-          <div className="flex items-baseline justify-between mb-3">
-            <div className="flex items-baseline gap-3">
-              <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground">
-                Monthly Spend
-              </div>
-              <div className="text-[11px] text-muted-foreground">
-                avg{" "}
-                {fmt(
-                  monthlyData.reduce((s, d) => s + d.spend, 0) /
-                    monthlyData.length,
-                )}
-                /mo
-              </div>
+          <div className="flex items-baseline gap-3 mb-3">
+            <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground">
+              Monthly Spend
             </div>
-            <div className="flex gap-2">
-              <button className="text-[10px] px-2 py-1 rounded border border-border hover:bg-muted transition-colors">
-                Last 3 months
-              </button>
-              <button className="text-[10px] px-2 py-1 rounded bg-primary text-primary-foreground">
-                Last 30 days
-              </button>
-              <button className="text-[10px] px-2 py-1 rounded border border-border hover:bg-muted transition-colors">
-                Last 7 days
-              </button>
+            <div className="text-[11px] text-muted-foreground">
+              avg{" "}
+              {fmt(
+                monthlyData.reduce((s, d) => s + d.spend, 0) /
+                  monthlyData.length,
+              )}
+              /mo
             </div>
           </div>
           <ResponsiveContainer width="100%" height={240}>
-            <LineChart
+            <ComposedChart
               data={monthlyData}
               margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
             >
@@ -220,6 +208,7 @@ export default function SpendingCharts({ spending, credits, cats }) {
                 axisLine={false}
                 tickLine={false}
                 width={44}
+                domain={["dataMin - 100", "dataMax + 100"]}
               />
               <Tooltip
                 content={<BarTooltipContent />}
@@ -228,16 +217,21 @@ export default function SpendingCharts({ spending, credits, cats }) {
                 }}
                 isAnimationActive={false}
               />
+              <Area
+                type="monotone"
+                dataKey="spend"
+                fill="url(#spendGradient)"
+                baseValue="dataMin"
+              />
               <Line
                 type="monotone"
                 dataKey="spend"
                 stroke="#8b5cf6"
                 strokeWidth={2}
-                fill="url(#spendGradient)"
                 dot={{ fill: "#8b5cf6", r: 3 }}
                 activeDot={{ r: 5 }}
               />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       )}
