@@ -44,6 +44,8 @@ export default function ImportBlock({ card, onLoad, onClear, rules = [] }) {
   function loadJSONFile(file) {
     if (!file) return;
     setJsonErr('');
+    if (!file.name.match(/\.(json|txt)$/i)) { setJsonErr('✗ File must be .json or .txt'); return; }
+    if (file.size > 10 * 1024 * 1024) { setJsonErr('✗ File too large (max 10 MB)'); return; }
     const reader = new FileReader();
     reader.onload = ev => {
       try {
@@ -61,6 +63,8 @@ export default function ImportBlock({ card, onLoad, onClear, rules = [] }) {
   function loadCSVFile(file) {
     if (!file) return;
     setCsvErr('');
+    if (!file.name.match(/\.csv$/i)) { setCsvErr('✗ File must be .csv'); return; }
+    if (file.size > 10 * 1024 * 1024) { setCsvErr('✗ File too large (max 10 MB)'); return; }
     const reader = new FileReader();
     reader.onload = ev => {
       try {
