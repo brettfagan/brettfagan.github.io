@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
   if (!resendKey) return json({ error: "Email service not configured" }, 500);
 
   const inviteUrl =
-    `https://www.brettlabs.dev?tool=spend-analyzer&invite=${invite.token}`;
+    `https://www.brettlabs.dev/tools/spend-analyzer/?invite=${invite.token}`;
 
   const emailRes = await fetch("https://api.resend.com/emails", {
     method: "POST",
