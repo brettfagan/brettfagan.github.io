@@ -30,11 +30,12 @@ export default function SpendAnalyzer() {
   // ── Invite token detection ────────────────────────────────────────────────
   // On mount: stash any ?invite=<token> in localStorage before OAuth redirect
   // clears query params, then clean the URL.
+  // Store a timestamp so stale tokens on shared devices expire after 7 days.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('invite');
     if (token) {
-      localStorage.setItem('pendingInviteToken', token);
+      localStorage.setItem('pendingInviteToken', JSON.stringify({ token, storedAt: Date.now() }));
       const url = new URL(window.location.href);
       url.searchParams.delete('invite');
       window.history.replaceState(null, '', url.toString());
@@ -44,9 +45,23 @@ export default function SpendAnalyzer() {
   // When a user signs in, check for a pending invite token and accept it.
   useEffect(() => {
     if (!user) return;
-    const token = localStorage.getItem('pendingInviteToken');
-    if (!token) return;
+
+    const raw = localStorage.getItem('pendingInviteToken');
+    if (!raw) return;
+
+    // Always clear the token immediately — whether valid or stale — so it
+    // never leaks to another user signing in later on a shared device.
     localStorage.removeItem('pendingInviteToken');
+
+    let token;
+    try {
+      const { token: t, storedAt } = JSON.parse(raw);
+      const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+      if (!t || Date.now() - storedAt > INVITE_TTL_MS) return; // expired
+      token = t;
+    } catch {
+      return; // corrupt / legacy plain-string entry, discard
+    }
 
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
