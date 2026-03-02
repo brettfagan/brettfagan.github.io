@@ -93,26 +93,8 @@ Deno.serve(async (req) => {
     body: JSON.stringify({
       from: "BrettLabs <noreply@brettlabs.dev>",
       to: [email],
-      subject: "You've been invited to BrettLabs Spend Analyzer",
-      html: `
-        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#111">
-          <h2 style="font-size:20px;font-weight:800;margin-bottom:12px">You're invited to BrettLabs Spend Analyzer</h2>
-          <p style="font-size:14px;line-height:1.6;color:#444">
-            Your partner has invited you to view their shared spending data in the
-            <strong>BrettLabs Spend Analyzer</strong>.
-          </p>
-          <p style="margin:24px 0">
-            <a href="${inviteUrl}"
-               style="display:inline-block;padding:11px 22px;background:#000;color:#fff;text-decoration:none;border-radius:7px;font-weight:700;font-size:14px">
-              Accept Invitation
-            </a>
-          </p>
-          <p style="font-size:12px;color:#888;line-height:1.5">
-            Sign in with your Google account after clicking the link above.<br>
-            This invitation expires in 7 days. If you weren't expecting this, you can safely ignore it.
-          </p>
-        </div>
-      `,
+      template_id: "spend-analyzer-invitation-1",
+      variables: { inviteUrl },
     }),
   });
 
