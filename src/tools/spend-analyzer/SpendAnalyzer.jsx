@@ -216,8 +216,9 @@ export default function SpendAnalyzer() {
       </header>
 
       {inviteError && (
-        <div className="px-12 py-3 bg-destructive/10 border-b border-destructive/20 text-xs text-destructive font-medium">
-          Invite error: {inviteError}
+        <div className="px-12 py-3 bg-destructive/10 border-b border-destructive/20 text-xs text-destructive font-medium flex items-center justify-between">
+          <span>Invite error: {inviteError}</span>
+          <button onClick={() => setInviteError(null)} className="ml-4 hover:opacity-70">✕</button>
         </div>
       )}
 
