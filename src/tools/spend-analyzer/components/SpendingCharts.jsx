@@ -129,8 +129,6 @@ export default function SpendingCharts({ spending, credits, cats }) {
   };
   const fmtY = (v) =>
     v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v.toFixed(0)}`;
-  const barSize =
-    monthlyData.length <= 6 ? 28 : monthlyData.length <= 12 ? 18 : undefined;
 
   return (
     <div
@@ -220,6 +218,7 @@ export default function SpendingCharts({ spending, credits, cats }) {
               <Area
                 type="monotone"
                 dataKey="spend"
+                stroke="none"
                 fill="url(#spendGradient)"
                 baseValue="dataMin"
               />
