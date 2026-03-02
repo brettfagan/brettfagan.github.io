@@ -122,8 +122,9 @@ dist
 # TernJS port file
 .tern-port
 
-# VSCode settings
-.vscode/
+# VSCode settings (track settings.json for shared project config, ignore personal files)
+.vscode/*
+!.vscode/settings.json
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
