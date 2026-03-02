@@ -222,7 +222,7 @@ Deno.serve(async (req: Request) => {
     // read vault.decrypted_secrets. Never used for user-data reads/writes.
     const adminSupabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      Deno.env.get("SB_SERVICE_ROLE_KEY")!,
     );
 
     const jwt = authHeader.replace(/^bearer /i, "");
