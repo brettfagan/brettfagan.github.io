@@ -3,10 +3,13 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useCategories } from '../context/CategoriesContext';
 import { useDetailLabels } from '../context/DetailLabelsContext';
+import { useAuth } from '../context/AuthContext';
 import { SUBCATEGORIES } from '../lib/constants';
 import { fmt, fmtCat, fmtDetail } from '../lib/format';
 
 export default function TransactionModal({ tx, onClose, onReCategorize, onDelete }) {
+  const { role } = useAuth();
+  const isLinked = role === 'linked';
   const [editingCat, setEditingCat] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
   const [selectedCat, setSelectedCat] = useState(tx?.cat || '');
@@ -143,7 +146,7 @@ export default function TransactionModal({ tx, onClose, onReCategorize, onDelete
                       Apply to all similar transactions (same merchant &amp; category)
                     </label>
                   </div>
-                  {applyToSimilar && (
+                  {applyToSimilar && !isLinked && (
                     <div className="flex items-center gap-1.5 pl-4 text-[11px] text-muted-foreground">
                       <input
                         type="checkbox"
@@ -245,7 +248,7 @@ export default function TransactionModal({ tx, onClose, onReCategorize, onDelete
             <Row label="Account ID" value={tx.account_id ? <span className="text-[10px] break-all">{tx.account_id}</span> : null} />
           </Section>
 
-          {onDelete && (
+          {onDelete && !isLinked && (
             <div className="pt-2 border-t border-border">
               {deletePending ? (
                 <div className="flex items-center justify-between gap-3">

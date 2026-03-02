@@ -80,7 +80,7 @@ export const COLOR_PALETTE = [
 const CategoriesContext = createContext(null);
 
 export function CategoriesProvider({ children }) {
-  const { user } = useAuth();
+  const { user, role, effectiveUserId } = useAuth();
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [loading, setLoading] = useState(false);
   // Guard against StrictMode double-invoke seeding the same user twice
@@ -93,6 +93,8 @@ export function CategoriesProvider({ children }) {
       seedingRef.current = false;
       return;
     }
+    // Wait until effectiveUserId is resolved (may lag one render behind user)
+    if (!effectiveUserId) return;
 
     let cancelled = false;
     setLoading(true);
@@ -100,6 +102,7 @@ export function CategoriesProvider({ children }) {
     supabase
       .from('categories')
       .select('key, label, color, excluded')
+      .eq('user_id', effectiveUserId)
       .order('key')
       .then(({ data, error }) => {
         if (cancelled) return;
@@ -107,17 +110,17 @@ export function CategoriesProvider({ children }) {
           console.error('Failed to load categories:', error.message);
         } else if (data && data.length > 0) {
           setCategories(data);
-        } else if (!seedingRef.current) {
-          // First sign-in: seed defaults into Supabase silently
+        } else if (!seedingRef.current && role !== 'linked') {
+          // First sign-in for primary users: seed defaults into Supabase silently
           seedingRef.current = true;
-          seedDefaults(user.id);
+          seedDefaults(effectiveUserId);
           setCategories(DEFAULT_CATEGORIES);
         }
         if (!cancelled) setLoading(false);
       });
 
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, effectiveUserId, role]);
 
   async function seedDefaults(userId) {
     const rows = DEFAULT_CATEGORIES.map(c => ({ ...c, user_id: userId }));

@@ -6,7 +6,7 @@ import { fmtDetail } from '../lib/format';
 const DetailLabelsContext = createContext(null);
 
 export function DetailLabelsProvider({ children }) {
-  const { user } = useAuth();
+  const { user, effectiveUserId } = useAuth();
   const [detailLabels, setDetailLabels] = useState([]);
   const [loading, setLoading] = useState(false);
   // StrictMode safety — prevents duplicate load race conditions
@@ -17,6 +17,7 @@ export function DetailLabelsProvider({ children }) {
       setDetailLabels([]);
       return;
     }
+    if (!effectiveUserId) return;
 
     let cancelled = false;
     setLoading(true);
@@ -24,7 +25,7 @@ export function DetailLabelsProvider({ children }) {
     supabase
       .from('detail_labels')
       .select('id, cat_detail, label')
-      .eq('user_id', user.id)
+      .eq('user_id', effectiveUserId)
       .order('cat_detail')
       .then(({ data, error }) => {
         if (cancelled) return;
@@ -37,7 +38,7 @@ export function DetailLabelsProvider({ children }) {
       });
 
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, effectiveUserId]);
 
   // Upsert a single label. Returns true on success, false on failure.
   const saveDetailLabel = useCallback(async (cat_detail, label) => {
