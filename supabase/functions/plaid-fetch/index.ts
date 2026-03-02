@@ -201,6 +201,29 @@ async function syncTransactions(
   return { added, modified, removed, next_cursor: currentCursor, accounts };
 }
 
+// Exchange a one-time public_token for an access_token entirely server-side.
+async function exchangePublicToken(
+  plaidBase: string,
+  clientId: string,
+  secret: string,
+  publicToken: string,
+): Promise<string> {
+  const res = await fetch(`${plaidBase}/item/public_token/exchange`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      client_id: clientId,
+      secret,
+      public_token: publicToken,
+    }),
+  });
+  const data = await res.json();
+  if (data.error_code) {
+    throw new Error(data.error_message || data.error_code);
+  }
+  return data.access_token;
+}
+
 Deno.serve(async (req: Request) => {
   const cors = corsHeaders(req);
   const json = (data: unknown, status = 200) =>
@@ -238,8 +261,19 @@ Deno.serve(async (req: Request) => {
     } = await supabase.auth.getUser(jwt);
     if (authError || !user) return json({ error: "Unauthorized" }, 401);
 
+    const clientId = Deno.env.get("PLAID_CLIENT_ID");
+    const secret = Deno.env.get("PLAID_SECRET");
+    const plaidEnv = Deno.env.get("PLAID_ENV") || "production";
+    if (!clientId || !secret) {
+      return json({ error: "Plaid credentials not configured" }, 500);
+    }
+    const plaidBase =
+      plaidEnv === "sandbox"
+        ? "https://sandbox.plaid.com"
+        : "https://production.plaid.com";
+
     const body = await req.json();
-    const { connection_id, access_token, card_name, cursor, save, action } = body;
+    const { connection_id, access_token, public_token, card_name, cursor, save, action } = body;
 
     // ── Token rotation ────────────────────────────────────────────────────────
     // Replaces the direct client-side write to plaid_connections.access_token.
@@ -279,13 +313,18 @@ Deno.serve(async (req: Request) => {
       );
       if (vaultErr || !vaultToken) return json({ error: "Failed to retrieve token" }, 500);
       token = vaultToken;
-    } else if (access_token) {
-      token = access_token;
+    } else if (public_token) {
+      // Plaid Link flow: exchange one-time public_token for access_token server-side.
+      // The access_token never reaches the client.
+      try {
+        token = await exchangePublicToken(plaidBase, clientId, secret, public_token);
+      } catch (e) {
+        return json({ error: String(e) }, 400);
+      }
       if (save && card_name) {
-        // Store the token in Vault and save only the opaque secret ID to the DB.
         const { data: secretId, error: vaultErr } = await adminSupabase.rpc(
           "create_plaid_vault_secret",
-          { p_token: access_token },
+          { p_token: token },
         );
         if (vaultErr || !secretId) {
           return json({ error: "Failed to store token" }, 500);
@@ -298,21 +337,12 @@ Deno.serve(async (req: Request) => {
         if (insertErr) return json({ error: "Failed to save connection" }, 500);
         if (inserted) resolvedConnectionId = inserted.id;
       }
+    } else if (access_token) {
+      // Legacy path: kept for backward compatibility (e.g. token rotation callers).
+      token = access_token;
     } else {
-      return json({ error: "connection_id or access_token required" }, 400);
+      return json({ error: "connection_id, public_token, or access_token required" }, 400);
     }
-
-    const clientId = Deno.env.get("PLAID_CLIENT_ID");
-    const secret = Deno.env.get("PLAID_SECRET");
-    const plaidEnv = Deno.env.get("PLAID_ENV") || "production";
-    if (!clientId || !secret) {
-      return json({ error: "Plaid credentials not configured" }, 500);
-    }
-
-    const plaidBase =
-      plaidEnv === "sandbox"
-        ? "https://sandbox.plaid.com"
-        : "https://production.plaid.com";
 
     if (cursor) {
       // Incremental sync — use /transactions/sync with the stored cursor
