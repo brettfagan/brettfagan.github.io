@@ -93,8 +93,10 @@ Deno.serve(async (req) => {
     body: JSON.stringify({
       from: "BrettLabs <noreply@brettlabs.dev>",
       to: [email],
-      template_id: "spend-analyzer-invitation-1",
-      variables: { inviteUrl },
+      template: {
+        id: "spend-analyzer-invitation-1",
+        variables: { inviteUrl },
+      },
     }),
   });
 
