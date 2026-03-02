@@ -218,6 +218,13 @@ Deno.serve(async (req: Request) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
+    // Admin client for Vault operations — service role bypasses RLS and can
+    // read vault.decrypted_secrets. Never used for user-data reads/writes.
+    const adminSupabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SB_SERVICE_ROLE_KEY")!,
+    );
+
     const jwt = authHeader.replace(/^bearer /i, "");
     const {
       data: { user },
@@ -226,26 +233,58 @@ Deno.serve(async (req: Request) => {
     if (authError || !user) return json({ error: "Unauthorized" }, 401);
 
     const body = await req.json();
-    const { connection_id, access_token, card_name, cursor, save } = body;
+    const { connection_id, access_token, card_name, cursor, save, action } = body;
+
+    // ── Token rotation ────────────────────────────────────────────────────────
+    // Replaces the direct client-side write to plaid_connections.access_token.
+    if (action === "rotate_token") {
+      if (!connection_id || !access_token) {
+        return json({ error: "connection_id and access_token required" }, 400);
+      }
+      const { data: conn, error: connErr } = await supabase
+        .from("plaid_connections")
+        .select("vault_secret_id")
+        .eq("id", connection_id)
+        .single();
+      if (connErr || !conn) return json({ error: "Connection not found" }, 404);
+      const { error: vaultErr } = await adminSupabase.rpc("update_plaid_vault_secret", {
+        p_secret_id: conn.vault_secret_id,
+        p_token: access_token,
+      });
+      if (vaultErr) return json({ error: "Failed to update token" }, 500);
+      return json({ ok: true });
+    }
 
     let token: string;
     let resolvedConnectionId: string | undefined = connection_id;
 
     if (connection_id) {
-      // Fetch saved connection — RLS ensures the user owns this row
+      // Fetch saved connection — RLS ensures the user owns this row.
+      // vault_secret_id is a pointer into Supabase Vault; decrypt via admin client.
       const { data, error } = await supabase
         .from("plaid_connections")
-        .select("access_token")
+        .select("vault_secret_id")
         .eq("id", connection_id)
         .single();
       if (error || !data) return json({ error: "Connection not found" }, 404);
-      token = data.access_token;
+      const { data: vaultToken, error: vaultErr } = await adminSupabase.rpc(
+        "read_plaid_vault_secret",
+        { p_secret_id: data.vault_secret_id },
+      );
+      if (vaultErr || !vaultToken) return json({ error: "Failed to retrieve token" }, 500);
+      token = vaultToken;
     } else if (access_token) {
       token = access_token;
       if (save && card_name) {
+        // Store the token in Vault and save only the opaque secret ID to the DB.
+        const { data: secretId, error: vaultErr } = await adminSupabase.rpc(
+          "create_plaid_vault_secret",
+          { p_token: access_token, p_name: `plaid_${user.id}_${card_name}` },
+        );
+        if (vaultErr || !secretId) return json({ error: "Failed to store token" }, 500);
         const { data: inserted } = await supabase
           .from("plaid_connections")
-          .insert({ user_id: user.id, card_name, access_token })
+          .insert({ user_id: user.id, card_name, vault_secret_id: secretId })
           .select("id")
           .single();
         if (inserted) resolvedConnectionId = inserted.id;

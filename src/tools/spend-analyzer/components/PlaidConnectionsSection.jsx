@@ -142,7 +142,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
   }
 
   async function removeConnection(conn) {
-    await supabase.from('plaid_connections').delete().eq('id', conn.id);
+    await supabase.from('plaid_connections').delete().eq('id', conn.id).eq('user_id', user.id);
     clearCursor(conn.id);
     connectionIdsRef.current.delete(conn.id);
     onClear(conn.card_name);
@@ -155,15 +155,13 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
     if (!newToken) return;
     setUpdatingToken(u => ({ ...u, [conn.id]: true }));
     try {
-      const { error } = await supabase.from('plaid_connections').update({ access_token: newToken }).eq('id', conn.id);
-      if (error) {
-        setFetchErr(e => ({ ...e, [conn.id]: error.message }));
-        return;
-      }
+      await callPlaidFetch({ action: 'rotate_token', connection_id: conn.id, access_token: newToken });
       clearCursor(conn.id);
       onClear(conn.card_name);
       setLoadedKeys(s => { const n = new Set(s); n.delete(conn.id); return n; });
       setEditingToken(e => { const n = { ...e }; delete n[conn.id]; return n; });
+    } catch (e) {
+      setFetchErr(err => ({ ...err, [conn.id]: e.message }));
     } finally {
       setUpdatingToken(u => ({ ...u, [conn.id]: false }));
     }
