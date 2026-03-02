@@ -1,0 +1,7 @@
+{
+  "github-actions.workflows.pinned.workflows": [
+    ".github/workflows/deploy-pages.yml"
+  ],
+  "deno.enablePaths": ["supabase/functions"],
+  "deno.lint": true
+}
