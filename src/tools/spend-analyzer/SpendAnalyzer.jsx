@@ -5,6 +5,7 @@ import { CARDS } from './lib/constants';
 import { useAuth } from './context/AuthContext';
 import { useCatRules } from './context/CatRulesContext';
 import { useURLParam } from './lib/useURLParam';
+import { supabase } from './lib/supabase';
 import ImportSidebar from './components/ImportSidebar';
 import ResultsView from './components/ResultsView';
 import AuthButton from './components/AuthButton';
@@ -14,7 +15,7 @@ import MyBudgetPage from './components/MyBudgetPage';
 import BulkUpdateDialog from './components/BulkUpdateDialog';
 
 export default function SpendAnalyzer() {
-  const { user, loading } = useAuth();
+  const { user, loading, role } = useAuth();
   const { rules, saveRule } = useCatRules();
   const { resolvedTheme, setTheme } = useTheme();
   const [loadedData, setLoadedData] = useState({});
@@ -22,6 +23,60 @@ export default function SpendAnalyzer() {
   const [sidebarKey, setSidebarKey] = useState(0);
   const [bulkDialog, setBulkDialog] = useState(null);
   const [page, setPage] = useURLParam('tab', 'analyzer');
+  const [inviteError, setInviteError] = useState(null);
+
+  const isLinked = role === 'linked';
+
+  // ── Invite token detection ────────────────────────────────────────────────
+  // On mount: stash any ?invite=<token> in localStorage before OAuth redirect
+  // clears query params, then clean the URL.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('invite');
+    if (token) {
+      localStorage.setItem('pendingInviteToken', token);
+      const url = new URL(window.location.href);
+      url.searchParams.delete('invite');
+      window.history.replaceState(null, '', url.toString());
+    }
+  }, []);
+
+  // When a user signs in, check for a pending invite token and accept it.
+  useEffect(() => {
+    if (!user) return;
+    const token = localStorage.getItem('pendingInviteToken');
+    if (!token) return;
+    localStorage.removeItem('pendingInviteToken');
+
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/accept-invite`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ token }),
+        },
+      );
+      const json = await res.json();
+      if (!res.ok) {
+        setInviteError(json.error || 'Failed to accept invitation.');
+      }
+      // Reload the page so AuthContext re-runs loadPartnerStatus with the new link
+      if (res.ok) window.location.reload();
+    })();
+  }, [user]);
+
+  // ── Tab guards ────────────────────────────────────────────────────────────
+  // Redirect to 'my-spending' (not analyzer) if linked user somehow has analyzer/settings active
+  useEffect(() => {
+    if (!loading && user && isLinked && (page === 'analyzer' || page === 'settings')) {
+      setPage('my-spending');
+    }
+  }, [user, loading, isLinked, page]);
 
   // Redirect to analyzer if user signs out while on an auth-only page
   useEffect(() => {
@@ -107,7 +162,22 @@ export default function SpendAnalyzer() {
     setSidebarKey(k => k + 1);
   }
 
-  const isFull = ['my-spending', 'my-budget', 'settings'].includes(page);
+  // Linked users only see my-spending and my-budget
+  const visibleTabs = user
+    ? isLinked
+      ? [
+          { id: 'my-spending', label: 'My Spending' },
+          { id: 'my-budget',   label: 'My Budget'   },
+        ]
+      : [
+          { id: 'analyzer',    label: 'Analyzer'    },
+          { id: 'my-spending', label: 'My Spending' },
+          { id: 'my-budget',   label: 'My Budget'   },
+          { id: 'settings',    label: 'Settings'    },
+        ]
+    : [];
+
+  const isFull = isLinked || ['my-spending', 'my-budget', 'settings'].includes(page);
 
   return (
     <>
@@ -119,12 +189,7 @@ export default function SpendAnalyzer() {
         <div className="flex items-center">
           {user && (
             <nav className="flex gap-0.5 mr-3">
-              {[
-                { id: 'analyzer',    label: 'Analyzer'    },
-                { id: 'my-spending', label: 'My Spending' },
-                { id: 'my-budget',   label: 'My Budget'   },
-                { id: 'settings',    label: 'Settings'    },
-              ].map(({ id, label }) => (
+              {visibleTabs.map(({ id, label }) => (
                 <button
                   key={id}
                   onClick={() => setPage(id)}
@@ -150,8 +215,14 @@ export default function SpendAnalyzer() {
         </div>
       </header>
 
+      {inviteError && (
+        <div className="px-12 py-3 bg-destructive/10 border-b border-destructive/20 text-xs text-destructive font-medium">
+          Invite error: {inviteError}
+        </div>
+      )}
+
       <div className={`grid min-h-[calc(100vh-89px)] ${isFull ? 'grid-cols-1' : 'grid-cols-[260px_1fr]'}`}>
-        {page === 'analyzer' && (
+        {page === 'analyzer' && !isLinked && (
           <ImportSidebar
             key={sidebarKey}
             loadedCount={Object.keys(loadedData).length}
@@ -171,7 +242,7 @@ export default function SpendAnalyzer() {
           <div className="px-9 py-7 overflow-y-auto">
             <MyBudgetPage />
           </div>
-        ) : page === 'settings' ? (
+        ) : page === 'settings' && !isLinked ? (
           <SettingsPage />
         ) : (
           <div className="px-9 py-7 overflow-y-auto">

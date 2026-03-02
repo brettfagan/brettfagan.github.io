@@ -1,14 +1,24 @@
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
+import { Button } from '@/components/ui/button';
 import CategoryContent from './CategoryManager';
 import CatRulesManager from './CatRulesManager';
+import LinkedAccessManager from './LinkedAccessManager';
 
 const SECTIONS = [
-  { id: 'categories', label: 'Categories' },
-  { id: 'rules',      label: 'Rules'      },
+  { id: 'categories',     label: 'Categories'      },
+  { id: 'rules',          label: 'Rules'            },
+  { id: 'linked-access',  label: 'Linked Access'    },
 ];
 
 export default function SettingsPage() {
+  const { role } = useAuth();
   const [activeSection, setActiveSection] = useState('categories');
+
+  // Guard: linked users should never reach this page (tab is hidden),
+  // but add a safety render-null just in case.
+  if (role === 'linked') return null;
 
   return (
     <div className="flex min-h-[calc(100vh-89px)]">
@@ -56,6 +66,16 @@ export default function SettingsPage() {
               <p className="text-xs text-muted-foreground mt-1">Automatically categorize transactions on import using regex patterns.</p>
             </div>
             <CatRulesManager />
+          </>
+        )}
+
+        {activeSection === 'linked-access' && (
+          <>
+            <div className="mb-6">
+              <h2 className="text-[22px] font-extrabold tracking-[-0.3px]">Linked Access</h2>
+              <p className="text-xs text-muted-foreground mt-1">Invite a partner to view your spending data with limited access.</p>
+            </div>
+            <LinkedAccessManager />
           </>
         )}
         </div>

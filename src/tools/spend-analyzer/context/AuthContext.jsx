@@ -6,25 +6,78 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(undefined); // undefined = loading, null = signed out
   const [loading, setLoading] = useState(true);
+  // 'primary' = account owner, 'linked' = partner with delegated access
+  const [role, setRole] = useState('primary');
+  // For linked users: the master's user_id used in all data queries
+  const [effectiveUserId, setEffectiveUserId] = useState(null);
+  // For primary users: info about their linked partner (if any)
+  const [linkedPartnerEmail, setLinkedPartnerEmail] = useState(null);
+  // For primary users: email address of a pending invite (if any)
+  const [pendingInviteEmail, setPendingInviteEmail] = useState(null);
+
+  async function loadPartnerStatus(currentUser) {
+    if (!currentUser) {
+      setRole('primary');
+      setEffectiveUserId(null);
+      setLinkedPartnerEmail(null);
+      setPendingInviteEmail(null);
+      return;
+    }
+
+    // Check if this user is a linked partner
+    const { data: partnerRow } = await supabase
+      .from('partner_access')
+      .select('master_user_id')
+      .eq('partner_user_id', currentUser.id)
+      .maybeSingle();
+
+    if (partnerRow) {
+      setRole('linked');
+      setEffectiveUserId(partnerRow.master_user_id);
+      return;
+    }
+
+    // This user is a primary — check if they have a linked partner
+    setRole('primary');
+    setEffectiveUserId(currentUser.id);
+
+    const [accessRes, inviteRes] = await Promise.all([
+      supabase
+        .from('partner_access')
+        .select('partner_email')
+        .eq('master_user_id', currentUser.id)
+        .maybeSingle(),
+      supabase
+        .from('partner_invites')
+        .select('invited_email')
+        .eq('master_user_id', currentUser.id)
+        .maybeSingle(),
+    ]);
+
+    setLinkedPartnerEmail(accessRes.data?.partner_email ?? null);
+    setPendingInviteEmail(inviteRes.data?.invited_email ?? null);
+  }
 
   useEffect(() => {
-    // Both the auth state listener and getSession() are deferred behind
-    // sessionGuardReady so that the INITIAL_SESSION event fires with the
-    // post-guard state. Registering onAuthStateChange before the guard
-    // completes would push a stale session into `user` before sign-out runs.
     let subscription;
 
     sessionGuardReady.then(() => {
-      // Set up the listener first (recommended Supabase pattern to avoid races),
-      // then confirm the current session.
       const { data: { subscription: sub } } = supabase.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        // Optimistically set effectiveUserId = user.id for primary users so
+        // data contexts don't wait on the partner status query. loadPartnerStatus
+        // will override this if the user turns out to be a linked partner.
+        setEffectiveUserId(currentUser?.id ?? null);
+        loadPartnerStatus(currentUser);
       });
       subscription = sub;
 
       supabase.auth.getSession().then(({ data: { session } }) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        setEffectiveUserId(currentUser?.id ?? null);
+        loadPartnerStatus(currentUser).then(() => setLoading(false));
       });
     });
 
@@ -45,8 +98,24 @@ export function AuthProvider({ children }) {
     if (error) console.error('Sign out error:', error.message);
   }
 
+  // Called from SettingsPage after successfully sending/cancelling an invite
+  // or removing a partner link — refreshes partner status without full reload.
+  async function refreshPartnerStatus() {
+    if (user) await loadPartnerStatus(user);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      role,
+      effectiveUserId,
+      linkedPartnerEmail,
+      pendingInviteEmail,
+      signInWithGoogle,
+      signOut,
+      refreshPartnerStatus,
+    }}>
       {children}
     </AuthContext.Provider>
   );

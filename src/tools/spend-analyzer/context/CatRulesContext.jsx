@@ -18,7 +18,7 @@ export const DEFAULT_RULES = [
 const CatRulesContext = createContext(null);
 
 export function CatRulesProvider({ children }) {
-  const { user } = useAuth();
+  const { user, role, effectiveUserId } = useAuth();
   const [rules, setRules] = useState(DEFAULT_RULES);
   const [loading, setLoading] = useState(false);
   // Guard against StrictMode double-invoke seeding the same user twice
@@ -31,6 +31,8 @@ export function CatRulesProvider({ children }) {
       seedingRef.current = false;
       return;
     }
+    // Wait until effectiveUserId is resolved
+    if (!effectiveUserId) return;
 
     let cancelled = false;
 
@@ -39,7 +41,7 @@ export function CatRulesProvider({ children }) {
       const { data, error } = await supabase
         .from('cat_rules')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', effectiveUserId)
         .order('priority', { ascending: true });
 
       if (cancelled) return;
@@ -52,10 +54,10 @@ export function CatRulesProvider({ children }) {
       }
 
       if (!data || data.length === 0) {
-        // Only seed if no other invocation is already doing it
-        if (!seedingRef.current) {
+        // Only seed defaults for primary users on their first sign-in
+        if (!seedingRef.current && role !== 'linked') {
           seedingRef.current = true;
-          await seedDefaults(user.id);
+          await seedDefaults(effectiveUserId);
         }
       } else {
         setRules(data);
@@ -66,7 +68,7 @@ export function CatRulesProvider({ children }) {
     load();
     // Cleanup: mark this invocation as stale if effect re-runs (StrictMode / user change)
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, effectiveUserId, role]);
 
   async function seedDefaults(userId) {
     const rows = DEFAULT_RULES.map(r => ({ ...r, user_id: userId }));
@@ -81,11 +83,11 @@ export function CatRulesProvider({ children }) {
 
   // ── Re-fetch helper (after reorder) ─────────────────────────────────────────
   async function refetch() {
-    if (!user) return;
+    if (!user || !effectiveUserId) return;
     const { data } = await supabase
       .from('cat_rules')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', effectiveUserId)
       .order('priority', { ascending: true });
     if (data) setRules(data);
   }

@@ -40,7 +40,8 @@ function mapRow(row) {
 }
 
 export default function MySpendingPage() {
-  const { user } = useAuth();
+  const { user, role, effectiveUserId } = useAuth();
+  const isLinked = role === 'linked';
   const { rules, saveRule } = useCatRules();
   const [transactions, setTransactions] = useState([]);
   const [bulkDialog, setBulkDialog] = useState(null);
@@ -76,9 +77,9 @@ export default function MySpendingPage() {
   }, [filterMonth, filterMode]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !effectiveUserId) return;
     load();
-  }, [user]);
+  }, [user, effectiveUserId]);
 
   async function load() {
     setLoading(true);
@@ -86,7 +87,7 @@ export default function MySpendingPage() {
     const { data, error } = await supabase
       .from('imported_transactions')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', effectiveUserId)
       .order('date', { ascending: false });
     if (error) { setError(error.message); setLoading(false); return; }
     setTransactions((data || []).map(mapRow));
@@ -144,11 +145,11 @@ export default function MySpendingPage() {
       .from('imported_transactions')
       .update({ cat, cat_detail: catDetail || null })
       .eq('id', id)
-      .eq('user_id', user.id);
+      .eq('user_id', effectiveUserId);
     if (!error) setTransactions(prev => prev.map(tx =>
       tx._id === id ? { ...tx, cat, cat_detail: catDetail } : tx
     ));
-  }, [user, transactions]);
+  }, [user, effectiveUserId, transactions]);
 
   const handleBulkConfirm = useCallback(async () => {
     if (!bulkDialog) return;
@@ -157,7 +158,7 @@ export default function MySpendingPage() {
     const { error } = await supabase
       .from('imported_transactions')
       .update({ cat, cat_detail: catDetail || null })
-      .eq('user_id', user.id)
+      .eq('user_id', effectiveUserId)
       .eq('merchant', merchant)
       .eq('cat', originalCat);
     if (!error) {
@@ -174,7 +175,7 @@ export default function MySpendingPage() {
       await saveRule({ ...existing, pattern, match_field: 'merchant', cat, cat_detail: catDetail || null });
     }
     setBulkDialog(d => ({ ...d, step: 'done' }));
-  }, [bulkDialog, user, rules, saveRule]);
+  }, [bulkDialog, user, effectiveUserId, rules, saveRule]);
 
   const availableYears = useMemo(() => {
     const yrs = new Set(transactions.map(tx => tx.date?.substring(0, 4)).filter(Boolean));
@@ -300,8 +301,8 @@ export default function MySpendingPage() {
         <ResultsView
           allTransactions={filteredTransactions}
           onReCategorize={handleReCategorize}
-          onDeleteTransaction={handleDeleteTransaction}
-          onBulkDelete={handleBulkDelete}
+          onDeleteTransaction={isLinked ? undefined : handleDeleteTransaction}
+          onBulkDelete={isLinked ? undefined : handleBulkDelete}
           hideImport
           hideExcluded
           syncFiltersToURL
