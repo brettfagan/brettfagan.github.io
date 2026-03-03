@@ -1,46 +1,102 @@
+import { motion } from 'motion/react';
+
+const ease = [0.25, 0.1, 0.25, 1];
+
+const load = (delay) => ({
+  initial: { opacity: 0, y: 18 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.52, delay, ease },
+});
+
 function Hero() {
   return (
-    <section className="pt-24 pb-20 max-[680px]:pt-18">
-      <div className="w-[min(1080px,92%)] mx-auto flex items-center gap-12 max-[680px]:flex-col-reverse max-[680px]:gap-8">
-        <div>
-          <p className="uppercase tracking-[0.08em] text-[0.8rem] text-[#536189] dark:text-muted-foreground font-bold">Welcome</p>
-          <h1 className="text-[clamp(2rem,5vw,3.6rem)] leading-[1.2] tracking-[-0.02em] mb-4">
-            Hi, I&apos;m Brett Fagan. 👋
-          </h1>
-          <p className="text-[1.1rem] text-[#33415f] dark:text-foreground max-w-[70ch] mb-[1.2rem]">
+    <section
+      style={{
+        paddingTop: '5.5rem',
+        paddingBottom: '5.5rem',
+        background:
+          'radial-gradient(ellipse 70% 45% at 60% -5%, rgba(167,139,250,0.06) 0%, transparent 70%)',
+      }}
+    >
+      <div className="w-[min(1080px,92%)] mx-auto flex items-center gap-16 max-[680px]:flex-col max-[680px]:gap-10">
+
+        {/* Text column */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <motion.p
+            {...load(0.12)}
+            className="hp-section-label"
+          >
+            Product Manager &amp; Developer
+          </motion.p>
+
+          <motion.h1
+            {...load(0.24)}
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontWeight: 800,
+              fontSize: 'clamp(2.6rem, 7vw, 4.75rem)',
+              lineHeight: 1.08,
+              letterSpacing: '-0.03em',
+              color: '#e6edf3',
+              marginBottom: '1.25rem',
+            }}
+          >
+            Hi, I&apos;m<br />Brett Fagan.
+          </motion.h1>
+
+          <motion.p
+            {...load(0.4)}
+            style={{
+              fontSize: '1.05rem',
+              lineHeight: 1.7,
+              color: '#7d8590',
+              maxWidth: '46ch',
+              marginBottom: '2.25rem',
+            }}
+          >
             I build practical web tools and experiments that solve everyday
-            problems.
-          </p>
-          <div className="flex gap-[0.85rem] flex-wrap mt-6">
-            <a
-              className="inline-block py-[0.7rem] px-[1.1rem] rounded-[0.55rem] border border-transparent no-underline font-semibold transition-transform duration-200 hover:-translate-y-px bg-[#3158d4] text-white shadow-[0_8px_20px_-12px_#3158d4]"
-              href="#personal-projects"
-            >
+            problems — from spending analytics to bank integrations.
+          </motion.p>
+
+          <motion.div {...load(0.54)} className="flex gap-3 flex-wrap">
+            <a className="hp-btn-primary" href="#personal-projects">
               View Projects
             </a>
-            <a
-              className="inline-block py-[0.7rem] px-[1.1rem] rounded-[0.55rem] border no-underline font-semibold transition-transform duration-200 hover:-translate-y-px bg-[#e9eefb] text-[#20305c] border-[#ccd7f2] dark:bg-secondary dark:text-secondary-foreground dark:border-border"
-              href="#contact"
-            >
+            <a className="hp-btn-outline" href="#contact">
               Get in Touch
             </a>
-          </div>
+          </motion.div>
         </div>
-        <div className="flex items-center gap-4 shrink-0 max-[680px]:gap-3">
+
+        {/* Photo column */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.65, delay: 0.3, ease }}
+          className="shrink-0 max-[680px]:self-start"
+        >
           <img
             src="/brett.jpeg"
             alt="Brett Fagan"
-            className="w-56 h-56 rounded-full object-cover object-top shadow-[0_8px_32px_-12px_#6679ac] max-[680px]:w-36 max-[680px]:h-36"
+            style={{
+              width: '200px',
+              height: '200px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              objectPosition: 'top',
+              boxShadow:
+                '0 0 0 2px rgba(167,139,250,0.4), 0 0 0 6px #0e131f, 0 24px 56px rgba(0,0,0,0.45)',
+              display: 'block',
+            }}
           />
-          <div className="w-56 h-56 rounded-full shadow-[0_8px_32px_-12px_#6679ac] flex items-center justify-center shrink-0 max-[680px]:w-36 max-[680px]:h-36">
-            <img
-              src="/brettlabsicon.png"
-              alt="BrettLabs"
-              className="w-[67%] h-[67%] object-contain"
-            />
-          </div>
-        </div>
+        </motion.div>
       </div>
+
+      {/* Section divider */}
+      <div
+        className="w-[min(1080px,92%)] mx-auto"
+        style={{ marginTop: '5rem', borderTop: '1px solid #1a2233' }}
+      />
     </section>
   );
 }

@@ -1,33 +1,70 @@
+import FadeUp from './FadeUp';
+
 function Projects() {
   return (
-    <section id="personal-projects" className="py-18 bg-[#f0f4fb] dark:bg-muted max-[680px]:py-14">
+    <section
+      id="personal-projects"
+      style={{ padding: '5rem 0', borderBottom: '1px solid #1a2233' }}
+    >
       <div className="w-[min(1080px,92%)] mx-auto">
-        <h2 className="text-[clamp(1.6rem,4vw,2.4rem)] leading-[1.2] tracking-[-0.02em] mb-4">Personal Projects</h2>
-        <div className="grid grid-cols-1 gap-4">
-          <article className="bg-white dark:bg-card border border-[#dde5f3] dark:border-border rounded-[0.9rem] p-[1.4rem] shadow-[0_8px_24px_-20px_#6679ac]">
-            <h3 className="text-[1.3rem] leading-[1.2] tracking-[-0.02em] mb-4">Credit Card Spending Analyzer (WIP)</h3>
-            <p className="max-w-[70ch] mb-[1.2rem]">
-              A work-in-progress tool to help visualize and understand spending
-              trends across credit card statements.
-            </p>
-            <div className="flex gap-[0.85rem] flex-wrap mt-6">
-              <a
-                className="inline-block py-[0.7rem] px-[1.1rem] rounded-[0.55rem] border border-transparent no-underline font-semibold transition-transform duration-200 hover:-translate-y-px bg-[#3158d4] text-white shadow-[0_8px_20px_-12px_#3158d4]"
-                href="/tools/spend-analyzer/"
+        <FadeUp>
+          <p className="hp-section-label">03 — Projects</p>
+          <h2 className="hp-section-heading">Personal Projects</h2>
+        </FadeUp>
+
+        <FadeUp delay={0.12}>
+          <article className="hp-card">
+            <div className="flex items-start justify-between gap-4" style={{ marginBottom: '0.875rem' }}>
+              <h3
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontWeight: 800,
+                  fontSize: '1.25rem',
+                  letterSpacing: '-0.02em',
+                  color: '#e6edf3',
+                  lineHeight: 1.2,
+                }}
               >
+                Credit Card Spending Analyzer
+              </h3>
+              <span
+                style={{
+                  fontSize: '0.65rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: '#a78bfa',
+                  border: '1px solid rgba(167,139,250,0.35)',
+                  borderRadius: '6px',
+                  padding: '3px 9px',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  backgroundColor: 'rgba(167,139,250,0.07)',
+                }}
+              >
+                WIP
+              </span>
+            </div>
+            <p style={{ color: '#7d8590', fontSize: '0.975rem', lineHeight: 1.7, maxWidth: '55ch', marginBottom: '1.75rem' }}>
+              A tool to visualize and understand spending trends across credit
+              card statements — imports CSVs and Plaid bank connections, with
+              charts, categories, and budget tracking.
+            </p>
+            <div className="flex gap-3 flex-wrap">
+              <a className="hp-btn-primary" href="/tools/spend-analyzer/">
                 Open App
               </a>
               <a
-                className="inline-block py-[0.7rem] px-[1.1rem] rounded-[0.55rem] border no-underline font-semibold transition-transform duration-200 hover:-translate-y-px bg-[#e9eefb] text-[#20305c] border-[#ccd7f2] dark:bg-secondary dark:text-secondary-foreground dark:border-border"
+                className="hp-btn-outline"
                 href="https://github.com/brettfagan"
                 target="_blank"
                 rel="noreferrer"
               >
-                Visit GitHub
+                GitHub
               </a>
             </div>
           </article>
-        </div>
+        </FadeUp>
       </div>
     </section>
   );

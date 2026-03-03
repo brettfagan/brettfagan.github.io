@@ -1,28 +1,35 @@
+import FadeUp from './FadeUp';
+
 function Contact() {
   return (
-    <section id="contact" className="py-18 max-[680px]:py-14">
+    <section
+      id="contact"
+      style={{ padding: '5rem 0', backgroundColor: '#141b2b' }}
+    >
       <div className="w-[min(1080px,92%)] mx-auto">
-        <h2 className="text-[clamp(1.6rem,4vw,2.4rem)] leading-[1.2] tracking-[-0.02em] mb-4">Contact</h2>
-        <p className="max-w-[70ch] mb-[1.2rem]">
-          Interested in collaborating or learning more about my work? Feel free
-          to reach out — I&apos;d love to connect.
-        </p>
-        <div className="flex gap-[0.85rem] flex-wrap">
-          <a
-            className="inline-block py-[0.7rem] px-[1.1rem] rounded-[0.55rem] border border-transparent no-underline font-semibold transition-transform duration-200 hover:-translate-y-px bg-[#3158d4] text-white shadow-[0_8px_20px_-12px_#3158d4]"
-            href="mailto:fagan.brett@gmail.com"
-          >
-            Email Me
-          </a>
-          <a
-            className="inline-block py-[0.7rem] px-[1.1rem] rounded-[0.55rem] border no-underline font-semibold transition-transform duration-200 hover:-translate-y-px bg-[#e9eefb] text-[#20305c] border-[#ccd7f2] dark:bg-secondary dark:text-secondary-foreground dark:border-border"
-            href="https://www.linkedin.com/in/brettfagan/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            LinkedIn
-          </a>
-        </div>
+        <FadeUp>
+          <p className="hp-section-label">04 — Contact</p>
+          <h2 className="hp-section-heading">Get in Touch</h2>
+        </FadeUp>
+        <FadeUp delay={0.1}>
+          <p style={{ maxWidth: '52ch', lineHeight: 1.75, color: '#94a3b8', marginBottom: '2rem', fontSize: '1.05rem' }}>
+            Interested in collaborating or learning more about my work? Feel free
+            to reach out — I&apos;d love to connect.
+          </p>
+          <div className="flex gap-3 flex-wrap">
+            <a className="hp-btn-primary" href="mailto:fagan.brett@gmail.com">
+              Email Me
+            </a>
+            <a
+              className="hp-btn-outline"
+              href="https://www.linkedin.com/in/brettfagan/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              LinkedIn
+            </a>
+          </div>
+        </FadeUp>
       </div>
     </section>
   );
