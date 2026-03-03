@@ -1,5 +1,3 @@
-import { useTheme } from 'next-themes';
-import { Sun, Moon } from 'lucide-react';
 import Hero from './components/Hero';
 import About from './components/About';
 import MyWork from './components/MyWork';
@@ -7,40 +5,45 @@ import Projects from './components/Projects';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 
-function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme();
-  return (
-    <button
-      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-      className="flex items-center justify-center w-8 h-8 rounded-md text-[#2a3657] dark:text-[#9db4e8] hover:bg-[#e9eefb] dark:hover:bg-[#2a3657]/50 transition-colors"
-      aria-label="Toggle theme"
-    >
-      {resolvedTheme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-    </button>
-  );
-}
-
 function App() {
   return (
-    <div className="min-h-screen bg-linear-to-b from-white via-[#f7f9fc] to-[#eef2f9] dark:from-background dark:via-background dark:to-background">
-      <header className="sticky top-0 z-10 backdrop-blur-sm bg-white/85 dark:bg-background/85 border-b border-[#e7ecf5] dark:border-border">
+    <div className="homepage min-h-screen">
+      <header style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: '#0c0c0c', borderBottom: '1px solid #222' }}>
         <nav
-          className="w-[min(1080px,92%)] mx-auto flex items-center justify-between min-h-16 gap-4 max-[680px]:flex-col max-[680px]:items-start max-[680px]:py-3"
+          className="w-[min(1080px,92%)] mx-auto flex items-center justify-between gap-4 max-[680px]:flex-col max-[680px]:items-start max-[680px]:py-3"
+          style={{ minHeight: '64px' }}
           aria-label="Main navigation"
         >
-          <a className="font-bold text-[#1a2340] dark:text-foreground no-underline flex items-center gap-2" href="#top">
-            <img src="/brettlabsicon.png" alt="" className="h-6 w-6 object-contain" />
+          <a
+            href="#top"
+            style={{
+              fontFamily: "'Syne', sans-serif",
+              fontWeight: 800,
+              fontSize: '1.05rem',
+              color: '#f0f0f0',
+              textDecoration: 'none',
+              letterSpacing: '-0.01em',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            <img src="/brettlabsicon.png" alt="" style={{ height: '22px', width: '22px', objectFit: 'contain', opacity: 0.9 }} />
             Brett Fagan
           </a>
-          <div className="flex items-center gap-4">
-            <a className="no-underline text-[#2a3657] dark:text-foreground font-medium" href="#about">About</a>
-            <a className="no-underline text-[#2a3657] dark:text-foreground font-medium" href="#my-work">My Work</a>
-            <a className="no-underline text-[#2a3657] dark:text-foreground font-medium" href="#personal-projects">Personal Projects</a>
-            <a className="no-underline text-[#2a3657] dark:text-foreground font-medium" href="#contact">Contact</a>
-            <a href="https://www.linkedin.com/in/brettfagan/" target="_blank" rel="noreferrer" className="flex items-center">
-              <img src="/linkedin.webp" alt="LinkedIn" className="h-5 w-5 object-contain" />
+          <div className="flex items-center gap-6">
+            <a className="hp-nav-link" href="#about">About</a>
+            <a className="hp-nav-link" href="#my-work">My Work</a>
+            <a className="hp-nav-link" href="#personal-projects">Projects</a>
+            <a className="hp-nav-link" href="#contact">Contact</a>
+            <a
+              href="https://www.linkedin.com/in/brettfagan/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center"
+            >
+              <img src="/linkedin.webp" alt="LinkedIn" style={{ height: '18px', width: '18px', objectFit: 'contain', opacity: 0.5, transition: 'opacity 0.15s' }} />
             </a>
-            <ThemeToggle />
           </div>
         </nav>
       </header>

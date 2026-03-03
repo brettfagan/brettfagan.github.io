@@ -1,9 +1,10 @@
 function MyWork() {
   return (
-    <section id="my-work" className="py-18 bg-[#f0f4fb] dark:bg-muted max-[680px]:py-14">
+    <section id="my-work" style={{ padding: '5rem 0', backgroundColor: '#141414', borderBottom: '1px solid #1e1e1e' }}>
       <div className="w-[min(1080px,92%)] mx-auto">
-        <h2 className="text-[clamp(1.6rem,4vw,2.4rem)] leading-[1.2] tracking-[-0.02em] mb-4">My Work</h2>
-        <p className="text-[1.1rem] text-[#33415f] dark:text-foreground max-w-[70ch]">
+        <p className="hp-section-label">02 — My Work</p>
+        <h2 className="hp-section-heading">My Work</h2>
+        <p style={{ fontSize: '1.05rem', color: '#666', maxWidth: '55ch', lineHeight: 1.7 }}>
           Details about products I&apos;ve managed throughout my career — coming soon.
         </p>
       </div>
