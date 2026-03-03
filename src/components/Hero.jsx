@@ -68,12 +68,13 @@ function Hero() {
           </motion.div>
         </div>
 
-        {/* Photo column */}
+        {/* Photo column — flex:1 so it mirrors the text column width, photo centered within */}
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.65, delay: 0.3, ease }}
-          className="shrink-0 max-[680px]:self-start"
+          style={{ flex: 1, display: 'flex', justifyContent: 'center' }}
+          className="max-[680px]:justify-start"
         >
           <img
             src="/brett.jpeg"
