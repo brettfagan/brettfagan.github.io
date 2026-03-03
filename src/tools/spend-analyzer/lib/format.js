@@ -24,6 +24,9 @@ export function fmtDetail(d) {
 }
 
 export function fmtShortDate(iso) {
+  if (!iso) return '';
   const [y, m, d] = iso.split('-');
-  return `${parseInt(m)}/${parseInt(d)}/${y.slice(2)}`;
+  const month = parseInt(m), day = parseInt(d);
+  if (isNaN(month) || isNaN(day)) return iso; // graceful fallback for non-ISO dates
+  return `${month}/${day}/${y.slice(2)}`;
 }
