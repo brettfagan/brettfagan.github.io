@@ -68,6 +68,18 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
 
   const cardSet = useMemo(() => new Set(allTransactions.map(t => t._card)), [allTransactions]);
 
+  const cardSummary = useMemo(() => {
+    const map = {};
+    for (const tx of allTransactions) {
+      const card = tx._card || 'Unknown';
+      if (!map[card]) map[card] = { count: 0, minDate: tx.date, maxDate: tx.date };
+      map[card].count++;
+      if (tx.date < map[card].minDate) map[card].minDate = tx.date;
+      if (tx.date > map[card].maxDate) map[card].maxDate = tx.date;
+    }
+    return Object.entries(map).sort((a, b) => b[1].count - a[1].count);
+  }, [allTransactions]);
+
   function handleCategoryFilter(cat, detail) {
     setTableFilterSignal({ cat, detail: detail || null, ts: Date.now() });
     if (syncFiltersToURL) {
@@ -101,10 +113,20 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
 
       {/* ── Stat cards ───────────────────────────────────────────────────── */}
       <div className={`grid gap-4 mb-8 ${hideExcluded ? 'grid-cols-5' : 'grid-cols-6'}`}>
-        <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
+        <div className="relative group cursor-default bg-muted border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Cards</div>
           <div className="text-[20px] font-extrabold text-primary leading-tight">{cardSet.size} Cards / {allTransactions.length} Transactions</div>
           <div className="text-[11px] text-muted-foreground mt-1">{[...cardSet].join(' · ')}</div>
+          {cardSummary.length > 0 && (
+            <div className="absolute left-0 top-full mt-1.5 z-50 w-max min-w-full invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-150 bg-popover border border-border rounded-lg shadow-lg px-4 py-3">
+              {cardSummary.map(([card, { count, minDate, maxDate }]) => (
+                <div key={card} className="text-[12px] py-0.5 whitespace-nowrap">
+                  <span className="font-semibold text-foreground">{card}</span>
+                  <span className="text-muted-foreground">: {count} transactions ({fmtShortDate(minDate)} – {fmtShortDate(maxDate)})</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Total Posted Spend</div>
