@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useCatRules } from '../context/CatRulesContext';
-import { fmtShortDate } from '../lib/format';
 import { useURLParam } from '../lib/useURLParam';
 import ResultsView from './ResultsView';
 import BulkUpdateDialog from './BulkUpdateDialog';
@@ -184,18 +183,6 @@ export default function MySpendingPage() {
     return result;
   }, [transactions, todayYear]);
 
-  const cardSummary = useMemo(() => {
-    const map = {};
-    for (const tx of transactions) {
-      const card = tx._card || 'Unknown';
-      if (!map[card]) map[card] = { count: 0, minDate: tx.date, maxDate: tx.date };
-      map[card].count++;
-      if (tx.date < map[card].minDate) map[card].minDate = tx.date;
-      if (tx.date > map[card].maxDate) map[card].maxDate = tx.date;
-    }
-    return Object.entries(map).sort((a, b) => b[1].count - a[1].count);
-  }, [transactions]);
-
   const filteredTransactions = useMemo(() => {
     if (filterMode === 'all') return transactions;
     if (filterMode === 'month') {
@@ -219,23 +206,6 @@ export default function MySpendingPage() {
         <h2 className="text-[22px] font-extrabold tracking-[-0.3px]">My Spending</h2>
         <p className="text-xs text-muted-foreground mt-1">All transactions saved to your account.</p>
       </div>
-
-      {/* ── Saved data card summary ──────────────────────────────────────── */}
-      {cardSummary.length > 0 && (
-        <div className="mb-6 pb-6 border-b border-border">
-          <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2.5">Saved Data</div>
-          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))' }}>
-            {cardSummary.map(([card, { count, minDate, maxDate }]) => (
-              <div key={card} className="bg-muted border border-border rounded-lg px-5 py-4.5">
-                <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">{card}</div>
-                <div className="text-[22px] font-extrabold text-primary">{count}</div>
-                <div className="text-[11px] text-muted-foreground mt-1">transactions</div>
-                <div className="text-[11px] text-muted-foreground mt-1">{fmtShortDate(minDate)} – {fmtShortDate(maxDate)}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ── Date range filter ────────────────────────────────────────────── */}
       <div className="flex gap-3 items-center flex-wrap mb-7">

@@ -81,9 +81,21 @@ export function guessCat(rawCat = '', rawDesc = '', rules = []) {
 }
 
 export function normDate(d) {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
-  const m = d.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
-  return m ? `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}` : d;
+  if (!d) return d;
+  // Strip time component ("2026-01-26T..." or "01/26/2026 12:34:56")
+  const s = String(d).trim().split(/[T\s]/)[0];
+  // Already ISO YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  // YYYY/MM/DD or YYYY/M/D
+  const isoSlash = s.match(/^(\d{4})[/](\d{1,2})[/](\d{1,2})$/);
+  if (isoSlash) return `${isoSlash[1]}-${isoSlash[2].padStart(2, '0')}-${isoSlash[3].padStart(2, '0')}`;
+  // M/D/YYYY or M-D-YYYY
+  const mdy4 = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (mdy4) return `${mdy4[3]}-${mdy4[1].padStart(2, '0')}-${mdy4[2].padStart(2, '0')}`;
+  // M/D/YY or M-D-YY (2-digit year → assume 2000+)
+  const mdy2 = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2})$/);
+  if (mdy2) return `20${mdy2[3]}-${mdy2[1].padStart(2, '0')}-${mdy2[2].padStart(2, '0')}`;
+  return s;
 }
 
 function clean(s) {
