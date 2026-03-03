@@ -1,5 +1,3 @@
-import { useTheme } from 'next-themes';
-import { Sun, Moon } from 'lucide-react';
 import Hero from './components/Hero';
 import About from './components/About';
 import MyWork from './components/MyWork';
@@ -7,40 +5,60 @@ import Projects from './components/Projects';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 
-function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme();
-  return (
-    <button
-      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-      className="flex items-center justify-center w-8 h-8 rounded-md text-[#2a3657] dark:text-[#9db4e8] hover:bg-[#e9eefb] dark:hover:bg-[#2a3657]/50 transition-colors"
-      aria-label="Toggle theme"
-    >
-      {resolvedTheme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-    </button>
-  );
-}
-
 function App() {
   return (
-    <div className="min-h-screen bg-linear-to-b from-white via-[#f7f9fc] to-[#eef2f9] dark:from-background dark:via-background dark:to-background">
-      <header className="sticky top-0 z-10 backdrop-blur-sm bg-white/85 dark:bg-background/85 border-b border-[#e7ecf5] dark:border-border">
+    <div className="homepage min-h-screen" style={{ backgroundColor: '#f5ede0' }}>
+      <header
+        className="sticky top-0 z-10 backdrop-blur-sm"
+        style={{
+          backgroundColor: 'rgba(245, 237, 224, 0.92)',
+          borderBottom: '1px solid #d4c0a8',
+        }}
+      >
         <nav
           className="w-[min(1080px,92%)] mx-auto flex items-center justify-between min-h-16 gap-4 max-[680px]:flex-col max-[680px]:items-start max-[680px]:py-3"
           aria-label="Main navigation"
         >
-          <a className="font-bold text-[#1a2340] dark:text-foreground no-underline flex items-center gap-2" href="#top">
+          <a
+            className="no-underline flex items-center gap-2"
+            style={{
+              fontFamily: "'Fraunces', serif",
+              fontWeight: 600,
+              fontSize: '1.1rem',
+              color: '#1c140e',
+            }}
+            href="#top"
+          >
             <img src="/brettlabsicon.png" alt="" className="h-6 w-6 object-contain" />
             Brett Fagan
           </a>
-          <div className="flex items-center gap-4">
-            <a className="no-underline text-[#2a3657] dark:text-foreground font-medium" href="#about">About</a>
-            <a className="no-underline text-[#2a3657] dark:text-foreground font-medium" href="#my-work">My Work</a>
-            <a className="no-underline text-[#2a3657] dark:text-foreground font-medium" href="#personal-projects">Personal Projects</a>
-            <a className="no-underline text-[#2a3657] dark:text-foreground font-medium" href="#contact">Contact</a>
-            <a href="https://www.linkedin.com/in/brettfagan/" target="_blank" rel="noreferrer" className="flex items-center">
+          <div className="flex items-center gap-5">
+            {[
+              ['About', '#about'],
+              ['My Work', '#my-work'],
+              ['Personal Projects', '#personal-projects'],
+              ['Contact', '#contact'],
+            ].map(([label, href]) => (
+              <a
+                key={label}
+                className="no-underline font-medium transition-colors duration-200"
+                style={{ color: '#5a4a3a', fontSize: '0.9rem', letterSpacing: '0.01em' }}
+                href={href}
+                onMouseEnter={e => (e.currentTarget.style.color = '#c44b2a')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#5a4a3a')}
+              >
+                {label}
+              </a>
+            ))}
+            <a
+              href="https://www.linkedin.com/in/brettfagan/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center"
+              aria-label="LinkedIn profile"
+            >
               <img src="/linkedin.webp" alt="LinkedIn" className="h-5 w-5 object-contain" />
             </a>
-            <ThemeToggle />
           </div>
         </nav>
       </header>

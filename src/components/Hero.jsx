@@ -1,45 +1,127 @@
 function Hero() {
   return (
-    <section className="pt-24 pb-20 max-[680px]:pt-18">
-      <div className="w-[min(1080px,92%)] mx-auto flex items-center gap-12 max-[680px]:flex-col-reverse max-[680px]:gap-8">
-        <div>
-          <p className="uppercase tracking-[0.08em] text-[0.8rem] text-[#536189] dark:text-muted-foreground font-bold">Welcome</p>
-          <h1 className="text-[clamp(2rem,5vw,3.6rem)] leading-[1.2] tracking-[-0.02em] mb-4">
-            Hi, I&apos;m Brett Fagan. 👋
-          </h1>
-          <p className="text-[1.1rem] text-[#33415f] dark:text-foreground max-w-[70ch] mb-[1.2rem]">
-            I build practical web tools and experiments that solve everyday
-            problems.
+    <section className="pt-24 pb-20 max-[680px]:pt-16 max-[680px]:pb-14">
+      <div className="w-[min(1080px,92%)] mx-auto flex items-center gap-16 max-[680px]:flex-col-reverse max-[680px]:gap-8">
+
+        {/* Left: text column */}
+        <div className="flex-1 min-w-0">
+          <p
+            className="hp-animate hp-animate-d0 mb-3"
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: '#c44b2a',
+            }}
+          >
+            Portfolio
           </p>
-          <div className="flex gap-[0.85rem] flex-wrap mt-6">
+          <h1
+            className="hp-animate hp-animate-d1 mb-5"
+            style={{
+              fontFamily: "'Fraunces', serif",
+              fontSize: 'clamp(2.8rem, 6vw, 4.2rem)',
+              lineHeight: 1.05,
+              letterSpacing: '-0.025em',
+              fontWeight: 600,
+              color: '#1c140e',
+            }}
+          >
+            Hi, I&apos;m<br />Brett Fagan.
+          </h1>
+          <p
+            className="hp-animate hp-animate-d2 mb-8"
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: '1.1rem',
+              lineHeight: 1.65,
+              color: '#5a4a3a',
+              maxWidth: '44ch',
+            }}
+          >
+            I build practical web tools and experiments that solve everyday problems.
+          </p>
+          <div className="hp-animate hp-animate-d3 flex gap-3 flex-wrap">
             <a
-              className="inline-block py-[0.7rem] px-[1.1rem] rounded-[0.55rem] border border-transparent no-underline font-semibold transition-transform duration-200 hover:-translate-y-px bg-[#3158d4] text-white shadow-[0_8px_20px_-12px_#3158d4]"
               href="#personal-projects"
+              className="inline-block no-underline font-semibold transition-all duration-200"
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                padding: '0.7rem 1.3rem',
+                borderRadius: '0.4rem',
+                backgroundColor: '#c44b2a',
+                color: '#faf4ec',
+                border: '1.5px solid #c44b2a',
+                boxShadow: '0 6px 18px -8px rgba(196, 75, 42, 0.5)',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = '#9e3a1e';
+                e.currentTarget.style.borderColor = '#9e3a1e';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = '#c44b2a';
+                e.currentTarget.style.borderColor = '#c44b2a';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
             >
               View Projects
             </a>
             <a
-              className="inline-block py-[0.7rem] px-[1.1rem] rounded-[0.55rem] border no-underline font-semibold transition-transform duration-200 hover:-translate-y-px bg-[#e9eefb] text-[#20305c] border-[#ccd7f2] dark:bg-secondary dark:text-secondary-foreground dark:border-border"
               href="#contact"
+              className="inline-block no-underline font-semibold transition-all duration-200"
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                padding: '0.7rem 1.3rem',
+                borderRadius: '0.4rem',
+                backgroundColor: 'transparent',
+                color: '#1f4e3d',
+                border: '1.5px solid #1f4e3d',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = '#1f4e3d';
+                e.currentTarget.style.color = '#faf4ec';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#1f4e3d';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
             >
               Get in Touch
             </a>
           </div>
         </div>
-        <div className="flex items-center gap-4 shrink-0 max-[680px]:gap-3">
-          <img
-            src="/brett.jpeg"
-            alt="Brett Fagan"
-            className="w-56 h-56 rounded-full object-cover object-top shadow-[0_8px_32px_-12px_#6679ac] max-[680px]:w-36 max-[680px]:h-36"
-          />
-          <div className="w-56 h-56 rounded-full shadow-[0_8px_32px_-12px_#6679ac] flex items-center justify-center shrink-0 max-[680px]:w-36 max-[680px]:h-36">
+
+        {/* Right: photo column */}
+        <div className="hp-animate hp-animate-d4 shrink-0 max-[680px]:self-center">
+          <div
+            style={{
+              borderRadius: '50%',
+              padding: '5px',
+              background: 'linear-gradient(135deg, #c44b2a 0%, #e8a87c 50%, #c44b2a 100%)',
+              boxShadow: '0 16px 48px -12px rgba(196, 75, 42, 0.3)',
+            }}
+          >
             <img
-              src="/brettlabsicon.png"
-              alt="BrettLabs"
-              className="w-[67%] h-[67%] object-contain"
+              src="/brett.jpeg"
+              alt="Brett Fagan"
+              style={{
+                width: '220px',
+                height: '220px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                objectPosition: 'top',
+                display: 'block',
+                border: '4px solid #f5ede0',
+              }}
             />
           </div>
         </div>
+
       </div>
     </section>
   );
