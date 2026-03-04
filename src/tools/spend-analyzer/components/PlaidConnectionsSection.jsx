@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+import { usePlaidLink } from 'react-plaid-link';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { normPlaid } from '../lib/parse';
-import { CARDS } from '../lib/constants';
 import { Button } from '@/components/ui/button';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -44,15 +44,68 @@ async function callPlaidFetch(body) {
   return json;
 }
 
+// Lazily fetches a Plaid link_token from the server, then opens the Plaid Link
+// modal. On success the one-time public_token is handed to onConnected — the
+// raw access_token is exchanged entirely inside the Edge Function.
+function ConnectButton({ onConnected, disabled }) {
+  const [linkToken, setLinkToken] = useState(null);
+  const [fetching, setFetching] = useState(false);
+  const [err, setErr] = useState('');
+
+  const { open, ready } = usePlaidLink({
+    token: linkToken,
+    onSuccess: async (publicToken, metadata) => {
+      setLinkToken(null);
+      await onConnected(publicToken, metadata.institution?.name || 'My Bank');
+    },
+    onExit: () => { setLinkToken(null); setFetching(false); },
+  });
+
+  // Open the Plaid modal as soon as the SDK has initialised with the token
+  useEffect(() => {
+    if (linkToken && ready) { open(); setFetching(false); }
+  }, [linkToken, ready, open]);
+
+  async function handleClick() {
+    setFetching(true);
+    setErr('');
+    try {
+      let { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not signed in');
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/plaid-link-create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.link_token) throw new Error(data.error || 'Failed to start Plaid Link');
+      setLinkToken(data.link_token);
+    } catch (e) {
+      setErr(e.message);
+      setFetching(false);
+    }
+  }
+
+  return (
+    <div>
+      <Button
+        size="sm"
+        className="text-[11px] font-bold h-auto py-0.5 px-2"
+        onClick={handleClick}
+        disabled={disabled || fetching}
+      >
+        {fetching ? 'Loading…' : '+ Connect Bank Account'}
+      </Button>
+      {err && <p className="text-destructive text-[11px] mt-1">✗ {err}</p>}
+    </div>
+  );
+}
+
 export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
   const { user } = useAuth();
   const [connections, setConnections] = useState([]);
-  const [showAdd, setShowAdd] = useState(false);
-  const [newForm, setNewForm] = useState({
-    access_token: '',
-    card_name: '',
-    save: true,
-  });
   const [fetching, setFetching] = useState({});   // { [id | 'new' | 'sync_id']: bool }
   const [fetchErr, setFetchErr] = useState({});    // { [id | 'new']: string }
   const [loadedKeys, setLoadedKeys] = useState(new Set()); // connection ids loaded this session
@@ -116,20 +169,19 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
     }
   }
 
-  async function addConnection() {
-    if (!newForm.access_token || !newForm.card_name) return;
+  // Called by ConnectButton after Plaid Link succeeds with a one-time public_token.
+  // The Edge Function exchanges it for an access_token server-side.
+  async function addConnection(publicToken, institutionName) {
     setFetching(f => ({ ...f, new: true }));
     setFetchErr(e => ({ ...e, new: '' }));
     try {
       const { transactions, next_cursor, connection_id } = await callPlaidFetch({
-        access_token: newForm.access_token,
-        card_name: newForm.card_name,
-        save: newForm.save,
+        public_token: publicToken,
+        card_name: institutionName,
+        save: true,
       });
-      onLoad(newForm.card_name, transactions.map(normPlaid));
-      setShowAdd(false);
-      setNewForm({ access_token: '', card_name: '', save: true });
-      if (newForm.save && connection_id) {
+      onLoad(institutionName, transactions.map(normPlaid));
+      if (connection_id) {
         setCursor(connection_id, next_cursor);
         await loadConnections();
         setLoadedKeys(s => new Set([...s, connection_id]));
@@ -167,13 +219,6 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
     }
   }
 
-  const cardNameSuggestions = [
-    ...new Set([
-      ...CARDS.map(c => c.label),
-      ...connections.map(c => c.card_name),
-    ])
-  ];
-
   if (!user) return null;
 
   const inputCls = "w-full bg-background border border-border rounded text-xs py-1.5 px-2 outline-none text-foreground placeholder:text-muted-foreground focus:border-primary transition-colors";
@@ -186,58 +231,14 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
         <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em]">
           Plaid API
         </span>
-        <Button
-          variant={showAdd ? 'outline' : 'default'}
-          size="sm"
-          className="text-[11px] font-bold h-auto py-0.5 px-2"
-          onClick={() => setShowAdd(s => !s)}
-        >
-          {showAdd ? 'Cancel' : '+ Add'}
-        </Button>
+        <ConnectButton onConnected={addConnection} disabled={!!fetching.new} />
       </div>
 
-      {/* ── Add connection form ─────────────────────────────────────────────── */}
-      {showAdd && (
-        <div className="bg-background border border-border rounded-lg p-3 mb-2 flex flex-col gap-2">
-          <input
-            type="text"
-            placeholder="Card name (e.g. Chase Sapphire)"
-            value={newForm.card_name}
-            onChange={e => setNewForm(f => ({ ...f, card_name: e.target.value }))}
-            className={inputCls}
-            list="plaid-card-name-suggestions"
-          />
-          <datalist id="plaid-card-name-suggestions">
-            {cardNameSuggestions.map(name => <option key={name} value={name} />)}
-          </datalist>
-          <input
-            type="password"
-            placeholder="Plaid access token"
-            value={newForm.access_token}
-            onChange={e => setNewForm(f => ({ ...f, access_token: e.target.value }))}
-            className={inputCls}
-          />
-          <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
-            <input
-              type="checkbox"
-              checked={newForm.save}
-              onChange={e => setNewForm(f => ({ ...f, save: e.target.checked }))}
-              className="cursor-pointer"
-            />
-            Save connection for future use
-          </label>
-          {fetchErr.new && (
-            <div className="text-destructive text-[11px]">✗ {fetchErr.new}</div>
-          )}
-          <Button
-            size="sm"
-            className="w-full text-[11px] font-bold"
-            onClick={addConnection}
-            disabled={fetching.new || !newForm.access_token || !newForm.card_name}
-          >
-            {fetching.new ? 'Fetching…' : 'Fetch Transactions'}
-          </Button>
-        </div>
+      {fetching.new && (
+        <div className="text-[11px] text-muted-foreground mb-2">Connecting…</div>
+      )}
+      {fetchErr.new && (
+        <div className="text-destructive text-[11px] mb-2">✗ {fetchErr.new}</div>
       )}
 
       {/* ── Saved connections ───────────────────────────────────────────────── */}
@@ -352,12 +353,12 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
         );
       })}
 
-      {connections.length === 0 && !showAdd && (
+      {connections.length === 0 && (
         <div className="text-[11px] text-muted-foreground py-0.5 pb-1">No saved connections</div>
       )}
 
       {/* ── Divider before existing card blocks ────────────────────────────── */}
-      <div className={`border-t border-border ${connections.length > 0 || showAdd ? 'mt-3' : 'mt-2'}`} />
+      <div className={`border-t border-border ${connections.length > 0 ? 'mt-3' : 'mt-2'}`} />
     </div>
   );
 }
