@@ -145,3 +145,6 @@ vite.config.ts.timestamp-*
 # macOS Finder metadata
 .DS_Store
 **/.DS_Store
+
+# MCP
+.mcp.json
