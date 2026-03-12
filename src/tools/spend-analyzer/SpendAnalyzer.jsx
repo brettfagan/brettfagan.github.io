@@ -401,8 +401,8 @@ function DemoPanel({ onLoad }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
         {[
-          { id: 'credit-card', label: 'Sample Credit Card', count: 62, icon: '💳' },
-          { id: 'checking-account', label: 'Sample Checking Account', count: 38, icon: '🏦' },
+          { id: 'credit-card', label: 'Sample Credit Card', count: 175, icon: '💳' },
+          { id: 'checking-account', label: 'Sample Checking Account', count: 100, icon: '🏦' },
         ].map(({ id, label, count, icon }) => {
           const checked = sources.includes(id);
           return (
