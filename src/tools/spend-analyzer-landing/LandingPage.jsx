@@ -147,7 +147,7 @@ function HeroDashboard() {
               <div style={{ fontSize: '10px', color: T.textMuted, fontFamily: "'DM Sans', sans-serif", marginBottom: '3px' }}>
                 {s.label}
               </div>
-              <div style={{ fontSize: '17px', fontWeight: 700, color: T.text, fontFamily: "'Syne', sans-serif", letterSpacing: '-0.02em' }}>
+              <div style={{ fontSize: '17px', fontWeight: 700, color: T.text, fontFamily: "'Bricolage Grotesque', sans-serif", letterSpacing: '-0.02em' }}>
                 {s.value}
               </div>
             </div>
@@ -175,7 +175,7 @@ function HeroDashboard() {
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center',
             }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: T.text, fontFamily: "'Syne', sans-serif", letterSpacing: '-0.02em' }}>$2,847</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: T.text, fontFamily: "'Bricolage Grotesque', sans-serif", letterSpacing: '-0.02em' }}>$2,847</div>
               <div style={{ fontSize: '9px', color: T.textMuted, fontFamily: "'DM Sans', sans-serif" }}>total</div>
             </div>
           </div>
@@ -466,7 +466,7 @@ function Nav() {
       <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 28px', height: '62px', display: 'flex', alignItems: 'center', gap: '32px' }}>
         <a href="#top" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '9px', flexShrink: 0 }}>
           <span style={{ fontSize: '17px', lineHeight: 1 }}>💳</span>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '15px', color: T.text, letterSpacing: '-0.025em' }}>
+          <span style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 700, fontSize: '15px', color: T.text, letterSpacing: '-0.025em' }}>
             Spend<span style={{ color: T.jade }}>Analyzer</span>
           </span>
         </a>
@@ -541,7 +541,7 @@ function Hero() {
             initial="hidden"
             animate="visible"
             style={{
-              fontFamily: "'Syne', sans-serif",
+              fontFamily: "'Bricolage Grotesque', sans-serif",
               fontWeight: 800,
               fontSize: 'clamp(38px, 4.8vw, 60px)',
               lineHeight: 1.04,
@@ -684,7 +684,7 @@ function FeaturesSection() {
           <motion.h2
             variants={fadeUp}
             style={{
-              fontFamily: "'Syne', sans-serif",
+              fontFamily: "'Bricolage Grotesque', sans-serif",
               fontWeight: 700,
               fontSize: 'clamp(30px, 4vw, 44px)',
               color: T.text,
@@ -733,7 +733,7 @@ function FeaturesSection() {
             >
               <div style={{ fontSize: '22px', marginBottom: '10px', lineHeight: 1 }}>{f.icon}</div>
               <h3 style={{
-                fontFamily: "'Syne', sans-serif",
+                fontFamily: "'Bricolage Grotesque', sans-serif",
                 fontWeight: 600,
                 fontSize: '15px',
                 color: T.text,
@@ -807,7 +807,7 @@ function HowItWorksSection() {
           <motion.h2
             variants={fadeUp}
             style={{
-              fontFamily: "'Syne', sans-serif",
+              fontFamily: "'Bricolage Grotesque', sans-serif",
               fontWeight: 700,
               fontSize: 'clamp(30px, 4vw, 44px)',
               color: T.text,
@@ -857,11 +857,11 @@ function HowItWorksSection() {
                 {s.icon}
               </div>
 
-              <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '11px', color: T.jade, fontWeight: 700, letterSpacing: '0.12em', marginBottom: '8px' }}>
+              <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '11px', color: T.jade, fontWeight: 700, letterSpacing: '0.12em', marginBottom: '8px' }}>
                 {s.num}
               </div>
               <h3 style={{
-                fontFamily: "'Syne', sans-serif",
+                fontFamily: "'Bricolage Grotesque', sans-serif",
                 fontWeight: 600,
                 fontSize: '18px',
                 color: T.text,
@@ -917,7 +917,7 @@ function CtaSection() {
 
           <div style={{ position: 'relative' }}>
             <h2 style={{
-              fontFamily: "'Syne', sans-serif",
+              fontFamily: "'Bricolage Grotesque', sans-serif",
               fontWeight: 800,
               fontSize: 'clamp(30px, 4.5vw, 50px)',
               color: T.text,
