@@ -388,7 +388,7 @@ function Nav() {
               {label}
             </a>
           ))}
-          <a href="/tools/spend-analyzer/" style={{
+          <a href="/tools/spend-analyzer/app/" style={{
             fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: 600,
             color: '#ffffff', background: T.jade, padding: '8px 20px',
             borderRadius: '8px', textDecoration: 'none', transition: 'background 0.18s, transform 0.18s',
@@ -449,7 +449,7 @@ function Hero() {
           </motion.p>
 
           <motion.div custom={0.32} variants={fadeUp} initial="hidden" animate="visible" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <a href="/tools/spend-analyzer/" style={{
+            <a href="/tools/spend-analyzer/app/" style={{
               fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '15px',
               color: '#ffffff', background: T.jade, padding: '13px 30px', borderRadius: '10px',
               textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '7px',
@@ -617,7 +617,7 @@ function CtaSection() {
               Sign in with Google and start analyzing your transactions in under two minutes. Free to use.
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <a href="/tools/spend-analyzer/" style={{
+              <a href="/tools/spend-analyzer/app/" style={{
                 fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '15px',
                 color: T.text, background: T.jade, padding: '14px 36px', borderRadius: '10px',
                 textDecoration: 'none', boxShadow: `0 4px 24px ${T.jade}40`, transition: 'all 0.2s',
