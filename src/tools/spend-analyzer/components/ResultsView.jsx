@@ -113,7 +113,7 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
 
       {/* ── Stat cards ───────────────────────────────────────────────────── */}
       <div className={`grid gap-4 mb-8 ${hideExcluded ? 'grid-cols-5' : 'grid-cols-6'}`}>
-        <div className="relative group cursor-default bg-muted border border-border rounded-lg px-5 py-4.5">
+        <div className="relative group cursor-default bg-card border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Cards</div>
           <div className="text-[20px] font-extrabold text-primary leading-tight">{cardSet.size} Cards / {allTransactions.length} Transactions</div>
           <div className="text-[11px] text-muted-foreground mt-1">{[...cardSet].join(' · ')}</div>
@@ -128,28 +128,28 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
             </div>
           )}
         </div>
-        <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
+        <div className="bg-card border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Total Posted Spend</div>
           <div className="text-[24px] font-extrabold text-primary">{fmt(postedTotal)}</div>
           <div className="text-[11px] text-muted-foreground mt-1">{postedSpend.length} transactions</div>
         </div>
-        <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
+        <div className="bg-card border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Credits / Refunds</div>
           <div className="text-[24px] font-extrabold text-cyan-600">{fmt(totalCredits)}</div>
           <div className="text-[11px] text-muted-foreground mt-1">{credits.length} transaction{credits.length !== 1 ? 's' : ''}</div>
         </div>
-        <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
+        <div className="bg-card border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Total Net Spend</div>
           <div className="text-[24px] font-extrabold text-foreground">{fmt(postedTotal - totalCredits)}</div>
           <div className="text-[11px] text-muted-foreground mt-1">posted minus refunds</div>
         </div>
-        <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
+        <div className="bg-card border border-border rounded-lg px-5 py-4.5">
           <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Total Pending Spend</div>
           <div className="text-[24px] font-extrabold text-amber-600">{fmt(pendingTotal)}</div>
           <div className="text-[11px] text-muted-foreground mt-1">{pendingSpend.length} transactions</div>
         </div>
         {!hideExcluded && (
-          <div className="bg-muted border border-border rounded-lg px-5 py-4.5">
+          <div className="bg-card border border-border rounded-lg px-5 py-4.5">
             <div className="text-[10px] tracking-[1.5px] uppercase text-muted-foreground mb-2">Excluded Transactions</div>
             <div className="text-[24px] font-extrabold text-muted-foreground">{fmt(excluded.reduce((s, t) => s + Math.abs(t.amount), 0))}</div>
             <div className="text-[11px] text-muted-foreground mt-1">{excluded.length} transaction{excluded.length !== 1 ? 's' : ''}</div>
@@ -179,47 +179,49 @@ export default function ResultsView({ allTransactions, onReCategorize, onDeleteT
         showMonthlyAvg={!!user}
       />
 
-      {/* ── Transactions heading ─────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-border">
-        <div className="text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground">
-          Transactions
-        </div>
-        {onBulkDelete && tableSelection.size > 0 && (
-          <div className="flex items-center gap-3">
-            <span className="text-muted-foreground text-xs">{tableSelection.size} selected</span>
-            <Button size="sm" variant="destructive" onClick={() => { setBulkDeleteCount(tableSelection.size); setBulkDeletePhase('confirm'); }}>
-              Delete Selected
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-xs text-muted-foreground"
-              onClick={() => setSelectionClearToken(t => t + 1)}
-            >
-              Clear
-            </Button>
+      {/* ── Transactions card ────────────────────────────────────────────── */}
+      <div className="bg-card border border-border rounded-lg p-5">
+        <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-border">
+          <div className="text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground">
+            Transactions
           </div>
-        )}
+          {onBulkDelete && tableSelection.size > 0 && (
+            <div className="flex items-center gap-3">
+              <span className="text-muted-foreground text-xs">{tableSelection.size} selected</span>
+              <Button size="sm" variant="destructive" onClick={() => { setBulkDeleteCount(tableSelection.size); setBulkDeletePhase('confirm'); }}>
+                Delete Selected
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs text-muted-foreground"
+                onClick={() => setSelectionClearToken(t => t + 1)}
+              >
+                Clear
+              </Button>
+            </div>
+          )}
+        </div>
+        <TransactionTable
+          key={tableFilterSignal ? `${tableFilterSignal.cat}-${tableFilterSignal.ts}` : 'initial'}
+          spending={spending}
+          credits={credits}
+          categories={cats}
+          initialCatFilter={tableFilterSignal?.cat || ''}
+          initialDetailFilter={tableFilterSignal?.detail || ''}
+          onOpenModal={setModalTx}
+          onDeleteTransaction={onDeleteTransaction}
+          onBulkDelete={onBulkDelete}
+          onSelectionChange={setTableSelection}
+          selectionClearToken={selectionClearToken}
+          onClearFilters={syncFiltersToURL ? () => {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('cat');
+            url.searchParams.delete('detail');
+            window.history.replaceState(null, '', url.toString());
+          } : undefined}
+        />
       </div>
-      <TransactionTable
-        key={tableFilterSignal ? `${tableFilterSignal.cat}-${tableFilterSignal.ts}` : 'initial'}
-        spending={spending}
-        credits={credits}
-        categories={cats}
-        initialCatFilter={tableFilterSignal?.cat || ''}
-        initialDetailFilter={tableFilterSignal?.detail || ''}
-        onOpenModal={setModalTx}
-        onDeleteTransaction={onDeleteTransaction}
-        onBulkDelete={onBulkDelete}
-        onSelectionChange={setTableSelection}
-        selectionClearToken={selectionClearToken}
-        onClearFilters={syncFiltersToURL ? () => {
-          const url = new URL(window.location.href);
-          url.searchParams.delete('cat');
-          url.searchParams.delete('detail');
-          window.history.replaceState(null, '', url.toString());
-        } : undefined}
-      />
 
       {/* ── Bulk delete dialog ───────────────────────────────────────────── */}
       {onBulkDelete && (

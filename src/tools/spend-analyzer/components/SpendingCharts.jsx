@@ -136,7 +136,7 @@ export default function SpendingCharts({ spending, credits, cats }) {
     >
       {/* ── Category donut ─────────────────────────────────────────────── */}
       {showDonut && (
-        <div>
+        <div className="bg-card border border-border rounded-lg p-5">
           <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground mb-3">
             Category Mix
           </div>
@@ -168,7 +168,7 @@ export default function SpendingCharts({ spending, credits, cats }) {
 
       {/* ── Monthly line chart ──────────────────────────────────────────── */}
       {showMonthly && (
-        <div>
+        <div className="bg-card border border-border rounded-lg p-5">
           <div className="flex items-baseline gap-3 mb-3">
             <div className="text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground">
               Monthly Spend
@@ -189,8 +189,8 @@ export default function SpendingCharts({ spending, credits, cats }) {
             >
               <defs>
                 <linearGradient id="spendGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#10d9a0" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#10d9a0" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis
@@ -225,9 +225,9 @@ export default function SpendingCharts({ spending, credits, cats }) {
               <Line
                 type="monotone"
                 dataKey="spend"
-                stroke="#8b5cf6"
+                stroke="#10d9a0"
                 strokeWidth={2}
-                dot={{ fill: "#8b5cf6", r: 3 }}
+                dot={{ fill: "#10d9a0", r: 3 }}
                 activeDot={{ r: 5 }}
               />
             </ComposedChart>
