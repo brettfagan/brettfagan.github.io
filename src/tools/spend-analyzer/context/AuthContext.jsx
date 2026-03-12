@@ -77,7 +77,15 @@ export function AuthProvider({ children }) {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
         setEffectiveUserId(currentUser?.id ?? null);
-        loadPartnerStatus(currentUser).then(() => setLoading(false));
+        loadPartnerStatus(currentUser).then(() => {
+          setLoading(false);
+          // If this window is the OAuth popup callback, close it so the
+          // parent window picks up the session via Supabase's cross-tab
+          // localStorage sync / onAuthStateChange.
+          if (new URLSearchParams(window.location.search).has('popup_auth')) {
+            window.close();
+          }
+        });
       });
     });
 
@@ -85,12 +93,16 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function signInWithGoogle() {
-    const redirectTo = `${window.location.origin}${window.location.pathname}`;
-    const { error } = await supabase.auth.signInWithOAuth({
+    const redirectTo = `${window.location.origin}${window.location.pathname}?popup_auth=1`;
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo },
+      options: { redirectTo, skipBrowserRedirect: true },
     });
-    if (error) console.error('Sign in error:', error.message);
+    if (error) { console.error('Sign in error:', error.message); return; }
+    const w = 500, h = 640;
+    const left = Math.round(window.screenX + (window.outerWidth - w) / 2);
+    const top  = Math.round(window.screenY + (window.outerHeight - h) / 2);
+    window.open(data.url, 'google-signin', `width=${w},height=${h},left=${left},top=${top},scrollbars=yes`);
   }
 
   async function signOut() {
