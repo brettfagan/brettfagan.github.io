@@ -222,7 +222,7 @@ export default function SpendAnalyzer() {
         ]
       : [];
 
-  const isFull = isLinked || ['my-spending', 'my-budget', 'settings'].includes(page);
+  const isFull = isLinked || (!user && !isDemo) || ['my-spending', 'my-budget', 'settings'].includes(page);
 
   return (
     <>
@@ -281,7 +281,7 @@ export default function SpendAnalyzer() {
       )}
 
       <div className={`grid min-h-[calc(100vh-89px)] ${isFull ? 'grid-cols-1' : 'grid-cols-[260px_1fr]'}`}>
-        {page === 'analyzer' && !isLinked && !isDemo && (
+        {page === 'analyzer' && !isLinked && !isDemo && user && (
           <ImportSidebar
             key={sidebarKey}
             loadedCount={Object.keys(loadedData).length}
@@ -438,9 +438,6 @@ function DemoPanel({ onLoad }) {
         {loading ? 'Loading…' : 'Explore Demo →'}
       </button>
 
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '14px' }}>
-        <AuthButton />
-      </div>
     </div>
   );
 }
