@@ -378,7 +378,10 @@ export default function MyBudgetPage() {
           </div>
 
           {/* ── Right: budget summary card ────────────────────────────── */}
-          <div className="w-56 shrink-0 sticky top-4">
+          <div className="w-56 shrink-0 flex flex-col">
+            {/* Invisible spacer matches column header height so card aligns with table body */}
+            <div className="pb-1.5 text-[10px] invisible select-none" aria-hidden="true">X</div>
+            <div className="sticky top-4">
             <div className="border border-border rounded-lg bg-card p-4 flex flex-col gap-4">
               {/* Total Budget Amount input */}
               <div className="flex flex-col gap-1.5">
@@ -434,6 +437,7 @@ export default function MyBudgetPage() {
                 {saving ? 'Saving…' : 'Save Budget'}
               </Button>
             </div>
+          </div>
           </div>
         </div>
       )}
