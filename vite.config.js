@@ -15,8 +15,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        'spend-analyzer': resolve(__dirname, 'tools/spend-analyzer/index.html'),
-        'spend-analyzer-landing': resolve(__dirname, 'tools/spend-analyzer-landing/index.html'),
+        'spend-analyzer': resolve(__dirname, 'tools/spend-analyzer/app/index.html'),
+        'spend-analyzer-landing': resolve(__dirname, 'tools/spend-analyzer/index.html'),
       },
     },
   },
