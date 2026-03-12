@@ -12,6 +12,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
   <body>
+    <script>
+      // Hide the page immediately if this window is the OAuth popup callback.
+      // Runs synchronously before any JS bundle loads to prevent a flash of
+      // the full app. React will render null (PopupAuthHandler) and close the
+      // popup; visibility is never restored in that case.
+      try {
+        if (
+          localStorage.getItem('sb-popup-auth') === '1' &&
+          new URLSearchParams(location.search).has('code')
+        ) {
+          document.documentElement.style.visibility = 'hidden';
+        }
+      } catch {}
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
