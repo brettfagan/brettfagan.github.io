@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'motion/react';
 import AuthButton from '../spend-analyzer/components/AuthButton';
+import { useAuth } from '../spend-analyzer/context/AuthContext';
 
 // ── Page design tokens (light theme) ─────────────────────────────────────────
 const T = {
@@ -665,6 +666,19 @@ function Footer() {
 
 // ── Root ──────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
+  const { user, loading } = useAuth();
+  const prevUserRef = useRef(undefined);
+
+  // Redirect to app when user signs in (but not on initial load if already signed in)
+  useEffect(() => {
+    if (loading) return;
+    const prev = prevUserRef.current;
+    prevUserRef.current = user;
+    if (prev === null && user) {
+      window.location.href = '/tools/spend-analyzer/app/';
+    }
+  }, [user, loading]);
+
   return (
     <div style={{
       background: T.bg,
