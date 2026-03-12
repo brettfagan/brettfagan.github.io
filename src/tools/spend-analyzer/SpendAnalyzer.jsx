@@ -498,7 +498,7 @@ function DemoSidebar({ loadedData, onExit }) {
         <p style={{ fontSize: '11px', color: 'var(--muted-foreground)', lineHeight: 1.6 }}>
           Sign in with Google to connect your bank accounts and save your spending history.
         </p>
-        <AuthButton />
+        <AuthButton fullWidth />
       </div>
 
       <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border)', paddingTop: '14px' }}>

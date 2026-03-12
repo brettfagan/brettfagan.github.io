@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '../context/AuthContext';
 
-export default function AuthButton() {
+export default function AuthButton({ fullWidth = false }) {
   const { user, loading, signInWithGoogle, signOut } = useAuth();
 
   if (loading) return null;
@@ -16,7 +16,7 @@ export default function AuthButton() {
   if (!user) {
     return (
       <button
-        className="inline-flex items-center gap-2 border border-border rounded-md text-xs font-bold px-3.5 py-1.75 cursor-pointer transition-all bg-card text-foreground hover:bg-muted hover:border-primary whitespace-nowrap"
+        className={`inline-flex items-center gap-2 border border-border rounded-md text-xs font-bold px-3.5 py-1.75 cursor-pointer transition-all bg-card text-foreground hover:bg-muted hover:border-primary whitespace-nowrap${fullWidth ? ' w-full justify-center' : ''}`}
         onClick={signInWithGoogle}
       >
         <GoogleIcon />
