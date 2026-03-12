@@ -101,6 +101,17 @@ export default function SpendAnalyzer() {
     if (!loading && !user) setPage('analyzer');
   }, [user, loading]);
 
+  // When a user signs in from demo mode, clear demo state so they get the normal
+  // post-login experience (My Spending, Settings, etc.) rather than staying in demo UI.
+  useEffect(() => {
+    if (user && isDemo) {
+      setIsDemo(false);
+      setShowTour(false);
+      setResults(null);
+      setLoadedData({});
+    }
+  }, [user]);
+
   const handleLoad = useCallback((cardId, txns) => {
     setLoadedData(prev => ({ ...prev, [cardId]: txns }));
   }, []);

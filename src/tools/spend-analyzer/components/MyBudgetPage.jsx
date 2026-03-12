@@ -209,8 +209,11 @@ export default function MyBudgetPage({ demoTransactions = null }) {
     let txData;
 
     if (isDemo) {
-      // Demo mode: use the passed-in transactions directly, no DB query
-      txData = demoTransactions;
+      // Demo mode: always use the 3 most recent months of demo data regardless
+      // of the user's month-picker selection (modal is bypassed for demo).
+      const allMonths = [...new Set(demoTransactions.map(t => t.date.slice(0, 7)))].sort().reverse();
+      const recentMonths = new Set(allMonths.slice(0, 3));
+      txData = demoTransactions.filter(t => recentMonths.has(t.date.slice(0, 7)));
       setAutoPopulating(false);
     } else {
       // Date range: last N complete calendar months (exclude current month-in-progress)
@@ -255,9 +258,9 @@ export default function MyBudgetPage({ demoTransactions = null }) {
       return;
     }
 
-    // In demo mode, divide by the number of distinct months present in the data
-    // (capped to the requested N), so averages are always meaningful.
-    const effectiveMonths = isDemo ? Math.min(monthSet.size || 1, months) : months;
+    // In demo mode txData was already sliced to the 3 most recent months, so
+    // divide by the actual number of distinct months in that slice.
+    const effectiveMonths = isDemo ? (monthSet.size || 1) : months;
 
     // Average over N months, round to 2 decimal places.
     // Skip hidden categories and any cat key not present in the user's category list
@@ -536,10 +539,10 @@ export default function MyBudgetPage({ demoTransactions = null }) {
                 </div>
               )}
 
-              {/* Auto-populate */}
+              {/* Auto-populate — demo skips the modal and always uses 3 months */}
               <button
                 className="text-[10px] text-muted-foreground hover:text-foreground transition-colors bg-transparent border-0 cursor-pointer p-0 text-left underline underline-offset-2"
-                onClick={() => setAutoPopModal(true)}
+                onClick={() => isDemo ? handleAutoPopulate() : setAutoPopModal(true)}
               >
                 Auto-populate from spending
               </button>
