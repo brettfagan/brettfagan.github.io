@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useCategories } from '../context/CategoriesContext';
-import { SUBCATEGORIES } from '../lib/constants';
+import { SUBCATEGORIES, EXCLUDED } from '../lib/constants';
 import {
   Dialog,
   DialogContent,
@@ -61,6 +61,10 @@ export default function MyBudgetPage() {
   const [confirmModal, setConfirmModal] = useState(null); // { key, label }
   const [totalBudget, setTotalBudget] = useState('');
   const [editingTotal, setEditingTotal] = useState(true);
+  const [autoPopModal, setAutoPopModal] = useState(false);
+  const [autoPopMode, setAutoPopMode] = useState('3'); // '3' | '6' | 'custom'
+  const [autoPopCustom, setAutoPopCustom] = useState('12');
+  const [autoPopulating, setAutoPopulating] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -193,6 +197,61 @@ export default function MyBudgetPage() {
     setSaveSuccess(true);
     if (totalBudget !== '') setEditingTotal(false);
     setTimeout(() => setSaveSuccess(false), 2500);
+  }
+
+  async function handleAutoPopulate() {
+    const months = autoPopMode === 'custom' ? Math.max(1, parseInt(autoPopCustom) || 1) : parseInt(autoPopMode);
+    setAutoPopulating(true);
+    setError(null);
+
+    // Date range: last N complete calendar months (exclude current month-in-progress)
+    const now = new Date();
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const rangeStart = new Date(currentMonthStart);
+    rangeStart.setMonth(rangeStart.getMonth() - months);
+    const startStr = rangeStart.toISOString().slice(0, 10);
+    // End = last day of previous month
+    const rangeEnd = new Date(currentMonthStart.getTime() - 86400000);
+    const endStr = rangeEnd.toISOString().slice(0, 10);
+
+    const { data, error: fetchErr } = await supabase
+      .from('imported_transactions')
+      .select('cat, amount')
+      .eq('user_id', user.id)
+      .gte('date', startStr)
+      .lte('date', endStr);
+
+    setAutoPopulating(false);
+    if (fetchErr) { setError(fetchErr.message); return; }
+
+    // Sum spending per category (positive amounts = spending), skip excluded cats
+    const catTotals = {};
+    for (const tx of data || []) {
+      if (!tx.cat || EXCLUDED.includes(tx.cat)) continue;
+      if ((tx.amount || 0) <= 0) continue;
+      catTotals[tx.cat] = (catTotals[tx.cat] || 0) + tx.amount;
+    }
+
+    if (Object.keys(catTotals).length === 0) {
+      setError(`No spending data found for the last ${months} month${months !== 1 ? 's' : ''}.`);
+      setAutoPopModal(false);
+      return;
+    }
+
+    // Average over N months, round to 2 decimal places; skip hidden categories
+    setBudgetMap(prev => {
+      const next = { ...prev };
+      for (const [cat, total] of Object.entries(catTotals)) {
+        const existing = next[cat] ?? { amount: '', hidden: false };
+        if (existing.hidden) continue;
+        const avg = Math.round((total / months) * 100) / 100;
+        next[cat] = { ...existing, amount: String(avg) };
+      }
+      return next;
+    });
+
+    setDirty(true);
+    setAutoPopModal(false);
   }
 
   const visibleCategories = categories.filter(c => !getItem(c.key).hidden);
@@ -452,6 +511,14 @@ export default function MyBudgetPage() {
                 </div>
               )}
 
+              {/* Auto-populate */}
+              <button
+                className="text-[10px] text-muted-foreground hover:text-foreground transition-colors bg-transparent border-0 cursor-pointer p-0 text-left underline underline-offset-2"
+                onClick={() => setAutoPopModal(true)}
+              >
+                Auto-populate from spending
+              </button>
+
               {/* Feedback */}
               {saveSuccess && <span className="text-xs font-bold text-emerald-600">Saved!</span>}
               {error && <span className="text-[11px] text-destructive">{error}</span>}
@@ -469,6 +536,71 @@ export default function MyBudgetPage() {
           </div>
         </div>
       )}
+
+      {/* ── Auto-populate modal ───────────────────────────────────────── */}
+      <Dialog open={autoPopModal} onOpenChange={open => { if (!open) setAutoPopModal(false); }}>
+        <DialogContent className="w-90 max-w-[calc(100vw-32px)]">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold">Auto-populate Budget</DialogTitle>
+            <DialogDescription>
+              Fill in category amounts based on your average monthly spending over a recent period.
+              Hidden categories will not be changed.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-3 py-1">
+            <p className="text-[10px] font-bold uppercase tracking-[1px] text-muted-foreground">Time period</p>
+            <div className="flex gap-2">
+              {[['3', 'Last 3 months'], ['6', 'Last 6 months']].map(([val, label]) => (
+                <button
+                  key={val}
+                  onClick={() => setAutoPopMode(val)}
+                  className={`flex-1 text-[11px] font-semibold px-3 py-2 rounded-md border transition-colors cursor-pointer ${
+                    autoPopMode === val
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background text-foreground border-border hover:border-primary/50'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setAutoPopMode('custom')}
+                className={`text-[11px] font-semibold px-3 py-2 rounded-md border transition-colors cursor-pointer whitespace-nowrap ${
+                  autoPopMode === 'custom'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background text-foreground border-border hover:border-primary/50'
+                }`}
+              >
+                Custom
+              </button>
+              <div className={`flex items-center gap-1 transition-opacity ${autoPopMode === 'custom' ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}>
+                <input
+                  type="number"
+                  min="1"
+                  max="36"
+                  value={autoPopCustom}
+                  onChange={e => setAutoPopCustom(e.target.value)}
+                  onFocus={() => setAutoPopMode('custom')}
+                  className="w-14 text-[11px] text-right bg-muted border border-border rounded px-2 py-[7px] outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <span className="text-[11px] text-muted-foreground">months</span>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex gap-2.5 justify-end">
+            <Button variant="outline" onClick={() => setAutoPopModal(false)} className="text-[11px] font-bold">
+              Cancel
+            </Button>
+            <Button onClick={handleAutoPopulate} disabled={autoPopulating} className="text-[11px] font-bold">
+              {autoPopulating ? 'Loading…' : 'Apply'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Confirmation modal ────────────────────────────────────────── */}
       <Dialog open={!!confirmModal} onOpenChange={open => { if (!open) setConfirmModal(null); }}>
