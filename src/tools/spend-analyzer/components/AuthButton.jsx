@@ -16,7 +16,7 @@ export default function AuthButton() {
   if (!user) {
     return (
       <button
-        className="inline-flex items-center gap-2 border border-border rounded-md text-xs font-bold px-3.5 py-1.75 cursor-pointer transition-all bg-background text-foreground hover:bg-muted hover:border-primary whitespace-nowrap"
+        className="inline-flex items-center gap-2 border border-border rounded-md text-xs font-bold px-3.5 py-1.75 cursor-pointer transition-all bg-card text-foreground hover:bg-muted hover:border-primary whitespace-nowrap"
         onClick={signInWithGoogle}
       >
         <GoogleIcon />
