@@ -219,14 +219,14 @@ export default function SpendAnalyzer() {
               ))}
             </nav>
           )}
-          <AuthButton />
           <button
             onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-            className="ml-2 flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground hover:bg-muted transition-colors"
+            className="mr-2 flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground hover:bg-muted transition-colors"
             aria-label="Toggle theme"
           >
             {resolvedTheme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
+          <AuthButton />
         </div>
       </header>
 
