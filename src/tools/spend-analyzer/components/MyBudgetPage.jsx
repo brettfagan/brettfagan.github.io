@@ -209,10 +209,14 @@ export default function MyBudgetPage() {
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const rangeStart = new Date(currentMonthStart);
     rangeStart.setMonth(rangeStart.getMonth() - months);
-    const startStr = rangeStart.toISOString().slice(0, 10);
-    // End = last day of previous month
-    const rangeEnd = new Date(currentMonthStart.getTime() - 86400000);
-    const endStr = rangeEnd.toISOString().slice(0, 10);
+    // Format using local date parts to avoid UTC shift in positive-offset timezones
+    const pad = n => String(n).padStart(2, '0');
+    const toDateStr = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const startStr = toDateStr(rangeStart);
+    // End = last day of previous month (subtract one day in local time)
+    const rangeEnd = new Date(currentMonthStart);
+    rangeEnd.setDate(rangeEnd.getDate() - 1);
+    const endStr = toDateStr(rangeEnd);
 
     const { data, error: fetchErr } = await supabase
       .from('imported_transactions')
@@ -238,10 +242,14 @@ export default function MyBudgetPage() {
       return;
     }
 
-    // Average over N months, round to 2 decimal places; skip hidden categories
+    // Average over N months, round to 2 decimal places.
+    // Skip hidden categories and any cat key not present in the user's category list
+    // (deleted/renamed cats would otherwise create invisible phantom budget rows).
+    const knownCatKeys = new Set(categories.map(c => c.key));
     setBudgetMap(prev => {
       const next = { ...prev };
       for (const [cat, total] of Object.entries(catTotals)) {
+        if (!knownCatKeys.has(cat)) continue;
         const existing = next[cat] ?? { amount: '', hidden: false };
         if (existing.hidden) continue;
         const avg = Math.round((total / months) * 100) / 100;
