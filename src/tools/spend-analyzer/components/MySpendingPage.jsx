@@ -225,7 +225,7 @@ export default function MySpendingPage() {
             <button
               key={mode}
               onClick={() => setFilterMode(mode)}
-              className={`text-[11px] font-bold px-3.5 py-1.5 cursor-pointer transition-colors border-0 whitespace-nowrap ${i < arr.length - 1 ? 'border-r border-border' : ''} ${filterMode === mode ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:text-foreground'}`}
+              className={`text-[11px] font-bold px-3.5 py-1.5 cursor-pointer transition-colors border-0 whitespace-nowrap ${i < arr.length - 1 ? 'border-r border-border' : ''} ${filterMode === mode ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:text-foreground'}`}
             >
               {label}
             </button>
