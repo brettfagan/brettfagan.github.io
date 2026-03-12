@@ -44,15 +44,16 @@ const rowActionsCls = "flex items-center justify-end gap-0.5";
 const iconBtnCls  = "flex items-center gap-1 bg-transparent border-0 cursor-pointer text-[11px] font-semibold text-muted-foreground px-[7px] py-[5px] rounded-[3px] transition-colors hover:bg-muted hover:text-foreground whitespace-nowrap";
 const deleteBtnCls = `${iconBtnCls} text-lg font-light leading-none px-[7px] py-1 hover:text-destructive`;
 
-export default function MyBudgetPage() {
+export default function MyBudgetPage({ demoTransactions = null }) {
   const { user } = useAuth();
   const { categories, getCatColor, getCatLabel } = useCategories();
+  const isDemo = demoTransactions !== null;
 
   // budgetMap: key -> { amount: string, hidden: boolean }
   const [budgetMap, setBudgetMap] = useState({});
   // Set of category keys whose subcategories are currently shown
   const [expanded, setExpanded] = useState(new Set());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isDemo); // demo mode starts ready
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState(null);
@@ -67,9 +68,10 @@ export default function MyBudgetPage() {
   const [autoPopulating, setAutoPopulating] = useState(false);
 
   useEffect(() => {
+    if (isDemo) return; // demo mode: no DB load
     if (!user) return;
     load();
-  }, [user]);
+  }, [user, isDemo]);
 
   async function load() {
     setLoading(true);
@@ -204,36 +206,47 @@ export default function MyBudgetPage() {
     setAutoPopulating(true);
     setError(null);
 
-    // Date range: last N complete calendar months (exclude current month-in-progress)
-    const now = new Date();
-    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const rangeStart = new Date(currentMonthStart);
-    rangeStart.setMonth(rangeStart.getMonth() - months);
-    // Format using local date parts to avoid UTC shift in positive-offset timezones
-    const pad = n => String(n).padStart(2, '0');
-    const toDateStr = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-    const startStr = toDateStr(rangeStart);
-    // End = last day of previous month (subtract one day in local time)
-    const rangeEnd = new Date(currentMonthStart);
-    rangeEnd.setDate(rangeEnd.getDate() - 1);
-    const endStr = toDateStr(rangeEnd);
+    let txData;
 
-    const { data, error: fetchErr } = await supabase
-      .from('imported_transactions')
-      .select('cat, amount')
-      .eq('user_id', user.id)
-      .gte('date', startStr)
-      .lte('date', endStr);
+    if (isDemo) {
+      // Demo mode: use the passed-in transactions directly, no DB query
+      txData = demoTransactions;
+      setAutoPopulating(false);
+    } else {
+      // Date range: last N complete calendar months (exclude current month-in-progress)
+      const now = new Date();
+      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const rangeStart = new Date(currentMonthStart);
+      rangeStart.setMonth(rangeStart.getMonth() - months);
+      // Format using local date parts to avoid UTC shift in positive-offset timezones
+      const pad = n => String(n).padStart(2, '0');
+      const toDateStr = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      const startStr = toDateStr(rangeStart);
+      // End = last day of previous month (subtract one day in local time)
+      const rangeEnd = new Date(currentMonthStart);
+      rangeEnd.setDate(rangeEnd.getDate() - 1);
+      const endStr = toDateStr(rangeEnd);
 
-    setAutoPopulating(false);
-    if (fetchErr) { setError(fetchErr.message); return; }
+      const { data, error: fetchErr } = await supabase
+        .from('imported_transactions')
+        .select('cat, amount')
+        .eq('user_id', user.id)
+        .gte('date', startStr)
+        .lte('date', endStr);
+
+      setAutoPopulating(false);
+      if (fetchErr) { setError(fetchErr.message); return; }
+      txData = data;
+    }
 
     // Sum spending per category (positive amounts = spending), skip excluded cats
     const catTotals = {};
-    for (const tx of data || []) {
+    const monthSet = new Set();
+    for (const tx of txData || []) {
       if (!tx.cat || EXCLUDED.includes(tx.cat)) continue;
       if ((tx.amount || 0) <= 0) continue;
       catTotals[tx.cat] = (catTotals[tx.cat] || 0) + tx.amount;
+      if (isDemo && tx.date) monthSet.add(tx.date.slice(0, 7));
     }
 
     if (Object.keys(catTotals).length === 0) {
@@ -241,6 +254,10 @@ export default function MyBudgetPage() {
       setAutoPopModal(false);
       return;
     }
+
+    // In demo mode, divide by the number of distinct months present in the data
+    // (capped to the requested N), so averages are always meaningful.
+    const effectiveMonths = isDemo ? Math.min(monthSet.size || 1, months) : months;
 
     // Average over N months, round to 2 decimal places.
     // Skip hidden categories and any cat key not present in the user's category list
@@ -252,7 +269,7 @@ export default function MyBudgetPage() {
         if (!knownCatKeys.has(cat)) continue;
         const existing = next[cat] ?? { amount: '', hidden: false };
         if (existing.hidden) continue;
-        const avg = Math.round((total / months) * 100) / 100;
+        const avg = Math.round((total / effectiveMonths) * 100) / 100;
         next[cat] = { ...existing, amount: String(avg) };
       }
       return next;
@@ -528,17 +545,23 @@ export default function MyBudgetPage() {
               </button>
 
               {/* Feedback */}
-              {saveSuccess && <span className="text-xs font-bold text-emerald-600">Saved!</span>}
+              {!isDemo && saveSuccess && <span className="text-xs font-bold text-emerald-600">Saved!</span>}
               {error && <span className="text-[11px] text-destructive">{error}</span>}
 
-              {/* Save button */}
-              <Button
-                onClick={handleSave}
-                disabled={saving || !dirty}
-                className="w-full text-[11px] font-bold"
-              >
-                {saving ? 'Saving…' : 'Save Budget'}
-              </Button>
+              {/* Save button — hidden in demo mode */}
+              {isDemo ? (
+                <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+                  Sign in to save your budget.
+                </p>
+              ) : (
+                <Button
+                  onClick={handleSave}
+                  disabled={saving || !dirty}
+                  className="w-full text-[11px] font-bold"
+                >
+                  {saving ? 'Saving…' : 'Save Budget'}
+                </Button>
+              )}
             </div>
           </div>
           </div>
