@@ -79,7 +79,7 @@ export default function LinkedAccessManager() {
 
       {/* ── Active link ──────────────────────────────────────────────────── */}
       {linkedPartnerEmail && (
-        <div className="flex items-center justify-between gap-4 bg-muted border border-border rounded-lg px-5 py-4">
+        <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-lg px-5 py-4">
           <div>
             <div className="text-[11px] font-bold tracking-[1px] uppercase text-muted-foreground mb-1">Partner access active</div>
             <div className="text-sm font-semibold">{linkedPartnerEmail}</div>
@@ -99,7 +99,7 @@ export default function LinkedAccessManager() {
 
       {/* ── Pending invite ────────────────────────────────────────────────── */}
       {!linkedPartnerEmail && pendingInviteEmail && (
-        <div className="flex items-center justify-between gap-4 bg-muted border border-border rounded-lg px-5 py-4">
+        <div className="flex items-center justify-between gap-4 bg-card border border-border rounded-lg px-5 py-4">
           <div>
             <div className="text-[11px] font-bold tracking-[1px] uppercase text-muted-foreground mb-1">Invitation pending</div>
             <div className="text-sm font-semibold">{pendingInviteEmail}</div>

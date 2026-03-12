@@ -208,7 +208,7 @@ export default function MySpendingPage() {
     });
   }, [transactions, filterMode, filterMonth, filterStart, filterEnd]);
 
-  const controlCls = "bg-muted border border-border rounded text-xs py-1.5 px-3 outline-none cursor-pointer text-foreground";
+  const controlCls = "bg-card border border-border rounded text-xs py-1.5 px-3 outline-none cursor-pointer text-foreground";
 
   return (
     <>
