@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Settings } from 'lucide-react';
 import { CARDS } from './lib/constants';
 import { useAuth } from './context/AuthContext';
 import { useCatRules } from './context/CatRulesContext';
@@ -188,7 +188,6 @@ export default function SpendAnalyzer() {
           { id: 'analyzer',    label: 'Analyzer'    },
           { id: 'my-spending', label: 'My Spending' },
           { id: 'my-budget',   label: 'My Budget'   },
-          { id: 'settings',    label: 'Settings'    },
         ]
     : [];
 
@@ -221,11 +220,24 @@ export default function SpendAnalyzer() {
           )}
           <button
             onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-            className="mr-2 flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground hover:bg-muted transition-colors"
+            className="flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground hover:bg-muted transition-colors"
             aria-label="Toggle theme"
           >
             {resolvedTheme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
+          {user && !isLinked && (
+            <button
+              onClick={() => setPage('settings')}
+              className={`flex items-center justify-center w-8 h-8 rounded-md transition-colors mr-2 ${
+                page === 'settings'
+                  ? 'text-primary bg-muted'
+                  : 'text-muted-foreground hover:bg-muted'
+              }`}
+              aria-label="Settings"
+            >
+              <Settings size={16} />
+            </button>
+          )}
           <AuthButton />
         </div>
       </header>
