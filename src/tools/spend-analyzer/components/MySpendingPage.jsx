@@ -189,6 +189,17 @@ export default function MySpendingPage() {
       const prefix = `${filterMonth.year}-${String(filterMonth.month).padStart(2, '0')}`;
       return transactions.filter(tx => tx.date?.startsWith(prefix));
     }
+    if (filterMode === 'last3' || filterMode === 'last6') {
+      const n = filterMode === 'last3' ? 3 : 6;
+      const now = new Date();
+      // End = last day of the previous (most recent complete) month
+      const end   = new Date(now.getFullYear(), now.getMonth(), 0);
+      // Start = first day of n months before the current month
+      const start = new Date(now.getFullYear(), now.getMonth() - n, 1);
+      const startStr = start.toISOString().slice(0, 10);
+      const endStr   = end.toISOString().slice(0, 10);
+      return transactions.filter(tx => tx.date >= startStr && tx.date <= endStr);
+    }
     return transactions.filter(tx => {
       if (!tx.date) return false;
       if (filterStart && tx.date < filterStart) return false;
@@ -210,7 +221,7 @@ export default function MySpendingPage() {
       {/* ── Date range filter ────────────────────────────────────────────── */}
       <div className="flex gap-3 items-center flex-wrap mb-7">
         <div className="flex border border-border rounded-md overflow-hidden">
-          {[['all', 'All Time'], ['month', 'Month'], ['custom', 'Custom Range']].map(([mode, label], i, arr) => (
+          {[['all', 'All Time'], ['last3', 'Last 3 Months'], ['last6', 'Last 6 Months'], ['month', 'Month'], ['custom', 'Custom Range']].map(([mode, label], i, arr) => (
             <button
               key={mode}
               onClick={() => setFilterMode(mode)}
