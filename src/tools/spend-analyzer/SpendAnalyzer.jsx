@@ -238,12 +238,12 @@ export default function SpendAnalyzer() {
   return (
     <>
       <header className="px-12 py-5 border-b border-border flex items-center justify-between gap-5">
-        <div className="flex items-center gap-2.5">
+        <h1 className="flex items-center gap-2.5">
           <span style={{ fontSize: '22px', lineHeight: 1 }}>💳</span>
           <span style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 800, fontSize: '20px', letterSpacing: '-0.03em', lineHeight: 1 }}>
             Spend<span style={{ color: '#10d9a0' }}>Analyzer</span>
           </span>
-        </div>
+        </h1>
         <div className="flex items-center">
           {(user || isDemo) && (
             <nav className="flex gap-0.5 mr-3">
