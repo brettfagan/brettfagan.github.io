@@ -23,6 +23,13 @@ export function fmtDetail(d) {
   return d.replace(/_/g, ' ').replace(/\b\w/g, x => x.toUpperCase());
 }
 
+export function fmtDate(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  if (!y || !m || !d) return iso;
+  return `${m}/${d}/${y}`;
+}
+
 export function fmtShortDate(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-');
