@@ -93,7 +93,7 @@ export function AuthProvider({ children }) {
     const top  = Math.round(window.screenY + (window.outerHeight - h) / 2);
     const popup = window.open('', 'google-signin', `width=${w},height=${h},left=${left},top=${top},scrollbars=yes`);
 
-    const redirectTo = `${window.location.origin}${window.location.pathname}?popup_auth=1`;
+    const redirectTo = `${window.location.origin}${window.location.pathname}`;
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo, skipBrowserRedirect: true },

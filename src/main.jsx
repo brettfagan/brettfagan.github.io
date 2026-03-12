@@ -19,7 +19,9 @@ function PopupAuthHandler() {
   return null;
 }
 
-const isPopupAuth = new URLSearchParams(window.location.search).has('popup_auth');
+// window.name is set to 'google-signin' when we open the popup via window.open()
+// and persists across all navigations (Google OAuth → back to our app).
+const isPopupAuth = window.name === 'google-signin';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
