@@ -200,9 +200,17 @@ export default function MyBudgetPage() {
     .filter(([, v]) => v.hidden)
     .map(([key]) => key);
 
-  // Sum of all non-hidden amounts entered across categories and subcategories
+  // Sum of all non-hidden amounts entered across categories and subcategories.
+  // Also exclude subcategory rows whose parent category is hidden, since hiding
+  // a category only marks the category key itself — subcategory entries keep
+  // hidden: false but are no longer visible or meaningful.
   const budgetedTotal = Object.entries(budgetMap)
-    .filter(([, v]) => !v.hidden && v.amount !== '')
+    .filter(([key, v]) => {
+      if (v.hidden || v.amount === '') return false;
+      const { category } = parseKey(key);
+      if (key.includes('::') && getItem(category).hidden) return false;
+      return true;
+    })
     .reduce((sum, [, v]) => sum + parseFloat(v.amount || 0), 0);
 
   const remaining = totalBudget !== '' ? parseFloat(totalBudget) - budgetedTotal : null;
