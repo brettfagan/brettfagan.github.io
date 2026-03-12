@@ -592,7 +592,7 @@ export default function MyBudgetPage() {
                   value={autoPopCustom}
                   onChange={e => setAutoPopCustom(e.target.value)}
                   onFocus={() => setAutoPopMode('custom')}
-                  className="w-14 text-[11px] text-right bg-muted border border-border rounded px-2 py-[7px] outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-14 text-[11px] text-right bg-muted border border-border rounded px-2 py-1.75 outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <span className="text-[11px] text-muted-foreground">months</span>
               </div>
