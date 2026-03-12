@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'motion/react';
+import AuthButton from '../spend-analyzer/components/AuthButton';
 
 // ── Page design tokens (light theme) ─────────────────────────────────────────
 const T = {
@@ -388,15 +389,7 @@ function Nav() {
               {label}
             </a>
           ))}
-          <a href="/tools/spend-analyzer/app/" style={{
-            fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: 600,
-            color: '#ffffff', background: T.jade, padding: '8px 20px',
-            borderRadius: '8px', textDecoration: 'none', transition: 'background 0.18s, transform 0.18s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = T.jadeDim; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = T.jade; e.currentTarget.style.transform = 'translateY(0)'; }}>
-            Get Started
-          </a>
+          <AuthButton />
         </div>
       </div>
     </motion.nav>
