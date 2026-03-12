@@ -19,9 +19,13 @@ function PopupAuthHandler() {
   return null;
 }
 
-// window.name is set to 'google-signin' when we open the popup via window.open()
-// and persists across all navigations (Google OAuth → back to our app).
-const isPopupAuth = window.name === 'google-signin';
+// The parent sets 'sb-popup-auth' in localStorage before opening the OAuth
+// popup. window.name is unreliable (cleared by Chrome on cross-origin nav).
+// We also check for the Supabase PKCE 'code' param to confirm this is the
+// OAuth callback landing, not just any page load while the marker exists.
+const isPopupAuth =
+  localStorage.getItem('sb-popup-auth') === '1' &&
+  new URLSearchParams(window.location.search).has('code');
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

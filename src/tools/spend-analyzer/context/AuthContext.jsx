@@ -1,11 +1,14 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { supabase, sessionGuardReady } from '../lib/supabase';
 
 const AuthContext = createContext(null);
 
+const POPUP_MARKER_KEY = 'sb-popup-auth';
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(undefined); // undefined = loading, null = signed out
   const [loading, setLoading] = useState(true);
+  const popupWindowRef = useRef(null);
   // 'primary' = account owner, 'linked' = partner with delegated access
   const [role, setRole] = useState('primary');
   // For linked users: the master's user_id used in all data queries
@@ -62,7 +65,7 @@ export function AuthProvider({ children }) {
     let subscription;
 
     sessionGuardReady.then(() => {
-      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange((event, session) => {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
         // Optimistically set effectiveUserId = user.id for primary users so
@@ -70,6 +73,15 @@ export function AuthProvider({ children }) {
         // will override this if the user turns out to be a linked partner.
         setEffectiveUserId(currentUser?.id ?? null);
         loadPartnerStatus(currentUser);
+        // Close the OAuth popup when sign-in completes. The popup may not be
+        // able to close itself (window.name cleared by Chrome cross-origin
+        // privacy rules; window.opener severed by COOP headers), so the
+        // parent does it here using its stored reference.
+        if (event === 'SIGNED_IN' && popupWindowRef.current) {
+          try { popupWindowRef.current.close(); } catch {}
+          popupWindowRef.current = null;
+          localStorage.removeItem(POPUP_MARKER_KEY);
+        }
       });
       subscription = sub;
 
@@ -93,6 +105,14 @@ export function AuthProvider({ children }) {
     const top  = Math.round(window.screenY + (window.outerHeight - h) / 2);
     const popup = window.open('', 'google-signin', `width=${w},height=${h},left=${left},top=${top},scrollbars=yes`);
 
+    // Set a localStorage marker so the popup can identify itself as the OAuth
+    // callback window. window.name is cleared by Chrome on cross-origin
+    // navigation so it's unreliable for this purpose.
+    if (popup) {
+      localStorage.setItem(POPUP_MARKER_KEY, '1');
+      popupWindowRef.current = popup;
+    }
+
     const redirectTo = `${window.location.origin}${window.location.pathname}`;
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -102,6 +122,8 @@ export function AuthProvider({ children }) {
     if (error) {
       console.error('Sign in error:', error.message);
       popup?.close();
+      popupWindowRef.current = null;
+      localStorage.removeItem(POPUP_MARKER_KEY);
       return;
     }
 
@@ -109,6 +131,8 @@ export function AuthProvider({ children }) {
       popup.location.href = data.url;
     } else {
       // Popup was blocked — fall back to a full-page redirect.
+      // Clear the marker so the redirected page doesn't try to close itself.
+      localStorage.removeItem(POPUP_MARKER_KEY);
       window.location.href = data.url;
     }
   }
