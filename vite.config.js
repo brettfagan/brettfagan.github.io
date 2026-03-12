@@ -16,6 +16,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         'spend-analyzer': resolve(__dirname, 'tools/spend-analyzer/index.html'),
+        'spend-analyzer-landing': resolve(__dirname, 'tools/spend-analyzer-landing/index.html'),
       },
     },
   },
