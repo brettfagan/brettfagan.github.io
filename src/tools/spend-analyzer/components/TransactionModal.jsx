@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { fmtDate } from '../lib/format';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useCategories } from '../context/CategoriesContext';
@@ -202,7 +203,7 @@ export default function TransactionModal({ tx, onClose, onReCategorize, onDelete
           </Section>
 
           <Section title="Dates">
-            <Row label="Posted" value={tx.date} />
+            <Row label="Posted" value={fmtDate(tx.date)} />
             <Row label="Datetime" value={tx.datetime ? tx.datetime.replace('T', ' ').replace('Z', ' UTC') : null} />
             <Row label="Authorized date" value={tx.authorized_date || null} />
             <Row label="Authorized datetime" value={tx.authorized_datetime ? tx.authorized_datetime.replace('T', ' ').replace('Z', ' UTC') : null} />

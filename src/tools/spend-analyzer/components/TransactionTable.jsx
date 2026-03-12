@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useCategories } from '../context/CategoriesContext';
-import { fmt, fmtCat } from '../lib/format';
+import { fmt, fmtCat, fmtDate } from '../lib/format';
 import { useDetailLabels } from '../context/DetailLabelsContext';
 import { Button } from '@/components/ui/button';
 
@@ -170,7 +170,7 @@ export default function TransactionTable({ spending, credits, categories, initia
             />
           </td>
         )}
-        <td className={`${tdCls} text-muted-foreground whitespace-nowrap text-xs`}>{tx.date}</td>
+        <td className={`${tdCls} text-muted-foreground whitespace-nowrap text-xs`}>{fmtDate(tx.date)}</td>
         <td className={`${tdCls} font-medium`} title={tx.merchant}>
           <div className="flex items-center gap-2 min-w-0 w-full">
             {(tx.logo_url || tx.cat_icon_url)
