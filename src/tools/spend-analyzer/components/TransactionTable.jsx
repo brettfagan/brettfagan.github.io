@@ -260,10 +260,10 @@ export default function TransactionTable({ spending, credits, categories, initia
         : <>
           {/* ── Pending section ─────────────────────────────────────────── */}
           {pending.length > 0 && (
-            <>
+            <div className="mb-3 border border-amber-200 dark:border-amber-900/50 rounded-lg p-4">
               <div
                 onClick={() => setPendingOpen(o => !o)}
-                className={`text-[11px] font-bold tracking-[2px] uppercase text-amber-600 pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${pendingOpen ? 'mb-2.5' : 'mb-6'}`}
+                className={`text-[11px] font-bold tracking-[2px] uppercase text-amber-600 pb-2 border-b border-amber-200 dark:border-amber-900/50 cursor-pointer select-none flex justify-between items-center ${pendingOpen ? 'mb-2.5' : 'mb-0'}`}
               >
                 <span>
                   Pending{' '}
@@ -275,40 +275,42 @@ export default function TransactionTable({ spending, credits, categories, initia
               {pendingOpen && (
                 <>
                   <table className="w-full border-collapse table-fixed">{colgroup}{thead}<tbody>{pending.map((tx, i) => <TxRow key={i} tx={tx} />)}</tbody></table>
-                  <div className="flex justify-between items-center text-muted-foreground text-[11px] py-2.5 pb-6">
+                  <div className="flex justify-between items-center text-muted-foreground text-[11px] py-2.5">
                     <span>{pending.length} pending transaction{pending.length !== 1 ? 's' : ''}</span>
                     <span className="font-bold text-foreground">{fmt(pending.reduce((s, t) => s + t.amount, 0))}</span>
                   </div>
                 </>
               )}
-            </>
+            </div>
           )}
 
           {/* ── Posted section ──────────────────────────────────────────── */}
-          <div
-            onClick={() => setPostedOpen(o => !o)}
-            className={`text-[11px] font-bold tracking-[2px] uppercase text-primary pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${postedOpen ? 'mb-2.5' : 'mb-0'}`}
-          >
-            <span>
-              Posted{' '}
-              <span className="font-normal text-muted-foreground">{posted.length} transaction{posted.length !== 1 ? 's' : ''}</span>
-              {!postedOpen && <span className="font-normal text-foreground ml-3">{fmt(posted.reduce((s, t) => s + t.amount, 0))}</span>}
-            </span>
-            <span className="text-[9px] opacity-60 tracking-normal">{postedOpen ? '▼ hide' : '▶ show'}</span>
-          </div>
-          {postedOpen && <>
-            {posted.length
-              ? <table className="w-full border-collapse table-fixed">{colgroup}{thead}<tbody>{posted.map((tx, i) => <TxRow key={i} tx={tx} />)}</tbody></table>
-              : <div className="text-muted-foreground py-4">No posted transactions match.</div>
-            }
-            <div className="text-[11px] py-2.5">
-              <div className="flex justify-between items-center text-muted-foreground mb-0.5">
-                <span>{posted.length} posted transaction{posted.length !== 1 ? 's' : ''}</span>
-                <span className="font-bold text-foreground">{fmt(posted.reduce((s, t) => s + t.amount, 0))}</span>
-              </div>
-              <div className="text-muted-foreground">{filtered.length} of {spending.length} total transactions</div>
+          <div className="border border-border rounded-lg p-4">
+            <div
+              onClick={() => setPostedOpen(o => !o)}
+              className={`text-[11px] font-bold tracking-[2px] uppercase text-primary pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${postedOpen ? 'mb-2.5' : 'mb-0'}`}
+            >
+              <span>
+                Posted{' '}
+                <span className="font-normal text-muted-foreground">{posted.length} transaction{posted.length !== 1 ? 's' : ''}</span>
+                {!postedOpen && <span className="font-normal text-foreground ml-3">{fmt(posted.reduce((s, t) => s + t.amount, 0))}</span>}
+              </span>
+              <span className="text-[9px] opacity-60 tracking-normal">{postedOpen ? '▼ hide' : '▶ show'}</span>
             </div>
-          </>}
+            {postedOpen && <>
+              {posted.length
+                ? <table className="w-full border-collapse table-fixed">{colgroup}{thead}<tbody>{posted.map((tx, i) => <TxRow key={i} tx={tx} />)}</tbody></table>
+                : <div className="text-muted-foreground py-4">No posted transactions match.</div>
+              }
+              <div className="text-[11px] py-2.5">
+                <div className="flex justify-between items-center text-muted-foreground mb-0.5">
+                  <span>{posted.length} posted transaction{posted.length !== 1 ? 's' : ''}</span>
+                  <span className="font-bold text-foreground">{fmt(posted.reduce((s, t) => s + t.amount, 0))}</span>
+                </div>
+                <div className="text-muted-foreground">{filtered.length} of {spending.length} total transactions</div>
+              </div>
+            </>}
+          </div>
         </>
       }
 
