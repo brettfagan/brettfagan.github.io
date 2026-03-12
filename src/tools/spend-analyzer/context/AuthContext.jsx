@@ -77,15 +77,7 @@ export function AuthProvider({ children }) {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
         setEffectiveUserId(currentUser?.id ?? null);
-        loadPartnerStatus(currentUser).then(() => {
-          setLoading(false);
-          // If this window is the OAuth popup callback, close it so the
-          // parent window picks up the session via Supabase's cross-tab
-          // localStorage sync / onAuthStateChange.
-          if (new URLSearchParams(window.location.search).has('popup_auth')) {
-            window.close();
-          }
-        });
+        loadPartnerStatus(currentUser).then(() => setLoading(false));
       });
     });
 
