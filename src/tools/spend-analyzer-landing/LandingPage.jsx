@@ -375,13 +375,6 @@ function Nav() {
       }}
     >
       <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 28px', height: '62px', display: 'flex', alignItems: 'center', gap: '32px' }}>
-        <a href="#top" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '9px', flexShrink: 0 }}>
-          <span style={{ fontSize: '17px', lineHeight: 1 }}>💳</span>
-          <span style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 700, fontSize: '15px', color: T.text, letterSpacing: '-0.02em' }}>
-            Spend<span style={{ color: T.jade }}>Analyzer</span>
-          </span>
-        </a>
-
         <div style={{ flex: 1 }} />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
