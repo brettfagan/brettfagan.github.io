@@ -147,7 +147,7 @@ function HeroDashboard() {
               <div style={{ fontSize: '10px', color: T.textMuted, fontFamily: "'DM Sans', sans-serif", marginBottom: '3px' }}>
                 {s.label}
               </div>
-              <div style={{ fontSize: '17px', fontWeight: 700, color: T.text, fontFamily: "'Bricolage Grotesque', sans-serif", letterSpacing: '-0.02em' }}>
+              <div style={{ fontSize: '17px', fontWeight: 700, color: T.text, fontFamily: "'Raleway', sans-serif", letterSpacing: '-0.02em' }}>
                 {s.value}
               </div>
             </div>
@@ -175,7 +175,7 @@ function HeroDashboard() {
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center',
             }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: T.text, fontFamily: "'Bricolage Grotesque', sans-serif", letterSpacing: '-0.02em' }}>$2,847</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: T.text, fontFamily: "'Raleway', sans-serif", letterSpacing: '-0.02em' }}>$2,847</div>
               <div style={{ fontSize: '9px', color: T.textMuted, fontFamily: "'DM Sans', sans-serif" }}>total</div>
             </div>
           </div>
@@ -466,7 +466,7 @@ function Nav() {
       <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 28px', height: '62px', display: 'flex', alignItems: 'center', gap: '32px' }}>
         <a href="#top" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '9px', flexShrink: 0 }}>
           <span style={{ fontSize: '17px', lineHeight: 1 }}>💳</span>
-          <span style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 700, fontSize: '15px', color: T.text, letterSpacing: '-0.025em' }}>
+          <span style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 700, fontSize: '15px', color: T.text, letterSpacing: '-0.025em' }}>
             Spend<span style={{ color: T.jade }}>Analyzer</span>
           </span>
         </a>
@@ -528,9 +528,9 @@ function Hero() {
         pointerEvents: 'none',
       }} />
 
-      <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 28px', display: 'flex', alignItems: 'center', gap: '56px' }}>
+      <div className="hero-layout" style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 28px', display: 'flex', alignItems: 'center', gap: '56px', flexWrap: 'wrap' }}>
         {/* Left */}
-        <div style={{ flex: '0 0 auto', maxWidth: '460px' }}>
+        <div className="hero-left" style={{ flex: '1 1 300px', maxWidth: '460px' }}>
           <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
             <Pill>Personal Finance · Built for clarity</Pill>
           </motion.div>
@@ -541,7 +541,7 @@ function Hero() {
             initial="hidden"
             animate="visible"
             style={{
-              fontFamily: "'Bricolage Grotesque', sans-serif",
+              fontFamily: "'Raleway', sans-serif",
               fontWeight: 800,
               fontSize: 'clamp(38px, 4.8vw, 60px)',
               lineHeight: 1.04,
@@ -648,7 +648,8 @@ function Hero() {
           initial={{ opacity: 0, x: 36, y: 8 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
           transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1], delay: 0.28 }}
-          style={{ flex: 1, minWidth: 0, display: 'flex', justifyContent: 'flex-end' }}
+          className="hero-mockup"
+          style={{ flex: '1 1 400px', minWidth: 0, display: 'flex', justifyContent: 'flex-end' }}
         >
           <HeroDashboard />
         </motion.div>
@@ -684,7 +685,7 @@ function FeaturesSection() {
           <motion.h2
             variants={fadeUp}
             style={{
-              fontFamily: "'Bricolage Grotesque', sans-serif",
+              fontFamily: "'Raleway', sans-serif",
               fontWeight: 700,
               fontSize: 'clamp(30px, 4vw, 44px)',
               color: T.text,
@@ -706,6 +707,7 @@ function FeaturesSection() {
           initial="hidden"
           animate={inView ? 'visible' : 'hidden'}
           variants={staggerContainer(0.07, 0.2)}
+          className="features-grid"
           style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}
         >
           {FEATURES.map(f => (
@@ -733,7 +735,7 @@ function FeaturesSection() {
             >
               <div style={{ fontSize: '22px', marginBottom: '10px', lineHeight: 1 }}>{f.icon}</div>
               <h3 style={{
-                fontFamily: "'Bricolage Grotesque', sans-serif",
+                fontFamily: "'Raleway', sans-serif",
                 fontWeight: 600,
                 fontSize: '15px',
                 color: T.text,
@@ -807,7 +809,7 @@ function HowItWorksSection() {
           <motion.h2
             variants={fadeUp}
             style={{
-              fontFamily: "'Bricolage Grotesque', sans-serif",
+              fontFamily: "'Raleway', sans-serif",
               fontWeight: 700,
               fontSize: 'clamp(30px, 4vw, 44px)',
               color: T.text,
@@ -822,6 +824,7 @@ function HowItWorksSection() {
           initial="hidden"
           animate={inView ? 'visible' : 'hidden'}
           variants={staggerContainer(0.14, 0.2)}
+          className="how-it-works-grid"
           style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', position: 'relative' }}
         >
           {/* Connector line */}
@@ -857,11 +860,11 @@ function HowItWorksSection() {
                 {s.icon}
               </div>
 
-              <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '11px', color: T.jade, fontWeight: 700, letterSpacing: '0.12em', marginBottom: '8px' }}>
+              <div style={{ fontFamily: "'Raleway', sans-serif", fontSize: '11px', color: T.jade, fontWeight: 700, letterSpacing: '0.12em', marginBottom: '8px' }}>
                 {s.num}
               </div>
               <h3 style={{
-                fontFamily: "'Bricolage Grotesque', sans-serif",
+                fontFamily: "'Raleway', sans-serif",
                 fontWeight: 600,
                 fontSize: '18px',
                 color: T.text,
@@ -917,7 +920,7 @@ function CtaSection() {
 
           <div style={{ position: 'relative' }}>
             <h2 style={{
-              fontFamily: "'Bricolage Grotesque', sans-serif",
+              fontFamily: "'Raleway', sans-serif",
               fontWeight: 800,
               fontSize: 'clamp(30px, 4.5vw, 50px)',
               color: T.text,
@@ -1021,6 +1024,19 @@ export default function LandingPage() {
         *, *::before, *::after { box-sizing: border-box; }
         body { margin: 0; background: ${T.bg}; }
         ::selection { background: ${T.jade}28; color: ${T.jade}; }
+
+        @media (max-width: 767px) {
+          .hero-layout { flex-direction: column !important; align-items: flex-start !important; gap: 40px !important; }
+          .hero-left { max-width: 100% !important; }
+          .hero-mockup { display: none !important; }
+          .features-grid { grid-template-columns: 1fr !important; }
+          .how-it-works-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .hero-mockup { flex: 1 1 100% !important; justify-content: center !important; }
+          .features-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .how-it-works-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
       `}</style>
 
       <Nav />
