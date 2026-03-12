@@ -60,6 +60,7 @@ export default function MyBudgetPage() {
   const [showHidden, setShowHidden] = useState(false);
   const [confirmModal, setConfirmModal] = useState(null); // { key, label }
   const [totalBudget, setTotalBudget] = useState('');
+  const [editingTotal, setEditingTotal] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -81,7 +82,10 @@ export default function MyBudgetPage() {
     const map = {};
     for (const row of data || []) {
       if (row.category === '__total__') {
-        setTotalBudget(row.amount != null ? String(row.amount) : '');
+        if (row.amount != null) {
+          setTotalBudget(String(row.amount));
+          setEditingTotal(false);
+        }
         continue;
       }
       const key = itemKey(row.category, row.subcategory);
@@ -187,6 +191,7 @@ export default function MyBudgetPage() {
     setSaving(false);
     setDirty(false);
     setSaveSuccess(true);
+    if (totalBudget !== '') setEditingTotal(false);
     setTimeout(() => setSaveSuccess(false), 2500);
   }
 
@@ -383,23 +388,38 @@ export default function MyBudgetPage() {
             <div className="pb-1.5 text-[10px] invisible select-none" aria-hidden="true">X</div>
             <div className="sticky top-4">
             <div className="border border-border rounded-lg bg-card p-4 flex flex-col gap-4">
-              {/* Total Budget Amount input */}
+              {/* Total Budget Amount */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-[1px] text-muted-foreground">
+                <span className="text-[10px] font-bold uppercase tracking-[1px] text-muted-foreground">
                   Total Budget
-                </label>
-                <div className={amountWrapCls}>
-                  <span className="text-xs text-muted-foreground shrink-0 select-none">$</span>
-                  <input
-                    type="number"
-                    className={amountInputCls}
-                    min="0"
-                    step="0.01"
-                    placeholder="—"
-                    value={totalBudget}
-                    onChange={e => { setTotalBudget(e.target.value); setDirty(true); }}
-                  />
-                </div>
+                </span>
+                {editingTotal ? (
+                  <div className={amountWrapCls}>
+                    <span className="text-xs text-muted-foreground shrink-0 select-none">$</span>
+                    <input
+                      type="number"
+                      className={amountInputCls}
+                      min="0"
+                      step="0.01"
+                      placeholder="—"
+                      value={totalBudget}
+                      onChange={e => { setTotalBudget(e.target.value); setDirty(true); }}
+                      autoFocus
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm font-bold text-foreground">
+                      ${parseFloat(totalBudget).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <button
+                      className="text-[10px] text-muted-foreground hover:text-foreground transition-colors bg-transparent border-0 cursor-pointer p-0 underline underline-offset-2"
+                      onClick={() => setEditingTotal(true)}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Divider */}
