@@ -59,6 +59,7 @@ export default function MyBudgetPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showHidden, setShowHidden] = useState(false);
   const [confirmModal, setConfirmModal] = useState(null); // { key, label }
+  const [totalBudget, setTotalBudget] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -79,6 +80,10 @@ export default function MyBudgetPage() {
     }
     const map = {};
     for (const row of data || []) {
+      if (row.category === '__total__') {
+        setTotalBudget(row.amount != null ? String(row.amount) : '');
+        continue;
+      }
       const key = itemKey(row.category, row.subcategory);
       map[key] = {
         amount: row.amount != null ? String(row.amount) : '',
@@ -156,6 +161,16 @@ export default function MyBudgetPage() {
         hidden,
       });
     }
+    // Persist the total budget amount as a special sentinel row
+    if (totalBudget !== '') {
+      rows.push({
+        user_id: user.id,
+        category: '__total__',
+        subcategory: '',
+        amount: parseFloat(totalBudget),
+        hidden: false,
+      });
+    }
 
     // Replace all budget items for this user atomically
     const { error: delErr } = await supabase
@@ -180,25 +195,19 @@ export default function MyBudgetPage() {
     .filter(([, v]) => v.hidden)
     .map(([key]) => key);
 
+  // Sum of all non-hidden amounts entered across categories and subcategories
+  const budgetedTotal = Object.entries(budgetMap)
+    .filter(([, v]) => !v.hidden && v.amount !== '')
+    .reduce((sum, [, v]) => sum + parseFloat(v.amount || 0), 0);
+
+  const remaining = totalBudget !== '' ? parseFloat(totalBudget) - budgetedTotal : null;
+
   return (
     <>
       {/* ── Page heading ──────────────────────────────────────────────── */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h2 className="text-[22px] font-extrabold tracking-[-0.3px] text-foreground">My Budget</h2>
-          <p className="text-xs text-muted-foreground mt-1">Set monthly spending targets for each category.</p>
-        </div>
-        <div className="flex items-center gap-3 shrink-0">
-          {saveSuccess && <span className="text-xs font-bold text-emerald-600">Saved!</span>}
-          {error && <span className="text-[11px] text-destructive max-w-55">{error}</span>}
-          <Button
-            onClick={handleSave}
-            disabled={saving || !dirty}
-            className="text-[11px] font-bold"
-          >
-            {saving ? 'Saving…' : 'Save Budget'}
-          </Button>
-        </div>
+      <div className="mb-6">
+        <h2 className="text-[22px] font-extrabold tracking-[-0.3px] text-foreground">My Budget</h2>
+        <p className="text-xs text-muted-foreground mt-1">Set monthly spending targets for each category.</p>
       </div>
 
       {loading && (
@@ -206,165 +215,227 @@ export default function MyBudgetPage() {
       )}
 
       {!loading && (
-        <>
-          {/* ── Column headers ────────────────────────────────────────── */}
-          <div className={`${rowColsCls} pb-1.5 text-[10px] font-bold uppercase tracking-[1px] text-muted-foreground`}>
-            <div />
-            <div>Category</div>
-            <div className="text-right">Monthly Budget</div>
-            <div />
-          </div>
+        <div className="flex items-start gap-6">
+          {/* ── Left: category list ───────────────────────────────────── */}
+          <div className="flex-1 min-w-0">
+            {/* ── Column headers ──────────────────────────────────────── */}
+            <div className={`${rowColsCls} pb-1.5 text-[10px] font-bold uppercase tracking-[1px] text-muted-foreground`}>
+              <div />
+              <div>Category</div>
+              <div className="text-right">Monthly Budget</div>
+              <div />
+            </div>
 
-          {/* ── Category list ─────────────────────────────────────────── */}
-          <div className="flex flex-col gap-1">
-            {visibleCategories.map(cat => {
-              const catKey = cat.key;
-              const catItem = getItem(catKey);
-              const isExpanded = expanded.has(catKey);
-              const subcats = SUBCATEGORIES[catKey] || [];
-              const visibleSubcats = subcats.filter(
-                s => !getItem(itemKey(catKey, s)).hidden
-              );
+            {/* ── Category list ───────────────────────────────────────── */}
+            <div className="flex flex-col gap-1">
+              {visibleCategories.map(cat => {
+                const catKey = cat.key;
+                const catItem = getItem(catKey);
+                const isExpanded = expanded.has(catKey);
+                const subcats = SUBCATEGORIES[catKey] || [];
+                const visibleSubcats = subcats.filter(
+                  s => !getItem(itemKey(catKey, s)).hidden
+                );
 
-              return (
-                <div key={catKey} className="border border-border rounded-md overflow-hidden">
-                  {/* Category row */}
-                  <div className={`${rowColsCls} bg-background min-h-11`}>
-                    <div
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ background: getCatColor(catKey) }}
-                    />
-                    <div className="text-[13px] font-semibold">{getCatLabel(catKey)}</div>
-                    <div className="flex justify-end">
-                      <div className={amountWrapCls}>
-                        <span className="text-xs text-muted-foreground shrink-0 select-none">$</span>
-                        <input
-                          type="number"
-                          className={amountInputCls}
-                          min="0"
-                          step="0.01"
-                          placeholder="—"
-                          value={catItem.amount}
-                          onChange={e => setAmount(catKey, e.target.value)}
-                        />
+                return (
+                  <div key={catKey} className="border border-border rounded-md overflow-hidden">
+                    {/* Category row */}
+                    <div className={`${rowColsCls} bg-background min-h-11`}>
+                      <div
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ background: getCatColor(catKey) }}
+                      />
+                      <div className="text-[13px] font-semibold">{getCatLabel(catKey)}</div>
+                      <div className="flex justify-end">
+                        <div className={amountWrapCls}>
+                          <span className="text-xs text-muted-foreground shrink-0 select-none">$</span>
+                          <input
+                            type="number"
+                            className={amountInputCls}
+                            min="0"
+                            step="0.01"
+                            placeholder="—"
+                            value={catItem.amount}
+                            onChange={e => setAmount(catKey, e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div className={rowActionsCls}>
+                        {subcats.length > 0 && (
+                          <button
+                            className={iconBtnCls}
+                            onClick={() => toggleExpanded(catKey)}
+                            title={isExpanded ? 'Collapse subcategories' : 'Expand subcategories'}
+                          >
+                            <span className={`inline-block text-[14px] transition-transform duration-200${isExpanded ? ' rotate-90' : ''}`}>›</span>
+                            <span className="text-[10px] uppercase tracking-[0.5px]">
+                              {isExpanded ? 'Less' : 'Subcategories'}
+                            </span>
+                          </button>
+                        )}
+                        <button
+                          className={deleteBtnCls}
+                          onClick={() => requestHide(catKey, getCatLabel(catKey))}
+                          title="Remove from budget"
+                        >
+                          ×
+                        </button>
                       </div>
                     </div>
-                    <div className={rowActionsCls}>
-                      {subcats.length > 0 && (
-                        <button
-                          className={iconBtnCls}
-                          onClick={() => toggleExpanded(catKey)}
-                          title={isExpanded ? 'Collapse subcategories' : 'Expand subcategories'}
-                        >
-                          <span className={`inline-block text-[14px] transition-transform duration-200${isExpanded ? ' rotate-90' : ''}`}>›</span>
-                          <span className="text-[10px] uppercase tracking-[0.5px]">
-                            {isExpanded ? 'Less' : 'Subcategories'}
-                          </span>
-                        </button>
-                      )}
-                      <button
-                        className={deleteBtnCls}
-                        onClick={() => requestHide(catKey, getCatLabel(catKey))}
-                        title="Remove from budget"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </div>
 
-                  {/* Subcategory rows */}
-                  {isExpanded && (
-                    <div>
-                      {visibleSubcats.map(sub => {
-                        const subKey = itemKey(catKey, sub);
-                        const subItem = getItem(subKey);
-                        return (
-                          <div key={subKey} className={`${rowColsCls} bg-muted border-t border-border min-h-11`}>
-                            <div />
-                            <div className="text-xs text-muted-foreground pl-2.5">{fmtSubcat(sub)}</div>
-                            <div className="flex justify-end">
-                              <div className={amountWrapCls}>
-                                <span className="text-xs text-muted-foreground shrink-0 select-none">$</span>
-                                <input
-                                  type="number"
-                                  className={amountInputCls}
-                                  min="0"
-                                  step="0.01"
-                                  placeholder="—"
-                                  value={subItem.amount}
-                                  onChange={e => setAmount(subKey, e.target.value)}
-                                />
+                    {/* Subcategory rows */}
+                    {isExpanded && (
+                      <div>
+                        {visibleSubcats.map(sub => {
+                          const subKey = itemKey(catKey, sub);
+                          const subItem = getItem(subKey);
+                          return (
+                            <div key={subKey} className={`${rowColsCls} bg-muted border-t border-border min-h-11`}>
+                              <div />
+                              <div className="text-xs text-muted-foreground pl-2.5">{fmtSubcat(sub)}</div>
+                              <div className="flex justify-end">
+                                <div className={amountWrapCls}>
+                                  <span className="text-xs text-muted-foreground shrink-0 select-none">$</span>
+                                  <input
+                                    type="number"
+                                    className={amountInputCls}
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="—"
+                                    value={subItem.amount}
+                                    onChange={e => setAmount(subKey, e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                              <div className={rowActionsCls}>
+                                <button
+                                  className={deleteBtnCls}
+                                  onClick={() =>
+                                    requestHide(
+                                      subKey,
+                                      `${getCatLabel(catKey)} › ${fmtSubcat(sub)}`
+                                    )
+                                  }
+                                  title="Remove from budget"
+                                >
+                                  ×
+                                </button>
                               </div>
                             </div>
-                            <div className={rowActionsCls}>
-                              <button
-                                className={deleteBtnCls}
-                                onClick={() =>
-                                  requestHide(
-                                    subKey,
-                                    `${getCatLabel(catKey)} › ${fmtSubcat(sub)}`
-                                  )
-                                }
-                                title="Remove from budget"
-                              >
-                                ×
-                              </button>
+                          );
+                        })}
+
+                        {visibleSubcats.length === 0 && (
+                          <div className={`${rowColsCls} bg-muted border-t border-border min-h-11`}>
+                            <div />
+                            <div className="col-span-3 text-[11px] text-muted-foreground italic">
+                              All subcategories hidden.
                             </div>
                           </div>
-                        );
-                      })}
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
 
-                      {visibleSubcats.length === 0 && (
-                        <div className={`${rowColsCls} bg-muted border-t border-border min-h-11`}>
-                          <div />
-                          <div className="col-span-3 text-[11px] text-muted-foreground italic">
-                            All subcategories hidden.
-                          </div>
+            {/* ── Hidden items ────────────────────────────────────────── */}
+            {hiddenItems.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <button
+                  className="flex items-center gap-1.5 bg-transparent border-0 cursor-pointer text-[11px] font-bold uppercase tracking-[0.5px] text-muted-foreground p-0 hover:text-foreground transition-colors"
+                  onClick={() => setShowHidden(p => !p)}
+                >
+                  <span className={`inline-block text-[14px] transition-transform duration-200${showHidden ? ' rotate-90' : ''}`}>›</span>
+                  Hidden ({hiddenItems.length})
+                </button>
+                {showHidden && (
+                  <div className="mt-2.5 flex flex-col">
+                    {hiddenItems.map(key => {
+                      const { category, subcategory } = parseKey(key);
+                      const label = subcategory
+                        ? `${getCatLabel(category)} › ${fmtSubcat(subcategory)}`
+                        : getCatLabel(category);
+                      return (
+                        <div key={key} className="flex items-center justify-between py-2 text-xs text-muted-foreground border-b border-border last:border-b-0">
+                          <span>{label}</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => restoreItem(key)}
+                            className="text-[10px] font-bold py-1 px-2.5 h-auto"
+                          >
+                            Restore
+                          </Button>
                         </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* ── Hidden items ──────────────────────────────────────────── */}
-          {hiddenItems.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-border">
-              <button
-                className="flex items-center gap-1.5 bg-transparent border-0 cursor-pointer text-[11px] font-bold uppercase tracking-[0.5px] text-muted-foreground p-0 hover:text-foreground transition-colors"
-                onClick={() => setShowHidden(p => !p)}
-              >
-                <span className={`inline-block text-[14px] transition-transform duration-200${showHidden ? ' rotate-90' : ''}`}>›</span>
-                Hidden ({hiddenItems.length})
-              </button>
-              {showHidden && (
-                <div className="mt-2.5 flex flex-col">
-                  {hiddenItems.map(key => {
-                    const { category, subcategory } = parseKey(key);
-                    const label = subcategory
-                      ? `${getCatLabel(category)} › ${fmtSubcat(subcategory)}`
-                      : getCatLabel(category);
-                    return (
-                      <div key={key} className="flex items-center justify-between py-2 text-xs text-muted-foreground border-b border-border last:border-b-0">
-                        <span>{label}</span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => restoreItem(key)}
-                          className="text-[10px] font-bold py-1 px-2.5 h-auto"
-                        >
-                          Restore
-                        </Button>
-                      </div>
-                    );
-                  })}
+          {/* ── Right: budget summary card ────────────────────────────── */}
+          <div className="w-56 shrink-0 sticky top-4">
+            <div className="border border-border rounded-lg bg-card p-4 flex flex-col gap-4">
+              {/* Total Budget Amount input */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-[1px] text-muted-foreground">
+                  Total Budget
+                </label>
+                <div className={amountWrapCls}>
+                  <span className="text-xs text-muted-foreground shrink-0 select-none">$</span>
+                  <input
+                    type="number"
+                    className={amountInputCls}
+                    min="0"
+                    step="0.01"
+                    placeholder="—"
+                    value={totalBudget}
+                    onChange={e => { setTotalBudget(e.target.value); setDirty(true); }}
+                  />
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-border" />
+
+              {/* Budgeted total */}
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-[1px] text-muted-foreground">Budgeted</span>
+                <span className="text-sm font-bold text-foreground">
+                  ${budgetedTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+
+              {/* Remaining (only shown when total is set) */}
+              {remaining !== null && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-[1px] text-muted-foreground">Remaining</span>
+                  <span className={`text-sm font-bold ${remaining < 0 ? 'text-destructive' : 'text-emerald-600'}`}>
+                    ${Math.abs(remaining).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {remaining < 0 ? ' over' : ''}
+                  </span>
                 </div>
               )}
+
+              {/* Feedback */}
+              {saveSuccess && <span className="text-xs font-bold text-emerald-600">Saved!</span>}
+              {error && <span className="text-[11px] text-destructive">{error}</span>}
+
+              {/* Save button */}
+              <Button
+                onClick={handleSave}
+                disabled={saving || !dirty}
+                className="w-full text-[11px] font-bold"
+              >
+                {saving ? 'Saving…' : 'Save Budget'}
+              </Button>
             </div>
-          )}
-        </>
+          </div>
+        </div>
       )}
 
       {/* ── Confirmation modal ────────────────────────────────────────── */}
