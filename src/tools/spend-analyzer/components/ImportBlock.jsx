@@ -84,7 +84,7 @@ export default function ImportBlock({ card, onLoad, onClear, rules = [] }) {
   }
 
   return (
-    <div className={`rounded-lg border overflow-hidden transition-colors ${loaded ? 'border-primary' : 'border-border'}`}>
+    <div className={`rounded-lg border overflow-hidden transition-colors bg-card ${loaded ? 'border-primary' : 'border-border'}`}>
       <div
         className={`flex items-center justify-between px-3.5 py-1.75 cursor-pointer select-none transition-colors hover:bg-black/3 dark:hover:bg-white/3 bg-muted/40 ${open ? 'border-b border-border' : ''}`}
         onClick={() => setOpen(o => !o)}
