@@ -241,7 +241,7 @@ export default function SpendAnalyzer() {
         <div className="flex items-center gap-2.5">
           <span style={{ fontSize: '22px', lineHeight: 1 }}>💳</span>
           <span style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 800, fontSize: '20px', letterSpacing: '-0.03em', lineHeight: 1 }}>
-            Spend<span style={{ color: 'var(--primary)' }}>Analyzer</span>
+            Spend<span style={{ color: '#10d9a0' }}>Analyzer</span>
           </span>
         </div>
         <div className="flex items-center">
