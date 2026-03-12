@@ -198,7 +198,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
 
       {/* ── Add connection form ─────────────────────────────────────────────── */}
       {showAdd && (
-        <div className="bg-background border border-border rounded-lg p-3 mb-2 flex flex-col gap-2">
+        <div className="bg-card border border-border rounded-lg p-3 mb-2 flex flex-col gap-2">
           <input
             type="text"
             placeholder="Card name (e.g. Chase Sapphire)"
@@ -247,7 +247,7 @@ export default function PlaidConnectionsSection({ onLoad, onClear, onSync }) {
           <div
             key={conn.id}
             className={`rounded-lg px-3 py-2.5 mb-1.5 border transition-colors ${
-              isLoaded ? 'bg-emerald-600/6 border-primary' : 'bg-background border-border'
+              isLoaded ? 'bg-emerald-600/6 border-primary' : 'bg-card border-border'
             }`}
           >
             <div className={`flex justify-between items-center${isLoaded ? '' : ' mb-2'}`}>
