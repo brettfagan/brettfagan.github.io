@@ -1,3 +1,11 @@
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useAuth } from '../context/AuthContext';
 
 export default function AuthButton() {
@@ -18,25 +26,40 @@ export default function AuthButton() {
   }
 
   return (
-    <div className="flex items-center gap-2.5">
-      {user.user_metadata?.avatar_url && (
-        <img
-          className="w-7 h-7 rounded-full border border-border shrink-0"
-          src={user.user_metadata.avatar_url}
-          alt={user.user_metadata?.full_name ?? 'User avatar'}
-          referrerPolicy="no-referrer"
-        />
-      )}
-      <span className="text-xs text-muted-foreground max-w-45 overflow-hidden text-ellipsis whitespace-nowrap">
-        {user.user_metadata?.full_name ?? user.email}
-      </span>
-      <button
-        className="inline-flex items-center gap-2 border border-border rounded-md text-[11px] font-bold px-2.5 py-1.25 cursor-pointer transition-all bg-transparent text-muted-foreground hover:border-destructive hover:text-destructive whitespace-nowrap"
-        onClick={signOut}
-      >
-        Sign out
-      </button>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2 rounded-md px-2 py-1 cursor-pointer transition-colors hover:bg-muted bg-transparent border-0 outline-none">
+          {user.user_metadata?.avatar_url && (
+            <img
+              className="w-7 h-7 rounded-full border border-border shrink-0"
+              src={user.user_metadata.avatar_url}
+              alt={user.user_metadata?.full_name ?? 'User avatar'}
+              referrerPolicy="no-referrer"
+            />
+          )}
+          <span className="text-xs text-muted-foreground max-w-45 overflow-hidden text-ellipsis whitespace-nowrap">
+            {user.user_metadata?.full_name ?? user.email}
+          </span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-48">
+        <DropdownMenuLabel className="font-normal">
+          <p className="text-xs font-semibold text-foreground truncate">
+            {user.user_metadata?.full_name ?? 'Account'}
+          </p>
+          <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+            {user.email}
+          </p>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+          onClick={signOut}
+        >
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
