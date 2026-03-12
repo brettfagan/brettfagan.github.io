@@ -30,7 +30,7 @@ export default function CategoryBreakdown({
   }
 
   return (
-    <div className="mb-9">
+    <div className="bg-card border border-border rounded-lg p-5 mb-9">
       <div className="text-[11px] font-bold tracking-[2px] uppercase text-muted-foreground mb-3.5 pb-2.5 border-b border-border">
         Spending by Category
         {pendingCount > 0 && (

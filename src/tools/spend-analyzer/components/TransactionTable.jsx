@@ -113,7 +113,7 @@ export default function TransactionTable({ spending, credits, categories, initia
   }, [initialCatFilter, initialDetailFilter, selectionClearToken]);
 
   // ── Shared class strings ───────────────────────────────────────────────────
-  const ctrlCls = "bg-muted border border-border rounded text-xs py-1.5 px-3 outline-none cursor-pointer text-foreground";
+  const ctrlCls = "bg-card border border-border rounded text-xs py-1.5 px-3 outline-none cursor-pointer text-foreground";
   const thCls   = "text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground text-left px-3 py-2 border-b border-border cursor-pointer select-none whitespace-nowrap overflow-hidden hover:text-foreground";
   const tdCls   = "px-3 py-1.5 border-b border-border align-middle overflow-hidden group-hover:bg-black/2 dark:group-hover:bg-white/3";
 
