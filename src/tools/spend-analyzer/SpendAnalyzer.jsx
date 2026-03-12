@@ -13,6 +13,7 @@ import SettingsPage from './components/SettingsPage';
 import MySpendingPage from './components/MySpendingPage';
 import MyBudgetPage from './components/MyBudgetPage';
 import BulkUpdateDialog from './components/BulkUpdateDialog';
+import DemoTour from './components/DemoTour';
 
 export default function SpendAnalyzer() {
   const { user, loading, role } = useAuth();
@@ -26,6 +27,8 @@ export default function SpendAnalyzer() {
   const [inviteError, setInviteError] = useState(null);
 
   const isLinked = role === 'linked';
+  const [isDemo, setIsDemo] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   // ── Invite token detection ────────────────────────────────────────────────
   // On mount: stash any ?invite=<token> in localStorage before OAuth redirect
@@ -97,6 +100,17 @@ export default function SpendAnalyzer() {
   useEffect(() => {
     if (!loading && !user) setPage('analyzer');
   }, [user, loading]);
+
+  // When a user signs in from demo mode, clear demo state so they get the normal
+  // post-login experience (My Spending, Settings, etc.) rather than staying in demo UI.
+  useEffect(() => {
+    if (user && isDemo) {
+      setIsDemo(false);
+      setShowTour(false);
+      setResults(null);
+      setLoadedData({});
+    }
+  }, [user]);
 
   const handleLoad = useCallback((cardId, txns) => {
     setLoadedData(prev => ({ ...prev, [cardId]: txns }));
@@ -171,10 +185,33 @@ export default function SpendAnalyzer() {
     setResults(prev => prev.filter(tx => tx._id !== id));
   }, []);
 
+  async function loadDemo(sources) {
+    const newData = {};
+    if (sources.includes('credit-card')) {
+      const { default: txns } = await import('./demo/credit-card.json');
+      newData['Demo Credit Card'] = txns;
+    }
+    if (sources.includes('checking-account')) {
+      const { default: txns } = await import('./demo/checking-account.json');
+      newData['Demo Checking Account'] = txns;
+    }
+    const all = [];
+    let idx = 0;
+    Object.entries(newData).forEach(([id, txns]) => {
+      txns.forEach(tx => all.push({ ...tx, _card: id, _id: idx++ }));
+    });
+    setLoadedData(newData);
+    setResults(all);
+    setIsDemo(true);
+    setShowTour(true);
+  }
+
   function handleStartOver() {
     setLoadedData({});
     setResults(null);
     setSidebarKey(k => k + 1);
+    setIsDemo(false);
+    setShowTour(false);
   }
 
   // Linked users only see my-spending and my-budget
@@ -189,9 +226,14 @@ export default function SpendAnalyzer() {
           { id: 'my-spending', label: 'My Spending' },
           { id: 'my-budget',   label: 'My Budget'   },
         ]
-    : [];
+    : isDemo
+      ? [
+          { id: 'analyzer',  label: 'Analyzer' },
+          { id: 'my-budget', label: 'Budget'   },
+        ]
+      : [];
 
-  const isFull = isLinked || ['my-spending', 'my-budget', 'settings'].includes(page);
+  const isFull = isLinked || (!user && !isDemo) || ['my-spending', 'my-budget', 'settings'].includes(page);
 
   return (
     <>
@@ -201,7 +243,7 @@ export default function SpendAnalyzer() {
           <span className="text-muted-foreground text-xs">BrettLabs</span>
         </div>
         <div className="flex items-center">
-          {user && (
+          {(user || isDemo) && (
             <nav className="flex gap-0.5 mr-3">
               {visibleTabs.map(({ id, label }) => (
                 <button
@@ -225,7 +267,7 @@ export default function SpendAnalyzer() {
           >
             {resolvedTheme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
-          {user && !isLinked && (
+          {user && !isLinked && !isDemo && (
             <button
               onClick={() => setPage('settings')}
               className={`flex items-center justify-center w-8 h-8 rounded-md transition-colors mr-2 ${
@@ -250,7 +292,7 @@ export default function SpendAnalyzer() {
       )}
 
       <div className={`grid min-h-[calc(100vh-89px)] ${isFull ? 'grid-cols-1' : 'grid-cols-[260px_1fr]'}`}>
-        {page === 'analyzer' && !isLinked && (
+        {page === 'analyzer' && !isLinked && !isDemo && user && (
           <ImportSidebar
             key={sidebarKey}
             loadedCount={Object.keys(loadedData).length}
@@ -261,6 +303,9 @@ export default function SpendAnalyzer() {
             onStartOver={handleStartOver}
           />
         )}
+        {page === 'analyzer' && isDemo && (
+          <DemoSidebar loadedData={loadedData} onExit={handleStartOver} />
+        )}
 
         {page === 'my-spending' ? (
           <div className="px-9 py-7 overflow-y-auto">
@@ -268,7 +313,7 @@ export default function SpendAnalyzer() {
           </div>
         ) : page === 'my-budget' ? (
           <div className="px-9 py-7 overflow-y-auto">
-            <MyBudgetPage />
+            <MyBudgetPage demoTransactions={isDemo ? results : null} />
           </div>
         ) : page === 'settings' && !isLinked ? (
           <SettingsPage />
@@ -278,14 +323,15 @@ export default function SpendAnalyzer() {
               <ResultsView allTransactions={results} onReCategorize={handleReCategorize} onDeleteTransaction={handleDeleteTransaction} />
             ) : (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground text-center">
-                <div className="text-[40px]">◈</div>
-                <p style={{ maxWidth: '300px', lineHeight: 1.8 }}>
-                  Import data from one or more cards via Plaid JSON or CSV, then click Analyze.
-                </p>
-                {!loading && !user && (
-                  <p style={{ maxWidth: '300px', lineHeight: 1.8, marginTop: '12px', fontSize: '11px' }}>
-                    Sign in to save imports and manage categories.
-                  </p>
+                {!loading && !user ? (
+                  <DemoPanel onLoad={loadDemo} />
+                ) : (
+                  <>
+                    <div className="text-[40px]">◈</div>
+                    <p style={{ maxWidth: '300px', lineHeight: 1.8 }}>
+                      Import data from one or more cards via Plaid JSON or CSV, then click Analyze.
+                    </p>
+                  </>
                 )}
               </div>
             )}
@@ -309,6 +355,162 @@ export default function SpendAnalyzer() {
           onClose={() => setBulkDialog(null)}
         />
       )}
+
+      {isDemo && showTour && (
+        <DemoTour
+          onDismiss={() => setShowTour(false)}
+          onNavigate={setPage}
+        />
+      )}
     </>
+  );
+}
+
+// ── Demo Panel ── shown in the unauthenticated empty state ────────────────────
+function DemoPanel({ onLoad }) {
+  const [sources, setSources] = useState(['credit-card', 'checking-account']);
+  const [loading, setLoading] = useState(false);
+
+  function toggle(src) {
+    setSources(prev =>
+      prev.includes(src) ? prev.filter(s => s !== src) : [...prev, src]
+    );
+  }
+
+  async function handleLoad() {
+    if (sources.length === 0) return;
+    setLoading(true);
+    await onLoad(sources);
+    setLoading(false);
+  }
+
+  return (
+    <div style={{
+      maxWidth: '360px', width: '100%', textAlign: 'left',
+      border: '1px solid var(--border)', borderRadius: '12px',
+      padding: '28px 28px 24px', background: 'var(--background)',
+      boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+    }}>
+      <div style={{ fontSize: '28px', marginBottom: '14px' }}>🧪</div>
+      <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--foreground)', marginBottom: '6px' }}>
+        Explore with demo data
+      </h3>
+      <p style={{ fontSize: '12px', color: 'var(--muted-foreground)', lineHeight: 1.7, marginBottom: '20px' }}>
+        See Spend Analyzer in action with 3 months of sample transactions across two accounts.
+      </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+        {[
+          { id: 'credit-card', label: 'Sample Credit Card', count: 175, icon: '💳' },
+          { id: 'checking-account', label: 'Sample Checking Account', count: 100, icon: '🏦' },
+        ].map(({ id, label, count, icon }) => {
+          const checked = sources.includes(id);
+          return (
+            <button
+              key={id}
+              onClick={() => toggle(id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                padding: '9px 12px', borderRadius: '8px', cursor: 'pointer',
+                border: `1px solid ${checked ? 'var(--primary)' : 'var(--border)'}`,
+                background: checked ? 'color-mix(in srgb, var(--primary) 6%, transparent)' : 'var(--muted)',
+                transition: 'all 0.15s',
+                width: '100%', textAlign: 'left',
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>{icon}</span>
+              <span style={{ flex: 1, fontSize: '12px', fontWeight: 600, color: 'var(--foreground)' }}>{label}</span>
+              <span style={{ fontSize: '11px', color: 'var(--muted-foreground)' }}>{count} txns</span>
+              <span style={{
+                width: '15px', height: '15px', borderRadius: '4px', flexShrink: 0,
+                border: `1.5px solid ${checked ? 'var(--primary)' : 'var(--border)'}`,
+                background: checked ? 'var(--primary)' : 'transparent',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontSize: '9px', fontWeight: 800,
+              }}>
+                {checked ? '✓' : ''}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <button
+        onClick={handleLoad}
+        disabled={sources.length === 0 || loading}
+        style={{
+          width: '100%', padding: '10px', borderRadius: '8px', cursor: 'pointer',
+          background: sources.length === 0 ? 'var(--muted)' : 'var(--primary)',
+          color: sources.length === 0 ? 'var(--muted-foreground)' : 'white',
+          border: 'none', fontSize: '13px', fontWeight: 700,
+          transition: 'opacity 0.15s', opacity: loading ? 0.7 : 1,
+        }}
+      >
+        {loading ? 'Loading…' : 'Explore Demo →'}
+      </button>
+
+    </div>
+  );
+}
+
+// ── Demo Sidebar ── replaces ImportSidebar in demo mode ───────────────────────
+function DemoSidebar({ loadedData, onExit }) {
+  return (
+    <aside style={{
+      borderRight: '1px solid var(--border)', padding: '20px 16px',
+      display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{
+          fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em',
+          color: 'var(--primary)', background: 'color-mix(in srgb, var(--primary) 12%, transparent)',
+          padding: '2px 8px', borderRadius: '100px',
+        }}>
+          DEMO MODE
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--muted-foreground)', marginBottom: '2px' }}>
+          Loaded sources
+        </p>
+        {Object.entries(loadedData).map(([key, txns]) => (
+          <div key={key} style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '7px 10px', borderRadius: '7px', background: 'var(--muted)',
+            border: '1px solid var(--border)',
+          }}>
+            <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--foreground)' }}>{key}</span>
+            <span style={{ fontSize: '10px', color: 'var(--muted-foreground)' }}>{txns.length} txns</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{
+        borderTop: '1px solid var(--border)', paddingTop: '16px',
+        display: 'flex', flexDirection: 'column', gap: '10px',
+      }}>
+        <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--foreground)' }}>
+          Ready for your real data?
+        </p>
+        <p style={{ fontSize: '11px', color: 'var(--muted-foreground)', lineHeight: 1.6 }}>
+          Sign in with Google to connect your bank accounts and save your spending history.
+        </p>
+        <AuthButton />
+      </div>
+
+      <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
+        <button
+          onClick={onExit}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+            fontSize: '11px', color: 'var(--muted-foreground)',
+            textDecoration: 'underline', textUnderlineOffset: '2px',
+          }}
+        >
+          Exit demo
+        </button>
+      </div>
+    </aside>
   );
 }
