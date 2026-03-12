@@ -420,8 +420,13 @@ function Hero() {
       <div className="hero-layout" style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 28px', display: 'flex', alignItems: 'center', gap: '56px', flexWrap: 'wrap' }}>
         {/* Left */}
         <div className="hero-left" style={{ flex: '1 1 300px', maxWidth: '460px' }}>
-          <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
-            <Pill>Personal Finance · Built for clarity</Pill>
+          <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible" style={{ marginBottom: '28px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '36px', lineHeight: 1 }}>💳</span>
+              <span style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 800, fontSize: '36px', letterSpacing: '-0.04em', color: T.text, lineHeight: 1 }}>
+                Spend<span style={{ color: T.jade }}>Analyzer</span>
+              </span>
+            </div>
           </motion.div>
 
           <motion.h1
