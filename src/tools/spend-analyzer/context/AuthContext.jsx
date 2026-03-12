@@ -85,16 +85,32 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function signInWithGoogle() {
+    // Open the popup synchronously within the user-gesture task so browsers
+    // (Safari, Firefox, strict Chrome) don't block it as an untrusted popup.
+    // We navigate it to the real OAuth URL once we have it.
+    const w = 500, h = 640;
+    const left = Math.round(window.screenX + (window.outerWidth - w) / 2);
+    const top  = Math.round(window.screenY + (window.outerHeight - h) / 2);
+    const popup = window.open('', 'google-signin', `width=${w},height=${h},left=${left},top=${top},scrollbars=yes`);
+
     const redirectTo = `${window.location.origin}${window.location.pathname}?popup_auth=1`;
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo, skipBrowserRedirect: true },
     });
-    if (error) { console.error('Sign in error:', error.message); return; }
-    const w = 500, h = 640;
-    const left = Math.round(window.screenX + (window.outerWidth - w) / 2);
-    const top  = Math.round(window.screenY + (window.outerHeight - h) / 2);
-    window.open(data.url, 'google-signin', `width=${w},height=${h},left=${left},top=${top},scrollbars=yes`);
+
+    if (error) {
+      console.error('Sign in error:', error.message);
+      popup?.close();
+      return;
+    }
+
+    if (popup) {
+      popup.location.href = data.url;
+    } else {
+      // Popup was blocked — fall back to a full-page redirect.
+      window.location.href = data.url;
+    }
   }
 
   async function signOut() {
