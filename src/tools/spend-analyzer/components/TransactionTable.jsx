@@ -314,10 +314,10 @@ export default function TransactionTable({ spending, credits, categories, initia
 
       {/* ── Credits section ───────────────────────────────────────────────── */}
       {filteredCredits.length > 0 && (
-        <>
+        <div className="mt-8 border border-cyan-200 dark:border-cyan-900/50 rounded-lg p-4">
           <div
             onClick={() => setCreditsOpen(o => !o)}
-            className={`text-[11px] font-bold tracking-[2px] uppercase text-cyan-600 mt-8 pb-2 border-b border-border cursor-pointer select-none flex justify-between items-center ${creditsOpen ? 'mb-2.5' : 'mb-0'}`}
+            className={`text-[11px] font-bold tracking-[2px] uppercase text-cyan-600 pb-2 border-b border-cyan-200 dark:border-cyan-900/50 cursor-pointer select-none flex justify-between items-center ${creditsOpen ? 'mb-2.5' : 'mb-0'}`}
           >
             <span>
               Credits / Refunds{' '}
@@ -333,7 +333,7 @@ export default function TransactionTable({ spending, credits, categories, initia
               <span className="font-bold text-cyan-600">{fmt(filteredCredits.reduce((s, t) => s + Math.abs(t.amount), 0))} credited</span>
             </div>
           </>}
-        </>
+        </div>
       )}
 
       {/* ── Legend ────────────────────────────────────────────────────────── */}
