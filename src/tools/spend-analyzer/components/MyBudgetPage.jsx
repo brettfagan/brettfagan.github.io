@@ -317,7 +317,7 @@ export default function MyBudgetPage({ demoTransactions = null }) {
       {!loading && (
         <div className="flex items-start gap-6">
           {/* ── Left: category list ───────────────────────────────────── */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 bg-card rounded-lg border border-border p-4">
             {/* ── Column headers ──────────────────────────────────────── */}
             <div className={`${rowColsCls} pb-1.5 text-[10px] font-bold uppercase tracking-[1px] text-muted-foreground`}>
               <div />
@@ -340,7 +340,7 @@ export default function MyBudgetPage({ demoTransactions = null }) {
                 return (
                   <div key={catKey} className="border border-border rounded-md overflow-hidden">
                     {/* Category row */}
-                    <div className={`${rowColsCls} bg-background min-h-11`}>
+                    <div className={`${rowColsCls} bg-card min-h-11`}>
                       <div
                         className="w-2.5 h-2.5 rounded-full shrink-0"
                         style={{ background: getCatColor(catKey) }}
@@ -390,7 +390,7 @@ export default function MyBudgetPage({ demoTransactions = null }) {
                           const subKey = itemKey(catKey, sub);
                           const subItem = getItem(subKey);
                           return (
-                            <div key={subKey} className={`${rowColsCls} bg-muted border-t border-border min-h-11`}>
+                            <div key={subKey} className={`${rowColsCls} bg-card border-t border-border min-h-11`}>
                               <div />
                               <div className="text-xs text-muted-foreground pl-2.5">{fmtSubcat(sub)}</div>
                               <div className="flex justify-end">
@@ -426,7 +426,7 @@ export default function MyBudgetPage({ demoTransactions = null }) {
                         })}
 
                         {visibleSubcats.length === 0 && (
-                          <div className={`${rowColsCls} bg-muted border-t border-border min-h-11`}>
+                          <div className={`${rowColsCls} bg-card border-t border-border min-h-11`}>
                             <div />
                             <div className="col-span-3 text-[11px] text-muted-foreground italic">
                               All subcategories hidden.
@@ -479,8 +479,6 @@ export default function MyBudgetPage({ demoTransactions = null }) {
 
           {/* ── Right: budget summary card ────────────────────────────── */}
           <div className="w-56 shrink-0 flex flex-col">
-            {/* Invisible spacer matches column header height so card aligns with table body */}
-            <div className="pb-1.5 text-[10px] invisible select-none" aria-hidden="true">X</div>
             <div className="sticky top-4">
             <div className="border border-border rounded-lg bg-card p-4 flex flex-col gap-4">
               {/* Total Budget Amount */}
