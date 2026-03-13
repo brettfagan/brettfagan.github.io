@@ -96,6 +96,11 @@ export default function SpendAnalyzer() {
     }
   }, [user, loading, isLinked, page]);
 
+  // Redirect authenticated users to My Spending by default
+  useEffect(() => {
+    if (!loading && user && !isLinked && page === 'analyzer') setPage('my-spending');
+  }, [user, loading]);
+
   // Redirect to analyzer if user signs out while on an auth-only page
   useEffect(() => {
     if (!loading && !user) setPage('analyzer');
@@ -222,8 +227,8 @@ export default function SpendAnalyzer() {
           { id: 'my-budget',   label: 'My Budget'   },
         ]
       : [
-          { id: 'analyzer',    label: 'Analyzer'    },
           { id: 'my-spending', label: 'My Spending' },
+          { id: 'analyzer',    label: 'Analyzer'    },
           { id: 'my-budget',   label: 'My Budget'   },
         ]
     : isDemo
