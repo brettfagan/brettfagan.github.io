@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { Sun, Moon, Settings } from 'lucide-react';
 import { CARDS } from './lib/constants';
@@ -27,6 +27,7 @@ export default function SpendAnalyzer() {
   const [inviteError, setInviteError] = useState(null);
 
   const isLinked = role === 'linked';
+  const hasRedirectedRef = useRef(false);
   const [isDemo, setIsDemo] = useState(false);
   const [showTour, setShowTour] = useState(false);
 
@@ -96,9 +97,12 @@ export default function SpendAnalyzer() {
     }
   }, [user, loading, isLinked, page]);
 
-  // Redirect authenticated users to My Spending by default
+  // Redirect authenticated users to My Spending on first load only
   useEffect(() => {
-    if (!loading && user && !isLinked && page === 'analyzer') setPage('my-spending');
+    if (!loading && user && !isLinked && page === 'analyzer' && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
+      setPage('my-spending');
+    }
   }, [user, loading]);
 
   // Redirect to analyzer if user signs out while on an auth-only page
