@@ -120,9 +120,7 @@ A personal financial transaction analysis tool available at `/tools/spend-analyz
 Full-page settings area with a left-nav sidebar covering:
 - Categories
 - Categorization Rules
-- Detail Labels
-- Partner Access
-- Budget
+- Linked Access (partner management)
 
 ### Supabase tables
 
