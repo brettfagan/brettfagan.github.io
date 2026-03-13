@@ -390,7 +390,7 @@ export default function MyBudgetPage({ demoTransactions = null }) {
                           const subKey = itemKey(catKey, sub);
                           const subItem = getItem(subKey);
                           return (
-                            <div key={subKey} className={`${rowColsCls} bg-muted border-t border-border min-h-11`}>
+                            <div key={subKey} className={`${rowColsCls} bg-card border-t border-border min-h-11`}>
                               <div />
                               <div className="text-xs text-muted-foreground pl-2.5">{fmtSubcat(sub)}</div>
                               <div className="flex justify-end">
@@ -426,7 +426,7 @@ export default function MyBudgetPage({ demoTransactions = null }) {
                         })}
 
                         {visibleSubcats.length === 0 && (
-                          <div className={`${rowColsCls} bg-muted border-t border-border min-h-11`}>
+                          <div className={`${rowColsCls} bg-card border-t border-border min-h-11`}>
                             <div />
                             <div className="col-span-3 text-[11px] text-muted-foreground italic">
                               All subcategories hidden.
