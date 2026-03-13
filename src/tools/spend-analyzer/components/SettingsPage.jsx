@@ -48,7 +48,7 @@ export default function SettingsPage() {
 
       {/* ── Content area ──────────────────────────────────────────────────── */}
       <div className="flex-1 px-9 py-7 overflow-y-auto">
-        <div className="max-w-2xl">
+        <div className="max-w-2xl bg-card rounded-lg border border-border p-6">
         {activeSection === 'categories' && (
           <>
             <div className="mb-6">

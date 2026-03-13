@@ -10,7 +10,7 @@ const editingCls   = "bg-muted border border-border rounded-md py-3.5 px-4";
 const blockCls     = "flex flex-col gap-2.5";
 const editRowCls   = "flex items-center gap-2.5";
 const labelCls     = "text-[10px] font-bold tracking-[1px] uppercase text-muted-foreground w-30 shrink-0";
-const inputCls     = "flex-1 bg-background border border-border rounded text-xs text-foreground py-1.5 px-2.5 outline-none focus:border-primary transition-colors";
+const inputCls     = "flex-1 bg-muted border border-border rounded text-xs text-foreground py-1.5 px-2.5 outline-none focus:border-primary transition-colors";
 const iconBtnCls   = "bg-transparent border-0 cursor-pointer text-[13px] text-muted-foreground p-0.5 px-1.5 rounded leading-none hover:text-primary hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors";
 const dangerBtnCls = "bg-transparent border-0 cursor-pointer text-[13px] text-muted-foreground p-0.5 px-1.5 rounded leading-none hover:text-destructive hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors";
 const addNewBtnCls = "w-full border border-dashed border-border rounded text-[11px] font-bold text-muted-foreground py-2 px-3 bg-transparent cursor-pointer tracking-[0.5px] mb-6 hover:text-primary hover:border-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors";
@@ -57,7 +57,7 @@ function SubcategoryRow({ subKey, displayName, isCustom, onSave, onDelete }) {
 
   if (!editing) {
     return (
-      <div className="grid grid-cols-[1fr_auto_auto] items-center gap-1.5 px-2 py-1 rounded hover:bg-background transition-colors">
+      <div className="grid grid-cols-[1fr_auto_auto] items-center gap-1.5 px-2 py-1 rounded hover:bg-muted transition-colors">
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-xs font-medium overflow-hidden text-ellipsis whitespace-nowrap">{displayName}</span>
           {isCustom && (
@@ -76,7 +76,7 @@ function SubcategoryRow({ subKey, displayName, isCustom, onSave, onDelete }) {
   }
 
   return (
-    <div className="px-2 py-2 bg-background rounded border border-border">
+    <div className="px-2 py-2 bg-muted rounded border border-border">
       <div className="flex items-center gap-2">
         <input
           className={inputCls}
@@ -143,7 +143,7 @@ function AddSubcategoryForm({ catKey, onAdd }) {
   }
 
   return (
-    <form className="mt-2 bg-background border border-border rounded-md p-3 flex flex-col gap-2" onSubmit={handleSubmit}>
+    <form className="mt-2 bg-muted border border-border rounded-md p-3 flex flex-col gap-2" onSubmit={handleSubmit}>
       <div className="flex items-center gap-2">
         <label className="text-[10px] font-bold tracking-[1px] uppercase text-muted-foreground w-12 shrink-0">Name</label>
         <input
