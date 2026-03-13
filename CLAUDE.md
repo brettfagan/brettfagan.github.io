@@ -40,7 +40,7 @@ Priority badges: **P1** (orange) = blocking, fix immediately; **P2** (yellow) = 
 src/tools/spend-analyzer/     # Main app
   SpendAnalyzer.jsx           # Root component, state management
   components/                 # UI components
-  context/                    # React context providers (Auth, Categories, CsvRules, DetailLabels)
+  context/                    # React context providers (Auth, Categories, CatRules, DetailLabels)
   lib/
     supabase.js               # Supabase client
     parse.js                  # normPlaid(), parseCSV(), guessCat()
@@ -59,9 +59,12 @@ supabase/functions/           # Edge Functions (Deno/TypeScript)
 |-------|---------|
 | `imported_transactions` | Main transaction store |
 | `categories` | User-defined category config |
-| `csv_rules` | Regex-based CSV categorization rules |
+| `cat_rules` | Regex-based categorization rules (renamed from `csv_rules`) |
 | `detail_labels` | Human-readable subcategory labels |
 | `plaid_connections` | Saved Plaid access tokens (RLS scoped) |
+| `budget_items` | Monthly budget targets per category/subcategory |
+| `partner_invites` | Pending partner invite tokens |
+| `partner_access` | Active partner links (owner ↔ partner user IDs) |
 
 ## Supabase Edge Functions
 - Secrets are set in Supabase dashboard, never in code or `.env`
